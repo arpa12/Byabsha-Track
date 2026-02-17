@@ -1,0 +1,507 @@
+{
+  "info": {
+    "name": "ByabshaTrack API - Authentication",
+    "_postman_id": "byabshatrack-auth-v1",
+    "description": "Authentication API collection for ByabshaTrack multi-branch POS system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login - Owner",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('auth_token', response.data.token);",
+                  "    pm.collectionVariables.set('auth_token', response.data.token);",
+                  "    console.log('Token saved:', response.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"owner@byabshatrack.com\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login as owner with full system access"
+          },
+          "response": []
+        },
+        {
+          "name": "Login - Manager",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('auth_token', response.data.token);",
+                  "    pm.collectionVariables.set('auth_token', response.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"manager@byabshatrack.com\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login as manager with branch management access"
+          },
+          "response": []
+        },
+        {
+          "name": "Login - Salesman",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('auth_token', response.data.token);",
+                  "    pm.collectionVariables.set('auth_token', response.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"salesman@byabshatrack.com\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login as salesman with sales-only access"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            },
+            "description": "Get authenticated user details with branch information"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Logout and invalidate current token"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Branches (Owner Only)",
+      "item": [
+        {
+          "name": "Get All Branches",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/branches",
+              "host": ["{{base_url}}"],
+              "path": ["branches"]
+            },
+            "description": "Get all branches (Owner only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Branch",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Branch\",\n  \"code\": \"NB001\",\n  \"address\": \"123 Main St\",\n  \"phone\": \"01712345678\",\n  \"email\": \"newbranch@example.com\",\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/branches",
+              "host": ["{{base_url}}"],
+              "path": ["branches"]
+            },
+            "description": "Create new branch (Owner only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Products (Owner & Manager)",
+      "item": [
+        {
+          "name": "Get All Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["products"]
+            },
+            "description": "Get all products (Owner and Manager)"
+          },
+          "response": []
+        },
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/search?search=phone",
+              "host": ["{{base_url}}"],
+              "path": ["products", "search"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "phone"
+                }
+              ]
+            },
+            "description": "Search products by name or barcode (All roles)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Product\",\n  \"barcode\": \"123456789\",\n  \"category_id\": 1,\n  \"branch_id\": 1,\n  \"unit\": \"pcs\",\n  \"purchase_price\": 100,\n  \"sale_price\": 150,\n  \"stock_quantity\": 50,\n  \"min_stock\": 10,\n  \"max_stock\": 100\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["products"]
+            },
+            "description": "Create new product (Owner and Manager)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Sales (All Roles)",
+      "item": [
+        {
+          "name": "POS - Create Sale",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"branch_id\": 1,\n  \"customer_name\": \"John Doe\",\n  \"customer_phone\": \"01712345678\",\n  \"payment_method\": \"cash\",\n  \"items\": [\n    {\n      \"product_id\": 1,\n      \"quantity\": 2,\n      \"unit_price\": 150\n    }\n  ],\n  \"subtotal\": 300,\n  \"discount\": 20,\n  \"tax\": 0,\n  \"total\": 280\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/sales/pos",
+              "host": ["{{base_url}}"],
+              "path": ["sales", "pos"]
+            },
+            "description": "Create new sale through POS (All roles)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Sales",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sales",
+              "host": ["{{base_url}}"],
+              "path": ["sales"]
+            },
+            "description": "Get all sales (filtered by branch for managers/salesmen)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reports (Owner & Manager)",
+      "item": [
+        {
+          "name": "Daily Sales Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/daily-sales?date=2024-01-15",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "daily-sales"],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2024-01-15"
+                }
+              ]
+            },
+            "description": "Get daily sales report (Owner and Manager)"
+          },
+          "response": []
+        },
+        {
+          "name": "Monthly Sales Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/monthly-sales?year=2024&month=1",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "monthly-sales"],
+              "query": [
+                {
+                  "key": "year",
+                  "value": "2024"
+                },
+                {
+                  "key": "month",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get monthly sales report (Owner and Manager)"
+          },
+          "response": []
+        },
+        {
+          "name": "Daily Gross Profit",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/daily-gross-profit?date=2024-01-15",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "daily-gross-profit"],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2024-01-15"
+                }
+              ]
+            },
+            "description": "Get daily gross profit (Owner and Manager)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Test Access Control",
+      "item": [
+        {
+          "name": "Manager tries Branch Access (Should Fail)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/branches",
+              "host": ["{{base_url}}"],
+              "path": ["branches"]
+            },
+            "description": "Manager should get 403 forbidden (Owner only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Salesman tries Products (Should Fail)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Unauthorized Product\",\n  \"barcode\": \"999999\",\n  \"category_id\": 1,\n  \"branch_id\": 1,\n  \"unit\": \"pcs\",\n  \"purchase_price\": 50,\n  \"sale_price\": 75,\n  \"stock_quantity\": 10\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["products"]
+            },
+            "description": "Salesman should get 403 forbidden (Manager/Owner only)"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
