@@ -10,14 +10,31 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       const token = localStorage.getItem("token");
+      const cachedUser = localStorage.getItem("user");
+
       if (token) {
+        // First, try to use cached user data
+        if (cachedUser) {
+          try {
+            setUser(JSON.parse(cachedUser));
+          } catch (e) {
+            console.error("Failed to parse cached user:", e);
+          }
+        }
+
+        // Then verify with the server
         try {
           const userData = await authService.getMe();
           setUser(userData);
         } catch (error) {
           console.error("Failed to fetch user:", error);
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
+          // Only remove token if it's a 401 error (invalid token)
+          if (error.response?.status === 401) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            setUser(null);
+          }
+          // For other errors (like network issues), keep the cached user
         }
       }
       setLoading(false);

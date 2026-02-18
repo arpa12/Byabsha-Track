@@ -27,20 +27,35 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 
-    // Branch routes (Owner only)
+    // Branch routes - Read access for all, write access for owner only
+    Route::get('branches', [BranchController::class, 'index']); // All authenticated users can view
+    Route::get('branches/{branch}', [BranchController::class, 'show']); // All authenticated users can view
+
     Route::middleware(['role:owner'])->group(function () {
-        Route::apiResource('branches', BranchController::class);
+        Route::post('branches', [BranchController::class, 'store']);
+        Route::put('branches/{branch}', [BranchController::class, 'update']);
+        Route::delete('branches/{branch}', [BranchController::class, 'destroy']);
     });
 
-    // Category routes (Owner, Manager)
+    // Category routes - Read access for all (for Products), write access for Owner/Manager
+    Route::get('categories', [CategoryController::class, 'index']); // All users can view
+    Route::get('categories/{category}', [CategoryController::class, 'show']); // All users can view
+
     Route::middleware(['role:owner,manager'])->group(function () {
-        Route::apiResource('categories', CategoryController::class);
+        Route::post('categories', [CategoryController::class, 'store']);
+        Route::put('categories/{category}', [CategoryController::class, 'update']);
+        Route::delete('categories/{category}', [CategoryController::class, 'destroy']);
     });
 
-    // Product routes (Owner, Manager)
+    // Product routes - Read access for all (for POS), write access for Owner/Manager
+    Route::get('products', [ProductController::class, 'index']); // All users can view
+    Route::get('products/{product}', [ProductController::class, 'show']); // All users can view
+    Route::get('products/low-stock', [ProductController::class, 'lowStock']); // All users can view
+
     Route::middleware(['role:owner,manager'])->group(function () {
-        Route::get('products/low-stock', [ProductController::class, 'lowStock']);
-        Route::apiResource('products', ProductController::class);
+        Route::post('products', [ProductController::class, 'store']);
+        Route::put('products/{product}', [ProductController::class, 'update']);
+        Route::delete('products/{product}', [ProductController::class, 'destroy']);
     });
 
     // Supplier routes (Owner, Manager)
