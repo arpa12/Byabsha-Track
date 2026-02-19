@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 import api from "../services/api";
 
 const Categories = () => {
-  const { t } = useLanguage();
+  const { user, logout } = useAuth();
+  const { t, toggleLanguage, language } = useLanguage();
+  const navigate = useNavigate();
 
   // State Management
   const [categories, setCategories] = useState([]);
@@ -178,180 +182,273 @@ const Categories = () => {
     cat.name.toLowerCase().includes(filters.search.toLowerCase()),
   );
 
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
+
+  const menuItems = [
+    { icon: "📊", label: t("dashboard"), path: "/dashboard" },
+    { icon: "🛒", label: t("pos"), path: "/pos" },
+    { icon: "💰", label: t("sales"), path: "/sales" },
+    { icon: "📦", label: t("products"), path: "/products" },
+    { icon: "🏷️", label: t("categories"), path: "/categories", active: true },
+    { icon: "📥", label: t("purchases"), path: "/purchases" },
+    { icon: "🏭", label: t("suppliers"), path: "/suppliers" },
+    { icon: "💸", label: t("expenses"), path: "/expenses" },
+    { icon: "🏢", label: t("branches"), path: "/branches" },
+    { icon: "📈", label: t("reports"), path: "/reports" },
+    { icon: "👥", label: t("users"), path: "/users" },
+    { icon: "⚙️", label: t("settings"), path: "/settings" },
+  ];
+
   return (
-    <div className="categories-page">
+    <div className="dashboard-container">
+      {/* Mobile Overlay */}
+      <div
+        className={`dashboard-overlay ${sidebarOpen ? "active" : ""}`}
+        onClick={() => setSidebarOpen(false)}
+      ></div>
+
       {/* Sidebar */}
-      <aside
-        className={`categories-sidebar ${sidebarOpen ? "open" : "closed"}`}
-      >
-        <div className="sidebar-header">
-          <h2>{t.appName}</h2>
-          <button
-            className="sidebar-toggle"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
-            {sidebarOpen ? "×" : "☰"}
-          </button>
+      <aside className={`dashboard-sidebar ${sidebarOpen ? "open" : "closed"}`}>
+        <div className="dashboard-sidebar-header">
+          <div className="dashboard-logo">
+            <div className="dashboard-logo-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                />
+              </svg>
+            </div>
+            {sidebarOpen && (
+              <span className="dashboard-logo-text">{t("appName")}</span>
+            )}
+          </div>
         </div>
-        <nav className="sidebar-nav">
-          <a href="/dashboard" className="nav-item">
-            <span className="nav-icon">📊</span>
-            <span className="nav-text">{t.dashboard}</span>
-          </a>
-          <a href="/pos" className="nav-item">
-            <span className="nav-icon">🛒</span>
-            <span className="nav-text">{t.pos}</span>
-          </a>
-          <a href="/sales" className="nav-item">
-            <span className="nav-icon">💰</span>
-            <span className="nav-text">{t.sales}</span>
-          </a>
-          <a href="/products" className="nav-item">
-            <span className="nav-icon">📦</span>
-            <span className="nav-text">{t.products}</span>
-          </a>
-          <a href="/categories" className="nav-item active">
-            <span className="nav-icon">📂</span>
-            <span className="nav-text">{t.categories}</span>
-          </a>
+        <nav className="dashboard-nav">
+          {menuItems.map((item, index) => (
+            <a
+              key={index}
+              href={item.path}
+              className={`dashboard-nav-item ${item.active ? "active" : ""}`}
+            >
+              <span className="dashboard-nav-icon">{item.icon}</span>
+              {sidebarOpen && (
+                <span className="dashboard-nav-label">{item.label}</span>
+              )}
+            </a>
+          ))}
         </nav>
       </aside>
 
       {/* Main Content */}
-      <main className="categories-content">
+      <main className="dashboard-main">
         {/* Header */}
-        <div className="categories-header">
-          <div className="header-left">
-            <h1>{t.categories}</h1>
-            <p className="subtitle">
-              {t.language === "en"
-                ? "Manage product categories"
-                : "পণ্যের বিভাগ পরিচালনা করুন"}
-            </p>
-          </div>
-          <button className="btn-add" onClick={() => setShowAddModal(true)}>
-            + {t.language === "en" ? "Add Category" : "বিভাগ যোগ করুন"}
-          </button>
-        </div>
-
-        {/* Filters */}
-        <div className="categories-filters">
-          <div className="filter-group">
-            <input
-              type="text"
-              placeholder={t.search + "..."}
-              value={filters.search}
-              onChange={(e) =>
-                setFilters((prev) => ({ ...prev, search: e.target.value }))
-              }
-              className="filter-input"
-            />
-          </div>
-
-          <div className="filter-group">
-            <select
-              value={filters.is_active}
-              onChange={(e) =>
-                setFilters((prev) => ({ ...prev, is_active: e.target.value }))
-              }
-              className="filter-select"
+        <header className="dashboard-header">
+          <div className="dashboard-header-left">
+            <button
+              className="dashboard-sidebar-toggle"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
             >
-              <option value="">
-                {t.language === "en" ? "All Status" : "সকল অবস্থা"}
-              </option>
-              <option value="1">
-                {t.language === "en" ? "Active" : "সক্রিয়"}
-              </option>
-              <option value="0">
-                {t.language === "en" ? "Inactive" : "নিষ্ক্রিয়"}
-              </option>
-            </select>
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
+            <h1 className="dashboard-page-title">{t("categories")}</h1>
           </div>
-        </div>
 
-        {/* Categories Grid */}
-        {loading ? (
-          <div className="loading-state">
-            <div className="spinner"></div>
-            <p>{t.language === "en" ? "Loading..." : "লোড হচ্ছে..."}</p>
-          </div>
-        ) : filteredCategories.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">📂</div>
-            <h3>
-              {t.language === "en"
-                ? "No Categories Found"
-                : "কোন বিভাগ পাওয়া যায়নি"}
-            </h3>
-            <p>
-              {t.language === "en"
-                ? "Start by adding your first category"
-                : "প্রথম বিভাগ যোগ করে শুরু করুন"}
-            </p>
-          </div>
-        ) : (
-          <div className="categories-grid">
-            {filteredCategories.map((category) => (
-              <div key={category.id} className="category-card">
-                <div className="category-card-header">
-                  <h3>{category.name}</h3>
-                  <span
-                    className={`status-badge ${
-                      category.is_active ? "active" : "inactive"
-                    }`}
-                  >
-                    {category.is_active
-                      ? t.language === "en"
-                        ? "Active"
-                        : "সক্রিয়"
-                      : t.language === "en"
-                        ? "Inactive"
-                        : "নিষ্ক্রিয়"}
+          <div className="dashboard-header-right">
+            <button onClick={toggleLanguage} className="dashboard-lang-btn">
+              <svg
+                className="dashboard-icon"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+                />
+              </svg>
+              <span>{language === "en" ? "বাংলা" : "English"}</span>
+            </button>
+
+            <div className="dashboard-user-menu">
+              <div className="dashboard-user-info">
+                <div className="dashboard-user-avatar">
+                  {user?.name?.charAt(0).toUpperCase() || "U"}
+                </div>
+                <div className="dashboard-user-details">
+                  <span className="dashboard-user-name">
+                    {user?.name || "User"}
+                  </span>
+                  <span className="dashboard-user-role">
+                    {user?.role || "Staff"}
                   </span>
                 </div>
-
-                {category.description && (
-                  <p className="category-description">{category.description}</p>
-                )}
-
-                {category.parent && (
-                  <div className="category-parent">
-                    <span className="parent-label">
-                      {t.language === "en" ? "Parent:" : "মূল বিভাগ:"}
-                    </span>
-                    <span className="parent-name">{category.parent.name}</span>
-                  </div>
-                )}
-
-                {category.children && category.children.length > 0 && (
-                  <div className="category-children">
-                    <span className="children-label">
-                      {t.language === "en" ? "Subcategories:" : "উপ-বিভাগ:"}
-                    </span>
-                    <span className="children-count">
-                      {category.children.length}
-                    </span>
-                  </div>
-                )}
-
-                <div className="category-actions">
-                  <button
-                    className="btn-edit"
-                    onClick={() => openEditModal(category)}
-                  >
-                    {t.edit}
-                  </button>
-                  <button
-                    className="btn-delete"
-                    onClick={() => openDeleteModal(category)}
-                  >
-                    {t.delete}
-                  </button>
-                </div>
               </div>
-            ))}
+              <button onClick={handleLogout} className="dashboard-logout-btn">
+                <svg
+                  className="dashboard-icon"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
-        )}
+        </header>
+
+        <div className="dashboard-content">
+          <div className="categories-header">
+            <div className="header-left">
+              <button className="btn-add" onClick={() => setShowAddModal(true)}>
+                + {language === "en" ? "Add Category" : "বিভাগ যোগ করুন"}
+              </button>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="categories-filters">
+            <div className="filter-group">
+              <input
+                type="text"
+                placeholder={t.search + "..."}
+                value={filters.search}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, search: e.target.value }))
+                }
+                className="filter-input"
+              />
+            </div>
+
+            <div className="filter-group">
+              <select
+                value={filters.is_active}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, is_active: e.target.value }))
+                }
+                className="filter-select"
+              >
+                <option value="">
+                  {t.language === "en" ? "All Status" : "সকল অবস্থা"}
+                </option>
+                <option value="1">
+                  {t.language === "en" ? "Active" : "সক্রিয়"}
+                </option>
+                <option value="0">
+                  {t.language === "en" ? "Inactive" : "নিষ্ক্রিয়"}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          {/* Categories Grid */}
+          {loading ? (
+            <div className="loading-state">
+              <div className="spinner"></div>
+              <p>{t.language === "en" ? "Loading..." : "লোড হচ্ছে..."}</p>
+            </div>
+          ) : filteredCategories.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">📂</div>
+              <h3>
+                {t.language === "en"
+                  ? "No Categories Found"
+                  : "কোন বিভাগ পাওয়া যায়নি"}
+              </h3>
+              <p>
+                {t.language === "en"
+                  ? "Start by adding your first category"
+                  : "প্রথম বিভাগ যোগ করে শুরু করুন"}
+              </p>
+            </div>
+          ) : (
+            <div className="categories-grid">
+              {filteredCategories.map((category) => (
+                <div key={category.id} className="category-card">
+                  <div className="category-card-header">
+                    <h3>{category.name}</h3>
+                    <span
+                      className={`status-badge ${
+                        category.is_active ? "active" : "inactive"
+                      }`}
+                    >
+                      {category.is_active
+                        ? t.language === "en"
+                          ? "Active"
+                          : "সক্রিয়"
+                        : t.language === "en"
+                          ? "Inactive"
+                          : "নিষ্ক্রিয়"}
+                    </span>
+                  </div>
+
+                  {category.description && (
+                    <p className="category-description">
+                      {category.description}
+                    </p>
+                  )}
+
+                  {category.parent && (
+                    <div className="category-parent">
+                      <span className="parent-label">
+                        {t.language === "en" ? "Parent:" : "মূল বিভাগ:"}
+                      </span>
+                      <span className="parent-name">
+                        {category.parent.name}
+                      </span>
+                    </div>
+                  )}
+
+                  {category.children && category.children.length > 0 && (
+                    <div className="category-children">
+                      <span className="children-label">
+                        {t.language === "en" ? "Subcategories:" : "উপ-বিভাগ:"}
+                      </span>
+                      <span className="children-count">
+                        {category.children.length}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="category-actions">
+                    <button
+                      className="btn-edit"
+                      onClick={() => openEditModal(category)}
+                    >
+                      {t.edit}
+                    </button>
+                    <button
+                      className="btn-delete"
+                      onClick={() => openDeleteModal(category)}
+                    >
+                      {t.delete}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
 
       {/* Add Category Modal */}

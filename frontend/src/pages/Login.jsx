@@ -152,6 +152,27 @@ const Login = () => {
                 <h1 className="login-mobile-app-name">{t("appName")}</h1>
               </div>
 
+              <button
+                type="button"
+                onClick={() => navigate("/")}
+                className="login-back-home-btn"
+              >
+                <svg
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  className="login-back-icon"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                  />
+                </svg>
+                {language === "en" ? "Back to Home" : "হোমে ফিরুন"}
+              </button>
+
               <div className="login-form-header">
                 <h2 className="login-form-title">{t("welcomeBack")}</h2>
                 <p className="login-form-subtitle">{t("loginSubtitle")}</p>

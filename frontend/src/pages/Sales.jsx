@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
+import saleService from "../services/saleService";
 import api from "../services/api";
+import "./Dashboard.css";
 import "./Sales.css";
 
 const Sales = () => {
@@ -152,75 +154,128 @@ const Sales = () => {
     { icon: "🛒", label: t("pos"), path: "/pos" },
     { icon: "💰", label: t("sales"), path: "/sales", active: true },
     { icon: "📦", label: t("products"), path: "/products" },
-    { icon: "📁", label: t("categories"), path: "/categories" },
+    { icon: "🏷️", label: t("categories"), path: "/categories" },
+    { icon: "📥", label: t("purchases"), path: "/purchases" },
+    { icon: "🏭", label: t("suppliers"), path: "/suppliers" },
+    { icon: "💸", label: t("expenses"), path: "/expenses" },
+    { icon: "🏢", label: t("branches"), path: "/branches" },
     { icon: "📈", label: t("reports"), path: "/reports" },
+    { icon: "👥", label: t("users"), path: "/users" },
+    { icon: "⚙️", label: t("settings"), path: "/settings" },
   ];
 
   return (
-    <div className="sales-container">
+    <div className="dashboard-container">
+      {/* Mobile Overlay */}
+      <div
+        className={`dashboard-overlay ${sidebarOpen ? "active" : ""}`}
+        onClick={() => setSidebarOpen(false)}
+      ></div>
+
       {/* Sidebar */}
-      <aside className={`sales-sidebar ${sidebarOpen ? "open" : "closed"}`}>
-        <div className="sidebar-header">
-          <h2 className="sidebar-title">{sidebarOpen && t("appName")}</h2>
+      <aside className={`dashboard-sidebar ${sidebarOpen ? "open" : "closed"}`}>
+        <div className="dashboard-sidebar-header">
+          <div className="dashboard-logo">
+            <div className="dashboard-logo-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                />
+              </svg>
+            </div>
+            {sidebarOpen && (
+              <span className="dashboard-logo-text">{t("appName")}</span>
+            )}
+          </div>
         </div>
 
-        <nav className="sidebar-nav">
+        <nav className="dashboard-nav">
           {menuItems.map((item, index) => (
-            <button
+            <a
               key={index}
-              className={`nav-item ${item.active ? "active" : ""}`}
-              onClick={() => navigate(item.path)}
-              title={item.label}
+              href={item.path}
+              className={`dashboard-nav-item ${item.active ? "active" : ""}`}
             >
-              <span className="nav-icon">{item.icon}</span>
-              {sidebarOpen && <span className="nav-label">{item.label}</span>}
-            </button>
+              <span className="dashboard-nav-icon">{item.icon}</span>
+              {sidebarOpen && (
+                <span className="dashboard-nav-label">{item.label}</span>
+              )}
+            </a>
           ))}
         </nav>
       </aside>
 
       {/* Main Content */}
-      <div className="sales-main">
+      <div className="dashboard-main">
         {/* Header */}
-        <header className="sales-header">
-          <div className="header-left">
+        <header className="dashboard-header">
+          <div className="dashboard-header-left">
             <button
-              className="toggle-sidebar-btn"
+              className="dashboard-sidebar-toggle"
               onClick={() => setSidebarOpen(!sidebarOpen)}
             >
-              ☰
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
             </button>
-            <h1 className="page-title">{t("sales")}</h1>
+            <h1 className="dashboard-page-title">{t("sales")}</h1>
           </div>
 
-          <div className="header-right">
-            <button className="lang-toggle" onClick={toggleLanguage}>
-              {language === "en" ? "বাংলা" : "English"}
+          <div className="dashboard-header-right">
+            <button onClick={toggleLanguage} className="dashboard-lang-btn">
+              <svg
+                className="dashboard-icon"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+                />
+              </svg>
+              <span>{language === "en" ? "বাংলা" : "English"}</span>
             </button>
 
-            <div className="user-menu">
-              <button
-                className="user-menu-btn"
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-              >
-                <span className="user-avatar">
-                  {user?.name?.charAt(0).toUpperCase()}
-                </span>
-                <span className="user-name">{user?.name}</span>
-              </button>
-
-              {userMenuOpen && (
-                <div className="user-dropdown">
-                  <div className="user-info">
-                    <div className="user-info-name">{user?.name}</div>
-                    <div className="user-info-email">{user?.email}</div>
-                    <div className="user-info-role">{user?.role}</div>
-                  </div>
-                  <button className="dropdown-item" onClick={handleLogout}>
-                    🚪 {t("logout")}
-                  </button>
+            <div className="dashboard-user-menu">
+              <div className="dashboard-user-info">
+                <div className="dashboard-user-avatar">
+                  {user?.name?.charAt(0).toUpperCase() || "U"}
                 </div>
-              )}
+                <div className="dashboard-user-details">
+                  <span className="dashboard-user-name">
+                    {user?.name || "User"}
+                  </span>
+                  <span className="dashboard-user-role">
+                    {user?.role || "Staff"}
+                  </span>
+                </div>
+              </div>
+              <button onClick={handleLogout} className="dashboard-logout-btn">
+                <svg
+                  className="dashboard-icon"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
         </header>
@@ -276,7 +331,7 @@ const Sales = () => {
         </div>
 
         {/* Sales Table */}
-        <div className="sales-content">
+        <div className="dashboard-content">
           {loading ? (
             <div className="loading-spinner">
               <div className="spinner"></div>

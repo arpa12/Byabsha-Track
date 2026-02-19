@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
+import "./Dashboard.css";
 import "./POS.css";
 
 const POS = () => {
@@ -14,6 +15,7 @@ const POS = () => {
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [barcodeInput, setBarcodeInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [branches, setBranches] = useState([]);
   const [selectedBranch, setSelectedBranch] = useState("");
@@ -133,6 +135,45 @@ const POS = () => {
 
     return () => clearTimeout(timer);
   }, [searchQuery, searchProducts]);
+
+  // Handle barcode scan
+  const handleBarcodeSearch = async () => {
+    if (!barcodeInput.trim()) {
+      setError("Please enter a barcode");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+      const response = await api.get("/products", {
+        params: {
+          barcode: barcodeInput.trim(),
+        },
+      });
+
+      const productData = response.data.data || response.data;
+      if (productData && productData.length > 0) {
+        await addToCart(productData[0]);
+        setBarcodeInput("");
+      } else {
+        setError("Product not found with this barcode");
+      }
+    } catch (err) {
+      console.error("Error searching by barcode:", err);
+      setError("Failed to search product by barcode");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle barcode input keypress (Enter key)
+  const handleBarcodeKeyPress = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleBarcodeSearch();
+    }
+  };
 
   // Add product to cart
   const addToCart = async (product) => {
@@ -274,7 +315,7 @@ const POS = () => {
       const response = await api.post("/sales/pos", saleData);
 
       setSuccess("Sale completed successfully!");
-      setInvoice(response.data.data);
+      setInvoice(response.data.invoice);
       setShowInvoice(true);
 
       // Reset form
@@ -330,18 +371,18 @@ const POS = () => {
   const totals = calculateTotals();
 
   return (
-    <div className="pos-container">
+    <div className="dashboard-container">
       {/* Mobile Overlay */}
       <div
-        className={`pos-overlay ${sidebarOpen ? "active" : ""}`}
+        className={`dashboard-overlay ${sidebarOpen ? "active" : ""}`}
         onClick={() => setSidebarOpen(false)}
       ></div>
 
       {/* Sidebar */}
-      <aside className={`pos-sidebar ${sidebarOpen ? "open" : "closed"}`}>
-        <div className="pos-sidebar-header">
-          <div className="pos-logo">
-            <div className="pos-logo-icon">
+      <aside className={`dashboard-sidebar ${sidebarOpen ? "open" : "closed"}`}>
+        <div className="dashboard-sidebar-header">
+          <div className="dashboard-logo">
+            <div className="dashboard-logo-icon">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
@@ -352,21 +393,21 @@ const POS = () => {
               </svg>
             </div>
             {sidebarOpen && (
-              <span className="pos-logo-text">{t("appName")}</span>
+              <span className="dashboard-logo-text">{t("appName")}</span>
             )}
           </div>
         </div>
 
-        <nav className="pos-nav">
+        <nav className="dashboard-nav">
           {menuItems.map((item, index) => (
             <a
               key={index}
               href={item.path}
-              className={`pos-nav-item ${item.active ? "active" : ""}`}
+              className={`dashboard-nav-item ${item.active ? "active" : ""}`}
             >
-              <span className="pos-nav-icon">{item.icon}</span>
+              <span className="dashboard-nav-icon">{item.icon}</span>
               {sidebarOpen && (
-                <span className="pos-nav-label">{item.label}</span>
+                <span className="dashboard-nav-label">{item.label}</span>
               )}
             </a>
           ))}
@@ -374,12 +415,12 @@ const POS = () => {
       </aside>
 
       {/* Main Content */}
-      <div className="pos-main">
+      <div className="dashboard-main">
         {/* Header */}
-        <header className="pos-header">
-          <div className="pos-header-left">
+        <header className="dashboard-header">
+          <div className="dashboard-header-left">
             <button
-              className="pos-sidebar-toggle"
+              className="dashboard-sidebar-toggle"
               onClick={() => setSidebarOpen(!sidebarOpen)}
             >
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -391,10 +432,10 @@ const POS = () => {
                 />
               </svg>
             </button>
-            <h1 className="pos-page-title">{t("pos")}</h1>
+            <h1 className="dashboard-page-title">{t("pos")}</h1>
           </div>
 
-          <div className="pos-header-right">
+          <div className="dashboard-header-right">
             <select
               value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
@@ -407,9 +448,9 @@ const POS = () => {
               ))}
             </select>
 
-            <button onClick={toggleLanguage} className="pos-lang-btn">
+            <button onClick={toggleLanguage} className="dashboard-lang-btn">
               <svg
-                className="pos-icon"
+                className="dashboard-icon"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -424,19 +465,23 @@ const POS = () => {
               <span>{language === "en" ? "বাংলা" : "English"}</span>
             </button>
 
-            <div className="pos-user-menu">
-              <div className="pos-user-info">
-                <div className="pos-user-avatar">
+            <div className="dashboard-user-menu">
+              <div className="dashboard-user-info">
+                <div className="dashboard-user-avatar">
                   {user?.name?.charAt(0).toUpperCase() || "U"}
                 </div>
-                <div className="pos-user-details">
-                  <span className="pos-user-name">{user?.name || "User"}</span>
-                  <span className="pos-user-role">{user?.role || "Staff"}</span>
+                <div className="dashboard-user-details">
+                  <span className="dashboard-user-name">
+                    {user?.name || "User"}
+                  </span>
+                  <span className="dashboard-user-role">
+                    {user?.role || "Staff"}
+                  </span>
                 </div>
               </div>
-              <button onClick={handleLogout} className="pos-logout-btn">
+              <button onClick={handleLogout} className="dashboard-logout-btn">
                 <svg
-                  className="pos-icon"
+                  className="dashboard-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -454,7 +499,7 @@ const POS = () => {
         </header>
 
         {/* Content */}
-        <div className="pos-content">
+        <div className="dashboard-content">
           {/* Alert Messages */}
           {error && (
             <div className="pos-alert pos-alert-error">
@@ -509,13 +554,49 @@ const POS = () => {
                     type="text"
                     placeholder={
                       language === "en"
-                        ? "Search products..."
-                        : "পণ্য খুঁজুন..."
+                        ? "Search products by name or SKU..."
+                        : "নাম বা SKU দিয়ে পণ্য খুঁজুন..."
                     }
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pos-search-input"
                   />
+                </div>
+
+                {/* Barcode Input */}
+                <div className="pos-barcode-wrapper">
+                  <svg
+                    className="pos-barcode-icon"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m-8-8h16M6 4v16m12-16v16"
+                    />
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder={
+                      language === "en"
+                        ? "Scan or enter barcode..."
+                        : "বারকোড স্ক্যান বা প্রবেশ করুন..."
+                    }
+                    value={barcodeInput}
+                    onChange={(e) => setBarcodeInput(e.target.value)}
+                    onKeyPress={handleBarcodeKeyPress}
+                    className="pos-barcode-input"
+                  />
+                  <button
+                    onClick={handleBarcodeSearch}
+                    className="pos-barcode-btn"
+                    disabled={!barcodeInput.trim() || loading}
+                  >
+                    {language === "en" ? "Add" : "যোগ করুন"}
+                  </button>
                 </div>
 
                 {/* Product Results */}
@@ -701,10 +782,10 @@ const POS = () => {
                       💳 {t("card")}
                     </button>
                     <button
-                      className={`pos-payment-method ${paymentMethod === "mobile" ? "active" : ""}`}
-                      onClick={() => setPaymentMethod("mobile")}
+                      className={`pos-payment-method ${paymentMethod === "bkash" ? "active" : ""}`}
+                      onClick={() => setPaymentMethod("bkash")}
                     >
-                      📱 {t("mobile")}
+                      📱 bKash
                     </button>
                   </div>
                 </div>
@@ -844,40 +925,144 @@ const POS = () => {
             </div>
             <div className="pos-modal-content">
               <div className="pos-invoice">
-                <h3>{t("appName")}</h3>
-                <p>{language === "en" ? "Sale Receipt" : "বিক্রয় রসিদ"}</p>
+                <h3>{invoice.business?.name || t("appName")}</h3>
+                <p className="pos-invoice-branch">
+                  {invoice.business?.branch || ""}
+                </p>
+                <p className="pos-invoice-address">
+                  {invoice.business?.address || ""}
+                </p>
+                <p className="pos-invoice-contact">
+                  {invoice.business?.phone || ""} |{" "}
+                  {invoice.business?.email || ""}
+                </p>
+
+                <div className="pos-invoice-separator"></div>
+
                 <div className="pos-invoice-details">
                   <p>
                     <strong>
                       {language === "en" ? "Invoice #" : "চালান #"}:
                     </strong>{" "}
-                    {invoice.invoice_number}
+                    {invoice.invoice_no}
                   </p>
                   <p>
                     <strong>{language === "en" ? "Date" : "তারিখ"}:</strong>{" "}
-                    {new Date(invoice.created_at).toLocaleString()}
+                    {invoice.date} {invoice.time}
                   </p>
-                  {invoice.customer_name && (
+                  <p>
+                    <strong>
+                      {language === "en" ? "Customer" : "গ্রাহক"}:
+                    </strong>{" "}
+                    {invoice.customer?.name || "Walk-in Customer"}
+                  </p>
+                  {invoice.customer?.phone && (
                     <p>
-                      <strong>{t("customer")}:</strong> {invoice.customer_name}
+                      <strong>{language === "en" ? "Phone" : "ফোন"}:</strong>{" "}
+                      {invoice.customer.phone}
                     </p>
                   )}
+                  <p>
+                    <strong>
+                      {language === "en" ? "Salesman" : "বিক্রয়কর্মী"}:
+                    </strong>{" "}
+                    {invoice.salesman?.name}
+                  </p>
                 </div>
+
+                <div className="pos-invoice-separator"></div>
+
+                {/* Invoice Items */}
+                <div className="pos-invoice-items">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>{language === "en" ? "Item" : "পণ্য"}</th>
+                        <th>{language === "en" ? "Qty" : "পরিমাণ"}</th>
+                        <th>{language === "en" ? "Price" : "মূল্য"}</th>
+                        <th>{language === "en" ? "Total" : "মোট"}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {invoice.items?.map((item, index) => (
+                        <tr key={index}>
+                          <td>
+                            <div>{item.product_name}</div>
+                            <small>{item.product_sku}</small>
+                          </td>
+                          <td>{item.quantity}</td>
+                          <td>৳{item.unit_price.toFixed(2)}</td>
+                          <td>৳{item.subtotal.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="pos-invoice-separator"></div>
+
+                {/* Invoice Totals */}
                 <div className="pos-invoice-totals">
                   <p>
-                    <strong>{t("total")}:</strong> ৳
-                    {parseFloat(invoice.total_amount).toFixed(2)}
+                    <strong>{language === "en" ? "Subtotal" : "উপমোট"}:</strong>
+                    <span>৳{invoice.payment?.subtotal?.toFixed(2)}</span>
                   </p>
-                  <p>
-                    <strong>{t("paid")}:</strong> ৳
-                    {parseFloat(invoice.paid_amount).toFixed(2)}
-                  </p>
-                  {invoice.due_amount > 0 && (
+                  {invoice.payment?.discount?.amount > 0 && (
                     <p>
-                      <strong>{t("due")}:</strong> ৳
-                      {parseFloat(invoice.due_amount).toFixed(2)}
+                      <strong>
+                        {language === "en" ? "Discount" : "ছাড়"}:
+                      </strong>
+                      <span>
+                        -৳{invoice.payment.discount.amount.toFixed(2)}
+                      </span>
                     </p>
                   )}
+                  {invoice.payment?.tax?.amount > 0 && (
+                    <p>
+                      <strong>{language === "en" ? "Tax" : "কর"}:</strong>
+                      <span>+৳{invoice.payment.tax.amount.toFixed(2)}</span>
+                    </p>
+                  )}
+                  <p className="pos-invoice-grand-total">
+                    <strong>
+                      {language === "en" ? "Grand Total" : "সর্বমোট"}:
+                    </strong>
+                    <span>৳{invoice.payment?.grand_total?.toFixed(2)}</span>
+                  </p>
+                  <p>
+                    <strong>{language === "en" ? "Paid" : "পরিশোধিত"}:</strong>
+                    <span>৳{invoice.payment?.paid_amount?.toFixed(2)}</span>
+                  </p>
+                  {invoice.payment?.change_amount > 0 && (
+                    <p className="pos-invoice-change">
+                      <strong>{language === "en" ? "Change" : "ফেরত"}:</strong>
+                      <span>৳{invoice.payment.change_amount.toFixed(2)}</span>
+                    </p>
+                  )}
+                  {invoice.payment?.due_amount > 0 && (
+                    <p className="pos-invoice-due">
+                      <strong>{language === "en" ? "Due" : "বাকি"}:</strong>
+                      <span>৳{invoice.payment.due_amount.toFixed(2)}</span>
+                    </p>
+                  )}
+                  <p>
+                    <strong>
+                      {language === "en" ? "Payment Method" : "পেমেন্ট পদ্ধতি"}:
+                    </strong>
+                    <span className="pos-invoice-payment-method">
+                      {invoice.payment?.payment_method?.toUpperCase()}
+                    </span>
+                  </p>
+                </div>
+
+                <div className="pos-invoice-separator"></div>
+
+                <div className="pos-invoice-footer">
+                  <p>
+                    {language === "en"
+                      ? "Thank you for your business!"
+                      : "আপনার ব্যবসার জন্য ধন্যবাদ!"}
+                  </p>
                 </div>
               </div>
             </div>
