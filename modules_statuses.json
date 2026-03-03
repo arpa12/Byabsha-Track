@@ -1,0 +1,11 @@
+{
+    "Auth": true,
+    "Capital": true,
+    "Dashboard": true,
+    "Landing": true,
+    "Product": true,
+    "Report": true,
+    "Sale": true,
+    "Shop": true,
+    "Restock": true
+}
