@@ -49,17 +49,9 @@
                         <select class="form-select @error('product_id') is-invalid @enderror"
                                 id="product_id"
                                 name="product_id"
+                                data-selected-product-id="{{ old('product_id', $sale->product_id) }}"
                                 required>
                             <option value="">{{ __('sale.select_product') }}</option>
-                            @foreach($products as $product)
-                                <option value="{{ $product->id }}"
-                                        data-stock="{{ $product->stock_quantity }}"
-                                        data-price="{{ $product->sale_price }}"
-                                        data-purchase-price="{{ $product->purchase_price }}"
-                                        {{ old('product_id', $sale->product_id) == $product->id ? 'selected' : '' }}>
-                                    {{ $product->name }} ({{ $product->shop->name }}) - Stock: {{ $product->stock_quantity }} - Price: {{ number_format($product->sale_price, 2) }}
-                                </option>
-                            @endforeach
                         </select>
                         @error('product_id')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -163,6 +155,51 @@
 </div>
 
 <script>
+const productsByShopEndpoint = "{{ route('sale.products-by-shop') }}";
+
+async function loadProductsByShop(selectedShopId) {
+    const productSelect = document.getElementById('product_id');
+    const selectedProductId = productSelect.dataset.selectedProductId || '';
+
+    productSelect.innerHTML = `<option value="">{{ __('sale.select_product') }}</option>`;
+
+    if (!selectedShopId) {
+        updateCalcPreview();
+        return;
+    }
+
+    try {
+        const response = await fetch(`${productsByShopEndpoint}?shop_id=${selectedShopId}`);
+        const products = await response.json();
+
+        products.forEach((product) => {
+            const option = document.createElement('option');
+            option.value = product.id;
+            option.setAttribute('data-stock', product.stock_quantity);
+            option.setAttribute('data-price', product.sale_price);
+            option.setAttribute('data-purchase-price', product.purchase_price);
+            option.textContent = `${product.name} - Stock: ${product.stock_quantity} - Price: ${Number(product.sale_price).toFixed(2)}`;
+
+            if (String(selectedProductId) === String(product.id)) {
+                option.selected = true;
+            }
+
+            productSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Failed to load products by shop:', error);
+    }
+
+    updateCalcPreview();
+}
+
+function filterProductsByShop() {
+    const shopSelect = document.getElementById('shop_id');
+    const selectedShopId = shopSelect.value;
+
+    loadProductsByShop(selectedShopId);
+}
+
 function updateCalcPreview() {
     const productSelect = document.getElementById('product_id');
     const quantityInput = document.getElementById('quantity');
@@ -205,10 +242,11 @@ function updateCalcPreview() {
     document.getElementById('value-margin').textContent   = margin.toFixed(2) + '%';
 }
 
+document.getElementById('shop_id').addEventListener('change', filterProductsByShop);
 document.getElementById('product_id').addEventListener('change', updateCalcPreview);
 document.getElementById('quantity').addEventListener('input', updateCalcPreview);
 
 // Auto-populate on page load using existing values
-document.addEventListener('DOMContentLoaded', updateCalcPreview);
+document.addEventListener('DOMContentLoaded', filterProductsByShop);
 </script>
 @endsection

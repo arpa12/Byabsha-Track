@@ -191,6 +191,65 @@
             border-left-color: var(--primary-color);
         }
 
+        /* Submenu Styles */
+        .nav-item-submenu {
+            position: relative;
+        }
+
+        .nav-link-parent {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+            justify-content: space-between;
+        }
+
+        .nav-link-parent:hover {
+            background: var(--sidebar-hover);
+            color: white;
+        }
+
+        .nav-link-parent.active,
+        .nav-link-parent[aria-expanded="true"] {
+            background: rgba(37,99,235,0.1);
+            color: white;
+            border-left-color: var(--primary-color);
+        }
+
+        .nav-link-parent .left-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-link-parent i.bi-chevron-down {
+            font-size: 0.875rem;
+            transition: transform 0.2s;
+        }
+
+        .nav-link-parent[aria-expanded="true"] i.bi-chevron-down {
+            transform: rotate(180deg);
+        }
+
+        .submenu {
+            background: rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .submenu .nav-link-custom {
+            padding-left: 3.5rem;
+            font-size: 0.9rem;
+        }
+
+        .submenu .nav-link-custom i {
+            font-size: 1rem;
+        }
+
         /* Main Content */
         .main-content {
             margin-left: var(--sidebar-width);
@@ -250,6 +309,158 @@
             }
         }
 
+        /* Notification Bell */
+        .notification-bell {
+            position: relative;
+            margin-right: 1rem;
+        }
+
+        .notification-bell .btn {
+            position: relative;
+            background: transparent;
+            border: none;
+            font-size: 1.25rem;
+            color: #64748b;
+            padding: 0.5rem;
+            cursor: pointer;
+        }
+
+        .notification-bell .btn:hover {
+            color: var(--primary-color);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #ef4444;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.15rem 0.4rem;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 380px;
+            max-height: 500px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1001;
+            overflow: hidden;
+        }
+
+        .notification-dropdown.show {
+            display: block;
+        }
+
+        .notification-dropdown-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-dropdown-header h6 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .notification-dropdown-body {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .notification-item:hover {
+            background: #f8fafc;
+        }
+
+        .notification-item.unread {
+            background: #eff6ff;
+        }
+
+        .notification-item.unread:hover {
+            background: #dbeafe;
+        }
+
+        .notification-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .notification-message {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+            line-height: 1.4;
+        }
+
+        .notification-time {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .notification-dropdown-footer {
+            padding: 0.75rem 1.25rem;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .notification-dropdown-footer a {
+            font-size: 0.875rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .notification-dropdown-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .notification-empty {
+            padding: 3rem 1.25rem;
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        .notification-empty i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
         /* Page Title */
         .page-title {
             font-size: 1.75rem;
@@ -280,6 +491,56 @@
                 <i class="bi bi-calendar3"></i>
                 <span id="currentDate"></span>
             </span>
+
+            <!-- Notification Bell -->
+            <div class="notification-bell">
+                <button class="btn" id="notificationBell" type="button">
+                    <i class="bi bi-bell-fill"></i>
+                    @if(auth()->user()->unreadNotificationsCount() > 0)
+                        <span class="notification-badge">{{ auth()->user()->unreadNotificationsCount() }}</span>
+                    @endif
+                </button>
+
+                <div class="notification-dropdown" id="notificationDropdown">
+                    <div class="notification-dropdown-header">
+                        <h6>{{ __('notifications.title') }}</h6>
+                        <form action="{{ route('notifications.mark-all-read') }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-link text-primary p-0" style="font-size: 0.8rem;">
+                                {{ __('notifications.mark_all_read') }}
+                            </button>
+                        </form>
+                    </div>
+                    <div class="notification-dropdown-body" id="notificationList">
+                        @php
+                            $recentNotifications = auth()->user()->notifications()->latest()->limit(5)->get();
+                        @endphp
+
+                        @forelse($recentNotifications as $notification)
+                            <a href="{{ $notification->data['url'] ?? '#' }}"
+                               class="notification-item {{ $notification->isUnread() ? 'unread' : '' }}">
+                                <i class="{{ $notification->icon }} notification-icon"></i>
+                                <div class="notification-content">
+                                    <div class="notification-title">{{ $notification->title }}</div>
+                                    <div class="notification-message">{{ $notification->message }}</div>
+                                    <div class="notification-time">{{ $notification->created_at->diffForHumans() }}</div>
+                                </div>
+                            </a>
+                        @empty
+                            <div class="notification-empty">
+                                <i class="bi bi-bell-slash"></i>
+                                <p class="mb-0">{{ __('notifications.no_notifications') }}</p>
+                            </div>
+                        @endforelse
+                    </div>
+                    @if($recentNotifications->count() > 0)
+                        <div class="notification-dropdown-footer">
+                            <a href="{{ route('notifications.index') }}">{{ __('notifications.view_all') }}</a>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <!-- Language Switcher -->
             <div class="lang-switcher me-2">
                 <a href="{{ route('language.switch', 'en') }}"
@@ -290,6 +551,9 @@
             <div class="header-user ms-1">
                 <i class="bi bi-person-circle me-1"></i>
                 <span class="me-2">{{ auth()->user()->name ?? 'User' }}</span>
+                <a href="{{ route('user.profile.edit') }}" class="btn btn-sm btn-outline-primary me-2">
+                    <i class="bi bi-person-gear"></i> {{ __('user.profile_title') }}
+                </a>
                 <form action="{{ route('logout') }}" method="POST" class="d-inline">
                     @csrf
                     <button type="submit" class="btn btn-sm btn-outline-danger">
@@ -308,6 +572,10 @@
                 <i class="bi bi-speedometer2"></i>
                 <span>{{ __('app.dashboard') }}</span>
             </a>
+            <a href="{{ route('user.profile.edit') }}" class="nav-link-custom {{ request()->is('profile') ? 'active' : '' }}">
+                <i class="bi bi-person-gear"></i>
+                <span>{{ __('user.profile_title') }}</span>
+            </a>
 
             <div class="nav-section-title">{{ __('app.management') }}</div>
             <a href="{{ route('shop.index') }}" class="nav-link-custom {{ request()->is('shops*') ? 'active' : '' }}">
@@ -317,6 +585,10 @@
             <a href="{{ route('product.index') }}" class="nav-link-custom {{ request()->is('products*') ? 'active' : '' }}">
                 <i class="bi bi-box-seam"></i>
                 <span>{{ __('app.products') }}</span>
+            </a>
+            <a href="{{ route('stock.index') }}" class="nav-link-custom {{ request()->is('stocks*') ? 'active' : '' }}">
+                <i class="bi bi-boxes"></i>
+                <span>{{ __('app.stocks') }}</span>
             </a>
             <a href="{{ route('sale.index') }}" class="nav-link-custom {{ request()->is('sales*') ? 'active' : '' }}">
                 <i class="bi bi-cart-check"></i>
@@ -330,6 +602,44 @@
                 <i class="bi bi-arrow-repeat"></i>
                 <span>{{ __('app.restocks') }}</span>
             </a>
+
+            @if(auth()->user()->isSuperAdmin())
+            <div class="nav-section-title">{{ __('app.system') }}</div>
+            <a href="{{ route('user.index') }}" class="nav-link-custom {{ request()->is('users*') ? 'active' : '' }}">
+                <i class="bi bi-people"></i>
+                <span>{{ __('app.users') }}</span>
+            </a>
+
+            <!-- Settings Submenu -->
+            <div class="nav-item-submenu">
+                <a class="nav-link-parent {{ request()->is('settings*') ? 'active' : '' }}"
+                   data-bs-toggle="collapse"
+                   href="#settingsSubmenu"
+                   role="button"
+                   aria-expanded="{{ request()->is('settings*') ? 'true' : 'false' }}"
+                   aria-controls="settingsSubmenu">
+                    <div class="left-content">
+                        <i class="bi bi-gear"></i>
+                        <span>{{ __('app.settings') }}</span>
+                    </div>
+                    <i class="bi bi-chevron-down"></i>
+                </a>
+                <div class="collapse submenu {{ request()->is('settings*') ? 'show' : '' }}" id="settingsSubmenu">
+                    <a href="{{ route('settings.index') }}?tab=general" class="nav-link-custom {{ request()->is('settings*') && (request()->get('tab', 'general') === 'general') ? 'active' : '' }}">
+                        <i class="bi bi-sliders"></i>
+                        <span>{{ __('settings.general_settings') }}</span>
+                    </a>
+                    <a href="{{ route('settings.index') }}?tab=business" class="nav-link-custom {{ request()->is('settings*') && request()->get('tab') === 'business' ? 'active' : '' }}">
+                        <i class="bi bi-briefcase"></i>
+                        <span>{{ __('settings.business_settings') }}</span>
+                    </a>
+                    <a href="{{ route('settings.index') }}?tab=system" class="nav-link-custom {{ request()->is('settings*') && request()->get('tab') === 'system' ? 'active' : '' }}">
+                        <i class="bi bi-cpu"></i>
+                        <span>{{ __('settings.system_settings') }}</span>
+                    </a>
+                </div>
+            </div>
+            @endif
 
             <div class="nav-section-title">{{ __('app.analytics') }}</div>
             <a href="{{ route('report.index') }}" class="nav-link-custom {{ request()->is('reports') || request()->is('reports/sales*') || request()->is('reports/products*') || request()->is('reports/shops*') ? 'active' : '' }}">
@@ -398,6 +708,24 @@
             }
         }
         updateDate();
+
+        // Notification bell dropdown
+        const notificationBell = document.getElementById('notificationBell');
+        const notificationDropdown = document.getElementById('notificationDropdown');
+
+        if (notificationBell && notificationDropdown) {
+            notificationBell.addEventListener('click', (e) => {
+                e.stopPropagation();
+                notificationDropdown.classList.toggle('show');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!notificationDropdown.contains(e.target) && !notificationBell.contains(e.target)) {
+                    notificationDropdown.classList.remove('show');
+                }
+            });
+        }
     </script>
     @stack('scripts')
 </body>

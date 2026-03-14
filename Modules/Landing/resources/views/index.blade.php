@@ -272,11 +272,6 @@
 
       <h2 style="font-size:1.35rem;font-weight:700;color:#fff;text-align:center;margin-bottom:.3rem">{{ __('auth.welcome_back') }}</h2>
       <p style="font-size:.85rem;color:#64748b;text-align:center;margin-bottom:1rem">{{ __('auth.sign_in_sub') }}</p>
-      <div class="text-center mb-3">
-        <span style="display:inline-flex;align-items:center;gap:.35rem;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);border-radius:50px;padding:.18rem .65rem;font-size:.72rem;color:#93c5fd;font-weight:600">
-          <i class="bi bi-info-circle-fill"></i> {{ __('auth.demo_available') }}
-        </span>
-      </div>
 
       @if($errors->any())
         <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:.75rem 1rem;color:#fca5a5;font-size:.875rem;display:flex;align-items:center;gap:.5rem;margin-bottom:1rem">
@@ -313,15 +308,17 @@
         <div class="d-flex align-items-center mb-3">
           <input type="checkbox" id="mRemember" name="remember" style="width:15px;height:15px;accent-color:#2563eb;cursor:pointer">
           <label for="mRemember" style="font-size:.82rem;color:#64748b;cursor:pointer;margin-left:.4rem">{{ __('auth.remember_me') }}</label>
+          <a href="{{ route('password.request') }}" style="margin-left:auto;font-size:.82rem;color:#93c5fd;text-decoration:none;">{{ __('auth.forgot_password_link') }}</a>
         </div>
         <button type="submit" class="btn-login-modal">
           <i class="bi bi-box-arrow-in-right"></i> {{ __('auth.sign_in') }}
         </button>
-        <button type="button" class="btn-demo-modal mt-2" onclick="fillMDemo()">
-          <i class="bi bi-lightning-charge-fill"></i> {{ __('auth.use_demo') }}
-          <span style="font-size:.72rem;opacity:.7;font-weight:400">{{ __('auth.demo_label') }}</span>
-        </button>
       </form>
+      <div class="text-center mt-3">
+        <a href="{{ route('register') }}" style="font-size:.84rem;color:#93c5fd;text-decoration:none;">
+          <i class="bi bi-person-plus"></i> {{ __('auth.create_owner_account') }}
+        </a>
+      </div>
     </div>
   </div>
 </div>
@@ -333,10 +330,6 @@
     var ic = document.getElementById('mEye');
     i.type = i.type === 'password' ? 'text' : 'password';
     ic.className = i.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
-  }
-  function fillMDemo() {
-    document.getElementById('mPwd').closest('form').querySelector('[name="email"]').value = 'admin@byabsha.com';
-    document.getElementById('mPwd').value = 'password';
   }
   @if($errors->any())
   document.addEventListener('DOMContentLoaded', function() {

@@ -52,13 +52,15 @@
             </a>
             <h1 style="font-size:1.5rem;font-weight:700;color:#fff;text-align:center;margin-bottom:.4rem">{{ __('auth.welcome_back') }}</h1>
             <p style="font-size:.9rem;color:#64748b;text-align:center;margin-bottom:1rem">{{ __('auth.sign_in_sub') }}</p>
-            <div class="text-center mb-3">
-              <span class="demo-badge"><i class="bi bi-info-circle-fill"></i> {{ __('auth.demo_available') }}</span>
-            </div>
             @if($errors->any())
                 <div class="alert-custom">
                     <i class="bi bi-exclamation-circle-fill"></i>
                     {{ $errors->first() }}
+                </div>
+            @endif
+            @if(session('status'))
+                <div class="alert alert-success mb-3" style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);color:#86efac;">
+                    {{ session('status') }}
                 </div>
             @endif
             <form action="{{ route('login.submit') }}" method="POST">
@@ -96,15 +98,17 @@
                 <div class="d-flex align-items-center mb-4">
                     <input type="checkbox" id="remember" name="remember" style="width:16px;height:16px;accent-color:#2563eb;cursor:pointer">
                     <label for="remember" style="font-size:.875rem;color:#64748b;cursor:pointer;margin-left:.4rem">{{ __('auth.remember_me') }}</label>
+                    <a href="{{ route('password.request') }}" style="margin-left:auto;font-size:.82rem;color:#93c5fd;text-decoration:none;">{{ __('auth.forgot_password_link') }}</a>
                 </div>
                 <button type="submit" class="btn-login">
                     <i class="bi bi-box-arrow-in-right"></i> {{ __('auth.sign_in') }}
                 </button>
-                <button type="button" class="btn-demo mt-2" onclick="fillDemo()">
-                    <i class="bi bi-lightning-charge-fill"></i> {{ __('auth.use_demo') }}
-                    <span style="font-size:.75rem;opacity:.7;font-weight:400">{{ __('auth.demo_label') }}</span>
-                </button>
             </form>
+            <div class="text-center mt-3">
+                <a href="{{ route('register') }}" class="back-link" style="justify-content:center;color:#93c5fd;">
+                    <i class="bi bi-person-plus"></i> {{ __('auth.create_owner_account') }}
+                </a>
+            </div>
             <div class="divider"><span>{{ __('auth.or') }}</span></div>
             <a href="{{ route('landing.index') }}" class="back-link">
                 <i class="bi bi-arrow-left"></i> {{ __('auth.back_to_home') }}
@@ -119,12 +123,6 @@
             var ic = document.getElementById('eyeIcon');
             i.type = i.type === 'password' ? 'text' : 'password';
             ic.className = i.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
-        }
-        function fillDemo() {
-            document.getElementById('email').value = 'admin@byabsha.com';
-            document.getElementById('password').value = 'password';
-            document.getElementById('email').dispatchEvent(new Event('input'));
-            document.getElementById('password').dispatchEvent(new Event('input'));
         }
     </script>
 </body>

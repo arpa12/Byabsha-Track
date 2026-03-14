@@ -12,17 +12,21 @@ return [
     'main_menu'       => 'প্রধান মেনু',
     'management'      => 'ব্যবস্থাপনা',
     'analytics'       => 'বিশ্লেষণ',
+    'system'          => 'সিস্টেম',
 
     // Layout - Sidebar links
     'dashboard'       => 'ড্যাশবোর্ড',
     'shops'           => 'দোকানসমূহ',
     'products'        => 'পণ্যসমূহ',
+    'stocks'          => 'স্টক',
     'sales'           => 'বিক্রয়',
     'capitals'        => 'মূলধন',
     'restocks'        => 'পুনঃমজুদ',
     'reports'         => 'প্রতিবেদন',
     'daily_pnl'       => 'দৈনিক লাভ/ক্ষতি',
     'monthly_pnl'     => 'মাসিক লাভ/ক্ষতি',
+    'users'           => 'ব্যবহারকারী',
+    'settings'        => 'সেটিংস',
 
     // Common actions
     'back'            => 'পেছনে',
@@ -57,7 +61,14 @@ return [
     'error'           => 'ত্রুটি',
     'warning'         => 'সতর্কতা',
     'info'            => 'তথ্য',
+    'validation_error' => 'অনুগ্রহ করে নিচের ত্রুটিগুলো সংশোধন করুন:',
 
     // Confirmation
     'confirm_delete'  => 'আপনি কি নিশ্চিত এটি মুছতে চান? এই ক্রিয়াটি পুনরুদ্ধার করা যাবে না।',
+
+    // Maintenance mode message
+    'maintenance_title' => 'রক্ষণাবেক্ষণ মোড',
+    'maintenance_badge' => 'সিস্টেম রক্ষণাবেক্ষণ',
+    'maintenance_heading' => 'সাময়িকভাবে বন্ধ',
+    'maintenance_message' => 'সুপার অ্যাডমিন রক্ষণাবেক্ষণ মোড চালু করেছেন। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।',
 ];

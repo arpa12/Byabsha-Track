@@ -7,5 +7,8 @@
     "Report": true,
     "Sale": true,
     "Shop": true,
-    "Restock": true
+    "Restock": true,
+    "User": true,
+    "Settings": true,
+    "Stock": true
 }

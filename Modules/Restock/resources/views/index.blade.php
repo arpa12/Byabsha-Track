@@ -71,22 +71,25 @@
                         <th class="text-end">{{ __('restock.col_total_cost') }}</th>
                         <th class="text-center">{{ __('restock.col_current_stock') }}</th>
                         <th>{{ __('restock.col_note') }}</th>
+                        <th class="text-end">{{ __('app.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($restocks as $restock)
                     <tr>
                         <td>{{ $restock->restock_date->format('d M Y') }}</td>
-                        <td><span class="badge bg-primary">{{ $restock->shop->name }}</span></td>
-                        <td>{{ $restock->product->name }}</td>
+                        <td>
+                            <span class="badge bg-primary">{{ $restock->shop?->name ?? 'Deleted shop' }}</span>
+                        </td>
+                        <td>{{ $restock->product?->name ?? 'Deleted product' }}</td>
                         <td class="text-center">
                             <span class="badge bg-success">+{{ number_format($restock->quantity) }}</span>
                         </td>
                         <td class="text-end">{{ number_format($restock->purchase_price_per_unit, 2) }}</td>
                         <td class="text-end"><strong>{{ number_format($restock->total_cost, 2) }}</strong></td>
                         <td class="text-center">
-                            <span class="badge {{ $restock->product->stock_quantity > 0 ? 'bg-info' : 'bg-danger' }}">
-                                {{ number_format($restock->product->stock_quantity) }}
+                            <span class="badge {{ (($restock->product?->stock_quantity ?? 0) > 0) ? 'bg-info' : 'bg-danger' }}">
+                                {{ $restock->product?->stock_quantity !== null ? number_format($restock->product->stock_quantity) : 'N/A' }}
                             </span>
                         </td>
                         <td>
@@ -97,6 +100,18 @@
                             @else
                                 <span class="text-muted">—</span>
                             @endif
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ route('restock.edit', $restock->id) }}" class="btn btn-sm btn-warning" title="{{ __('app.edit') }}">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form action="{{ route('restock.destroy', $restock->id) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('restock.confirm_delete') }}')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger" title="{{ __('app.delete') }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     @endforeach
@@ -125,7 +140,9 @@
         <div class="p-3">
             {{ $restocks->links() }}
         </div>
-    @else
+    @endif
+
+    @if($restocks->count() === 0)
         <div class="empty-state">
             <i class="bi bi-box-seam"></i>
             <h3>{{ __('restock.no_restocks') }}</h3>

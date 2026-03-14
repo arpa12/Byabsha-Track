@@ -43,8 +43,10 @@
                     @foreach($sales as $sale)
                     <tr>
                         <td>{{ $sale->sale_date->format('d M Y') }}</td>
-                        <td><span class="badge bg-primary">{{ $sale->shop->name }}</span></td>
-                        <td>{{ $sale->product->name }}</td>
+                        <td>
+                            <span class="badge bg-primary">{{ $sale->shop?->name ?? 'Deleted shop' }}</span>
+                        </td>
+                        <td>{{ $sale->product?->name ?? 'Deleted product' }}</td>
                         <td class="text-center">{{ $sale->quantity }}</td>
                         <td class="text-end">{{ number_format($sale->sale_price, 2) }}</td>
                         <td class="text-end"><strong>{{ number_format($sale->total_amount, 2) }}</strong></td>
@@ -59,6 +61,11 @@
                                    class="btn btn-outline-primary"
                                    title="View">
                                     <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ route('sale.edit', $sale->id) }}"
+                                   class="btn btn-outline-secondary"
+                                   title="Edit">
+                                    <i class="bi bi-pencil"></i>
                                 </a>
                                 <form action="{{ route('sale.destroy', $sale->id) }}"
                                       method="POST"

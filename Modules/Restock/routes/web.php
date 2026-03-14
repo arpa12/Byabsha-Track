@@ -3,9 +3,12 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Restock\Http\Controllers\RestockController;
 
-Route::middleware('auth')->prefix('restocks')->name('restock.')->group(function () {
+Route::middleware(['auth'])->prefix('restocks')->name('restock.')->group(function () {
     Route::get('/', [RestockController::class, 'index'])->name('index');
     Route::get('/create', [RestockController::class, 'create'])->name('create');
     Route::post('/', [RestockController::class, 'store'])->name('store');
+    Route::get('/{id}/edit', [RestockController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [RestockController::class, 'update'])->name('update');
+    Route::delete('/{id}', [RestockController::class, 'destroy'])->name('destroy');
     Route::get('/products-by-shop', [RestockController::class, 'productsByShop'])->name('products-by-shop');
 });

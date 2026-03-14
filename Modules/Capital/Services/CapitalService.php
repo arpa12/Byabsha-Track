@@ -38,7 +38,9 @@ class CapitalService
 
     public function getAllShopCapitals()
     {
-        return Capital::with(['shop', 'shop.products'])->get();
+        return Capital::with(['shop', 'shop.products'])
+            ->whereHas('shop')
+            ->get();
     }
 
     public function getShopCapital($shopId)

@@ -203,11 +203,13 @@
 </div>
 
 @forelse($capitals as $capital)
-    @php $products = $capital->shop->products; @endphp
-    <div class="capital-card">
-        <div class="capital-header">
-            <h3 class="shop-name">
-                <i class="bi bi-shop-window"></i>
+    @if($capital->shop)
+        @php $products = $capital->shop->products; @endphp
+        <div class="capital-card">
+            <div class="capital-header">
+                <h3 class="shop-name">
+                    <i class="bi bi-shop-window"></i>
+                    {{ $capital->shop->name }}
                 {{ $capital->shop->name }}
             </h3>
             <span class="badge bg-secondary">{{ $products->count() }} product(s)</span>
@@ -280,6 +282,7 @@
             </div>
         </div>
     </div>
+    @endif
 @empty
     <div class="empty-state">
         <i class="bi bi-piggy-bank"></i>

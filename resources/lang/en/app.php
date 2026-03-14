@@ -12,17 +12,21 @@ return [
     'main_menu'       => 'Main Menu',
     'management'      => 'Management',
     'analytics'       => 'Analytics',
+    'system'          => 'System',
 
     // Layout - Sidebar links
     'dashboard'       => 'Dashboard',
     'shops'           => 'Shops',
     'products'        => 'Products',
+    'stocks'          => 'Stocks',
     'sales'           => 'Sales',
     'capitals'        => 'Capitals',
     'restocks'        => 'Restock',
     'reports'         => 'Reports',
     'daily_pnl'       => 'Daily P&L',
     'monthly_pnl'     => 'Monthly P&L',
+    'users'           => 'Users',
+    'settings'        => 'Settings',
 
     // Common actions
     'back'            => 'Back',
@@ -57,7 +61,14 @@ return [
     'error'           => 'Error',
     'warning'         => 'Warning',
     'info'            => 'Info',
+    'validation_error' => 'Please correct the errors below:',
 
     // Confirmation
     'confirm_delete'  => 'Are you sure you want to delete this? This action cannot be undone.',
+
+    // Maintenance mode message
+    'maintenance_title' => 'Maintenance Mode',
+    'maintenance_badge' => 'System Maintenance',
+    'maintenance_heading' => 'Temporarily unavailable',
+    'maintenance_message' => 'The super admin enabled maintenance mode. Please wait and try again later.',
 ];

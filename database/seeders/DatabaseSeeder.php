@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Modules\Shop\Database\Seeders\ShopSeeder;
 
 class DatabaseSeeder extends Seeder
@@ -17,11 +18,27 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@byabsha.com',
-            'password' => Hash::make('password'),
-        ]);
+        $superAdminEmail = env('SUPERADMIN_EMAIL', 'superadmin@byabsha.local');
+        $superAdminPassword = env('SUPERADMIN_PASSWORD');
+
+        if (empty($superAdminPassword)) {
+            $superAdminPassword = Str::random(20);
+
+            if ($this->command) {
+                $this->command->warn('SUPERADMIN_PASSWORD was not set. A random password was generated for the seeded superadmin.');
+                $this->command->line('Superadmin Email: ' . $superAdminEmail);
+                $this->command->line('Superadmin Password: ' . $superAdminPassword);
+            }
+        }
+
+        User::updateOrCreate(
+            ['email' => $superAdminEmail],
+            [
+                'name' => 'Super Admin',
+                'password' => Hash::make($superAdminPassword),
+                'role' => 'superadmin',
+            ]
+        );
 
         $this->call([
             ShopSeeder::class,

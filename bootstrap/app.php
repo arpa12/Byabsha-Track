@@ -13,6 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
+            \App\Http\Middleware\RestrictDuringMaintenanceMode::class,
+        ]);
+
+        $middleware->alias([
+            'role' => \App\Http\Middleware\CheckRole::class,
+            'maintenance.restrict' => \App\Http\Middleware\RestrictDuringMaintenanceMode::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -43,6 +43,13 @@ class SaleController extends Controller
         // Get the product
         $product = Product::findOrFail($validated['product_id']);
 
+        // Ensure selected product belongs to selected shop
+        if ((int) $product->shop_id !== (int) $validated['shop_id']) {
+            return back()
+                ->withInput()
+                ->withErrors(['product_id' => 'Selected product does not belong to the selected shop.']);
+        }
+
         // Check if stock is sufficient
         if ($product->stock_quantity < $validated['quantity']) {
             return back()
@@ -104,6 +111,13 @@ class SaleController extends Controller
         $sale = Sale::findOrFail($id);
         $product = Product::findOrFail($validated['product_id']);
 
+        // Ensure selected product belongs to selected shop
+        if ((int) $product->shop_id !== (int) $validated['shop_id']) {
+            return back()
+                ->withInput()
+                ->withErrors(['product_id' => 'Selected product does not belong to the selected shop.']);
+        }
+
         // Calculate available stock (add back the old quantity if same product)
         $availableStock = $product->stock_quantity;
         if ($sale->product_id == $validated['product_id']) {
@@ -156,8 +170,10 @@ class SaleController extends Controller
 
         DB::transaction(function () use ($sale) {
             // Restore stock
-            $product = Product::findOrFail($sale->product_id);
-            $product->increment('stock_quantity', $sale->quantity);
+            $product = Product::withTrashed()->find($sale->product_id);
+            if ($product) {
+                $product->increment('stock_quantity', $sale->quantity);
+            }
 
             // Delete sale
             $sale->delete();
@@ -168,5 +184,18 @@ class SaleController extends Controller
 
         return redirect()->route('sale.index')
             ->with('success', 'Sale deleted successfully!');
+    }
+
+    /**
+     * API endpoint: return products for a given shop (JSON).
+     */
+    public function productsByShop(Request $request)
+    {
+        $products = Product::where('shop_id', $request->shop_id)
+            ->select('id', 'shop_id', 'name', 'purchase_price', 'sale_price', 'stock_quantity')
+            ->orderBy('name')
+            ->get();
+
+        return response()->json($products);
     }
 }

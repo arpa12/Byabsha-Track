@@ -22,7 +22,7 @@ class ShopController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:shops',
+            'name' => 'required|string|max:255',
         ]);
 
         Shop::create($validated);
@@ -53,7 +53,7 @@ class ShopController extends Controller
         $shop = Shop::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:shops,name,' . $shop->id,
+            'name' => 'required|string|max:255',
         ]);
 
         $shop->update($validated);
