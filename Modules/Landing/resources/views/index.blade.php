@@ -25,7 +25,8 @@
         .footer { background: #0f172a; padding: 2rem 0; text-align: center; }
         /* Navbar */
         .site-navbar { background: #ffffff; border-bottom: 1px solid #e2e8f0; transition: all .3s ease; }
-        .site-navbar .navbar-brand { font-size: 1.35rem; font-weight: 800; background: linear-gradient(135deg,#2563eb,#7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -.02em; }
+        .site-navbar .navbar-brand { font-size: 1.3rem; font-weight: 800; color: #1e293b; letter-spacing: -.02em; text-decoration: none; }
+        .site-navbar .navbar-brand .brand-text { background: linear-gradient(135deg,#2563eb,#7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; -webkit-font-smoothing: antialiased; }
         .site-navbar .nav-link { color: #475569 !important; font-size: .9rem; font-weight: 500; padding: .5rem 1rem !important; border-radius: 8px; transition: all .25s; }
         .site-navbar .nav-link:hover { color: #1e293b !important; background: rgba(15,23,42,.05); }
         .site-navbar .nav-badge { display: inline-flex; align-items: center; gap: .4rem; color: #6366f1; font-size: .78rem; font-weight: 600; background: rgba(99,102,241,.08); border: 1px solid rgba(99,102,241,.2); padding: .25rem .75rem; border-radius: 50px; }
@@ -66,10 +67,10 @@
 <nav class="navbar navbar-expand-lg sticky-top site-navbar">
   <div class="container">
     <a class="navbar-brand d-flex align-items-center gap-2" href="{{ route('landing.index') }}">
-      <div style="width:34px;height:34px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:9px;display:flex;align-items:center;justify-content:center;">
-        <i class="bi bi-graph-up-arrow" style="color:#fff;font-size:.95rem"></i>
+      <div style="width:36px;height:36px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(37,99,235,.35);">
+        <i class="bi bi-graph-up-arrow" style="color:#fff;font-size:1rem"></i>
       </div>
-      Byabsha Track
+      <span class="brand-text">Byabsha Track</span>
     </a>
     <button class="navbar-toggler border-0 ms-auto me-2" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
       <span class="navbar-toggler-icon"></span>
@@ -256,10 +257,12 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 @guest
-<!-- Login Modal -->
+<!-- Login / Register Modal -->
 <div class="modal fade modal-login" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" style="max-width:460px">
     <div class="modal-content p-4">
+
+      <!-- Shared header -->
       <div class="d-flex align-items-center justify-content-between mb-3">
         <a href="{{ route('landing.index') }}" class="d-flex align-items-center gap-2 text-decoration-none">
           <div style="width:38px;height:38px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;">
@@ -270,55 +273,132 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
 
-      <h2 style="font-size:1.35rem;font-weight:700;color:#fff;text-align:center;margin-bottom:.3rem">{{ __('auth.welcome_back') }}</h2>
-      <p style="font-size:.85rem;color:#64748b;text-align:center;margin-bottom:1rem">{{ __('auth.sign_in_sub') }}</p>
+      <!-- ─── LOGIN PANEL ─── -->
+      <div id="mLoginPanel">
+        <h2 style="font-size:1.35rem;font-weight:700;color:#fff;text-align:center;margin-bottom:.3rem">{{ __('auth.welcome_back') }}</h2>
+        <p style="font-size:.85rem;color:#64748b;text-align:center;margin-bottom:1rem">{{ __('auth.sign_in_sub') }}</p>
 
-      @if($errors->any())
-        <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:.75rem 1rem;color:#fca5a5;font-size:.875rem;display:flex;align-items:center;gap:.5rem;margin-bottom:1rem">
-          <i class="bi bi-exclamation-circle-fill"></i> {{ $errors->first() }}
-        </div>
-      @endif
+        @if($errors->any() && old('_form') !== 'register')
+          <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:.75rem 1rem;color:#fca5a5;font-size:.875rem;display:flex;align-items:center;gap:.5rem;margin-bottom:1rem">
+            <i class="bi bi-exclamation-circle-fill"></i> {{ $errors->first() }}
+          </div>
+        @endif
 
-      <form action="{{ route('login.submit') }}" method="POST">
-        @csrf
-        <div class="mb-3">
-          <label style="color:#94a3b8;font-size:.82rem;font-weight:500;display:block;margin-bottom:.4rem">{{ __('auth.email_address') }}</label>
-          <div style="position:relative">
-            <i class="bi bi-envelope input-icon-modal"></i>
-            <input type="email" name="email"
-              class="form-ctrl-dark {{ $errors->has('email') ? 'is-invalid' : '' }}"
-              placeholder="{{ __('auth.enter_email') }}"
-              value="{{ old('email') }}"
-              required autocomplete="email" autofocus>
+        <form action="{{ route('login.submit') }}" method="POST">
+          @csrf
+          <div class="mb-3">
+            <label style="color:#94a3b8;font-size:.82rem;font-weight:500;display:block;margin-bottom:.4rem">{{ __('auth.email_address') }}</label>
+            <div style="position:relative">
+              <i class="bi bi-envelope input-icon-modal"></i>
+              <input type="email" name="email"
+                class="form-ctrl-dark {{ $errors->has('email') && old('_form') !== 'register' ? 'is-invalid' : '' }}"
+                placeholder="{{ __('auth.enter_email') }}"
+                value="{{ old('_form') !== 'register' ? old('email') : '' }}"
+                required autocomplete="email" autofocus>
+            </div>
           </div>
-        </div>
-        <div class="mb-3">
-          <label style="color:#94a3b8;font-size:.82rem;font-weight:500;display:block;margin-bottom:.4rem">{{ __('auth.password') }}</label>
-          <div style="position:relative">
-            <i class="bi bi-lock input-icon-modal"></i>
-            <input type="password" id="mPwd" name="password"
-              class="form-ctrl-dark"
-              placeholder="{{ __('auth.enter_password') }}"
-              required autocomplete="current-password">
-            <button type="button" class="toggle-btn-modal" onclick="toggleMPwd()">
-              <i class="bi bi-eye" id="mEye"></i>
-            </button>
+          <div class="mb-3">
+            <label style="color:#94a3b8;font-size:.82rem;font-weight:500;display:block;margin-bottom:.4rem">{{ __('auth.password') }}</label>
+            <div style="position:relative">
+              <i class="bi bi-lock input-icon-modal"></i>
+              <input type="password" id="mPwd" name="password"
+                class="form-ctrl-dark"
+                placeholder="{{ __('auth.enter_password') }}"
+                required autocomplete="current-password">
+              <button type="button" class="toggle-btn-modal" onclick="toggleMPwd()">
+                <i class="bi bi-eye" id="mEye"></i>
+              </button>
+            </div>
           </div>
+          <div class="d-flex align-items-center mb-3">
+            <input type="checkbox" id="mRemember" name="remember" style="width:15px;height:15px;accent-color:#2563eb;cursor:pointer">
+            <label for="mRemember" style="font-size:.82rem;color:#64748b;cursor:pointer;margin-left:.4rem">{{ __('auth.remember_me') }}</label>
+            <a href="{{ route('password.request') }}" style="margin-left:auto;font-size:.82rem;color:#93c5fd;text-decoration:none;">{{ __('auth.forgot_password_link') }}</a>
+          </div>
+          <button type="submit" class="btn-login-modal">
+            <i class="bi bi-box-arrow-in-right"></i> {{ __('auth.sign_in') }}
+          </button>
+        </form>
+        <div class="text-center mt-3">
+          <button type="button" onclick="switchToRegister()" style="background:none;border:none;padding:0;font-size:.84rem;color:#93c5fd;cursor:pointer;">
+            <i class="bi bi-person-plus"></i> {{ __('auth.create_owner_account') }}
+          </button>
         </div>
-        <div class="d-flex align-items-center mb-3">
-          <input type="checkbox" id="mRemember" name="remember" style="width:15px;height:15px;accent-color:#2563eb;cursor:pointer">
-          <label for="mRemember" style="font-size:.82rem;color:#64748b;cursor:pointer;margin-left:.4rem">{{ __('auth.remember_me') }}</label>
-          <a href="{{ route('password.request') }}" style="margin-left:auto;font-size:.82rem;color:#93c5fd;text-decoration:none;">{{ __('auth.forgot_password_link') }}</a>
-        </div>
-        <button type="submit" class="btn-login-modal">
-          <i class="bi bi-box-arrow-in-right"></i> {{ __('auth.sign_in') }}
-        </button>
-      </form>
-      <div class="text-center mt-3">
-        <a href="{{ route('register') }}" style="font-size:.84rem;color:#93c5fd;text-decoration:none;">
-          <i class="bi bi-person-plus"></i> {{ __('auth.create_owner_account') }}
-        </a>
       </div>
+
+      <!-- ─── REGISTER PANEL ─── -->
+      <div id="mRegisterPanel" style="display:none">
+        <h2 style="font-size:1.35rem;font-weight:700;color:#fff;text-align:center;margin-bottom:.3rem">{{ __('auth.register_heading') }}</h2>
+        <p style="font-size:.85rem;color:#64748b;text-align:center;margin-bottom:1rem">{{ __('auth.register_subtitle') }}</p>
+
+        @if($errors->any() && old('_form') === 'register')
+          <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:.75rem 1rem;color:#fca5a5;font-size:.875rem;display:flex;align-items:center;gap:.5rem;margin-bottom:1rem">
+            <i class="bi bi-exclamation-circle-fill"></i> {{ $errors->first() }}
+          </div>
+        @endif
+
+        <form action="{{ route('register.submit') }}" method="POST">
+          @csrf
+          <input type="hidden" name="_form" value="register">
+          <div class="mb-3">
+            <label style="color:#94a3b8;font-size:.82rem;font-weight:500;display:block;margin-bottom:.4rem">{{ __('auth.full_name') }}</label>
+            <div style="position:relative">
+              <i class="bi bi-person input-icon-modal"></i>
+              <input type="text" name="name"
+                class="form-ctrl-dark {{ $errors->has('name') && old('_form') === 'register' ? 'is-invalid' : '' }}"
+                placeholder="{{ __('auth.enter_name') }}"
+                value="{{ old('_form') === 'register' ? old('name') : '' }}"
+                required autocomplete="name">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label style="color:#94a3b8;font-size:.82rem;font-weight:500;display:block;margin-bottom:.4rem">{{ __('auth.email_address') }}</label>
+            <div style="position:relative">
+              <i class="bi bi-envelope input-icon-modal"></i>
+              <input type="email" name="email"
+                class="form-ctrl-dark {{ $errors->has('email') && old('_form') === 'register' ? 'is-invalid' : '' }}"
+                placeholder="{{ __('auth.enter_email') }}"
+                value="{{ old('_form') === 'register' ? old('email') : '' }}"
+                required autocomplete="email">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label style="color:#94a3b8;font-size:.82rem;font-weight:500;display:block;margin-bottom:.4rem">{{ __('auth.password') }}</label>
+            <div style="position:relative">
+              <i class="bi bi-lock input-icon-modal"></i>
+              <input type="password" id="rPwd" name="password"
+                class="form-ctrl-dark"
+                placeholder="{{ __('auth.enter_password') }}"
+                required autocomplete="new-password">
+              <button type="button" class="toggle-btn-modal" onclick="toggleRPwd()">
+                <i class="bi bi-eye" id="rEye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label style="color:#94a3b8;font-size:.82rem;font-weight:500;display:block;margin-bottom:.4rem">{{ __('auth.confirm_new_password') }}</label>
+            <div style="position:relative">
+              <i class="bi bi-shield-lock input-icon-modal"></i>
+              <input type="password" id="rCPwd" name="password_confirmation"
+                class="form-ctrl-dark"
+                placeholder="{{ __('auth.confirm_new_password') }}"
+                required autocomplete="new-password">
+              <button type="button" class="toggle-btn-modal" onclick="toggleRCPwd()">
+                <i class="bi bi-eye" id="rCEye"></i>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="btn-login-modal">
+            <i class="bi bi-person-plus"></i> {{ __('auth.register_as_owner') }}
+          </button>
+        </form>
+        <div class="text-center mt-3">
+          <button type="button" onclick="switchToLogin()" style="background:none;border:none;padding:0;font-size:.84rem;color:#93c5fd;cursor:pointer;">
+            <i class="bi bi-box-arrow-in-right"></i> {{ __('auth.already_have_account') }}
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -331,9 +411,32 @@
     i.type = i.type === 'password' ? 'text' : 'password';
     ic.className = i.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
   }
+  function toggleRPwd() {
+    var i = document.getElementById('rPwd');
+    var ic = document.getElementById('rEye');
+    i.type = i.type === 'password' ? 'text' : 'password';
+    ic.className = i.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+  }
+  function toggleRCPwd() {
+    var i = document.getElementById('rCPwd');
+    var ic = document.getElementById('rCEye');
+    i.type = i.type === 'password' ? 'text' : 'password';
+    ic.className = i.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+  }
+  function switchToRegister() {
+    document.getElementById('mLoginPanel').style.display = 'none';
+    document.getElementById('mRegisterPanel').style.display = 'block';
+  }
+  function switchToLogin() {
+    document.getElementById('mRegisterPanel').style.display = 'none';
+    document.getElementById('mLoginPanel').style.display = 'block';
+  }
   @if($errors->any())
   document.addEventListener('DOMContentLoaded', function() {
     new bootstrap.Modal(document.getElementById('loginModal')).show();
+    @if(old('_form') === 'register')
+    switchToRegister();
+    @endif
   });
   @endif
 </script>
