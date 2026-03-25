@@ -14,9 +14,9 @@ use Illuminate\View\View;
 
 class PasswordResetController extends Controller
 {
-    public function create(): View
+    public function create(): \Illuminate\Http\RedirectResponse
     {
-        return view('auth::forgot-password');
+        return redirect()->route('landing.index', ['auth' => 'forgot']);
     }
 
     public function store(Request $request): RedirectResponse
@@ -30,8 +30,9 @@ class PasswordResetController extends Controller
         );
 
         return $status === Password::RESET_LINK_SENT
-            ? back()->with('status', __($status))
-            : back()->withInput($request->only('email'))
+            ? back()->with('status', __($status))->with('auth_modal', 'forgot')
+            : back()->withInput($request->only('email', '_form'))
+                ->with('auth_modal', 'forgot')
                 ->withErrors(['email' => __($status)]);
     }
 

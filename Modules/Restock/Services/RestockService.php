@@ -6,6 +6,7 @@ use Modules\Restock\Models\Restock;
 use Modules\Product\Models\Product;
 use Modules\Capital\Services\CapitalService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RestockService
 {
@@ -75,10 +76,10 @@ class RestockService
     {
         return DB::transaction(function () use ($id, $data) {
             $restock = Restock::findOrFail($id);
-            $product = Product::findOrFail($data['product_id']);
+            $product = Product::withTrashed()->findOrFail($data['product_id']);
 
-            // Reverse the old stock increment
-            $oldProduct = Product::findOrFail($restock->product_id);
+            // Reverse the old stock increment (use withTrashed for soft-deleted products)
+            $oldProduct = Product::withTrashed()->findOrFail($restock->product_id);
             $oldProduct->decrement('stock_quantity', $restock->quantity);
 
             // Calculate new total cost
@@ -111,10 +112,12 @@ class RestockService
     public function deleteRestock(int $id): void
     {
         DB::transaction(function () use ($id) {
+            Log::debug('Finding restock with ID: ' . $id);
             $restock = Restock::findOrFail($id);
+            Log::debug('Found restock, deleting...');
 
-            // Reverse stock increment
-            $product = Product::findOrFail($restock->product_id);
+            // Reverse stock increment (use withTrashed for soft-deleted products)
+            $product = Product::withTrashed()->findOrFail($restock->product_id);
             $product->decrement('stock_quantity', $restock->quantity);
 
             // Delete restock (soft delete)
@@ -122,6 +125,7 @@ class RestockService
 
             // Recalculate capital
             $this->capitalService->updateShopCapital($restock->shop_id);
+            Log::debug('Restock deletion transaction completed');
         });
     }
 }

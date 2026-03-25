@@ -17,7 +17,10 @@ return [
     // Layout - Sidebar links
     'dashboard'       => 'ড্যাশবোর্ড',
     'shops'           => 'দোকানসমূহ',
+    'brands'          => 'ব্র্যান্ডসমূহ',
+    'categories'      => 'বিভাগসমূহ',
     'products'        => 'পণ্যসমূহ',
+    'product_attributes' => 'পণ্যের বৈশিষ্ট্য',
     'stocks'          => 'স্টক',
     'sales'           => 'বিক্রয়',
     'capitals'        => 'মূলধন',

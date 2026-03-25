@@ -1,7 +1,17 @@
 ﻿<?php
 return [
+    // Index
     'title'            => 'Shops',
+    'subtitle'         => 'Manage your shop locations',
     'add_shop'         => 'Add New Shop',
+    'add_new'          => 'Add New Shop',
+
+    // Table columns
+    'col_name'         => 'Shop Name',
+    'col_products'     => 'Products',
+    'col_sales'        => 'Sales',
+    'col_created'      => 'Created',
+    'col_actions'      => 'Actions',
     'create_title'     => 'Create New Shop',
     'edit_title'       => 'Edit Shop',
     'show_title'       => 'Shop Details',
@@ -25,8 +35,16 @@ return [
     'table_products'   => 'Products',
     'table_created'    => 'Created',
     'table_actions'    => 'Actions',
+
+    // Empty state and actions
     'no_shops'         => 'No shops found.',
-    'create_first'     => 'Create your first shop to get started.',
+    'create_first'     => 'Create your first shop',
+    'confirm_delete'   => 'Are you sure you want to delete this shop? This action cannot be undone.',
+
+    // Badges
+    'products_badge'   => 'Products',
+    'sales_badge'      => 'Sales',
+
     'total_products'   => 'Total Products',
     'total_sales'      => 'Total Sales',
     'total_capital'    => 'Total Capital',

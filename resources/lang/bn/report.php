@@ -3,6 +3,25 @@
 return [
     'title'               => 'ব্যবসার প্রতিবেদন',
     'subtitle'            => 'ব্যাপক বিশ্লেষণ ও অন্তর্দৃষ্টি',
+    'compact_subtitle'    => 'দৈনিক ও মাসিক প্রতিবেদনে দ্রুত যাওয়ার জন্য সহজ সারসংক্ষেপ',
+    'quick_access'        => 'দ্রুত প্রবেশ',
+    'this_month_profit'   => 'এই মাসের লাভ',
+    'this_year_profit'    => 'এই বছরের লাভ',
+    'view_daily_report'   => 'নির্বাচিত দোকানের দৈনিক প্রতিবেদন খুলুন',
+    'view_monthly_report' => 'নির্বাচিত দোকানের মাসিক প্রতিবেদন খুলুন',
+    'recent_daily_performance' => 'সাম্প্রতিক দৈনিক পারফরম্যান্স',
+    'no_data_short'       => 'এই ফিল্টারে কোন তথ্য পাওয়া যায়নি।',
+    'action'              => 'অ্যাকশন',
+    'view'                => 'দেখুন',
+    'sale_details'        => 'বিক্রয়ের বিস্তারিত',
+    'sale_details_for'    => 'তারিখভিত্তিক বিক্রয়ের বিস্তারিত',
+    'customer_name'       => 'ক্রেতার নাম',
+    'customer_phone'      => 'ক্রেতার ফোন',
+    'customer_address'    => 'ক্রেতার ঠিকানা',
+    'sale_date'           => 'বিক্রয়ের তারিখ',
+    'discount'            => 'ডিসকাউন্ট',
+    'records'             => 'রেকর্ড',
+    'search_placeholder'  => 'দোকান, পণ্য, ক্রেতা, ফোন দিয়ে খুঁজুন...',
 
     // Filters
     'filters'             => 'ফিল্টার',
@@ -132,6 +151,11 @@ return [
     'month_nov'               => 'নভেম্বর',
     'month_dec'               => 'ডিসেম্বর',
     'per_shop_comparison'     => 'দোকান ভিত্তিক তুলনা',
+
+    // Product Breakdown
+    'top_products'            => 'শীর্ষ বিক্রীত পণ্য',
+    'product_name'            => 'পণ্যের নাম',
+    'quantity_sold'           => 'বিক্রীত পরিমাণ',
 
     // PDF Export
     'download_pdf'            => 'পিডিএফ ডাউনলোড',

@@ -1,416 +1,498 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', __('report.monthly_pnl'))
 
-@section('content')
-<div class="mb-4 d-flex justify-content-between align-items-center">
-    <div>
-        <h1 class="page-title"><i class="bi bi-calendar-range"></i> {{ __('report.monthly_pnl') }}</h1>
-        <p class="page-subtitle">{{ __('report.monthly_pnl_subtitle') }}</p>
-    </div>
-    <div class="d-flex gap-2">
-        <a href="{{ route('report.export.monthly-pdf', request()->query()) }}" class="btn btn-danger">
-            <i class="bi bi-file-earmark-pdf"></i> {{ __('report.download_pdf') }}
-        </a>
-        <button onclick="window.print()" class="btn btn-outline-dark">
-            <i class="bi bi-printer"></i> {{ __('report.print') }}
-        </button>
-        <a href="{{ route('report.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> {{ __('report.back_to_reports') }}
-        </a>
-    </div>
-</div>
-
-<!-- Filters -->
-<div class="content-card mb-4">
-    <div class="content-card-header">
-        <h5 class="content-card-title">
-            <i class="bi bi-funnel"></i>
-            {{ __('report.filters') }}
-        </h5>
-    </div>
-    <div class="p-4">
-        <form action="{{ route('report.monthly') }}" method="GET">
-            <div class="row">
-                <div class="col-md-4">
-                    <label for="shop_id" class="form-label fw-semibold">{{ __('report.shop') }}</label>
-                    <select class="form-select" id="shop_id" name="shop_id">
-                        <option value="">{{ __('report.all_shops') }}</option>
-                        @foreach($shops as $shop)
-                            <option value="{{ $shop->id }}" {{ ($filters['shop_id'] ?? '') == $shop->id ? 'selected' : '' }}>
-                                {{ $shop->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label for="year" class="form-label fw-semibold">{{ __('report.year') }}</label>
-                    <select class="form-select" id="year" name="year">
-                        @for($y = now()->format('Y'); $y >= now()->format('Y') - 5; $y--)
-                            <option value="{{ $y }}" {{ $filters['year'] == $y ? 'selected' : '' }}>{{ $y }}</option>
-                        @endfor
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">&nbsp;</label>
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-search"></i> {{ __('report.apply_filters') }}
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Formula hint -->
-<div class="alert alert-light border mb-3 py-2 px-3" style="font-size:0.8rem;">
-    <span class="fw-semibold text-muted"><i class="bi bi-calculator me-1"></i>{{ __('report.formulas') }} &nbsp;</span>
-    <span class="text-muted">
-        <strong>{{ __('report.total_revenue') }}</strong> = &Sigma;(Qty &times; Sale Price) &nbsp;|&nbsp;
-        <strong>{{ __('report.total_cost') }}</strong> = &Sigma;(Qty &times; Purchase Price) &nbsp;|&nbsp;
-        <strong>{{ __('report.profit_margin') }}</strong> = (Profit &divide; Revenue) &times; 100
-    </span>
-</div>
-
-<!-- Summary Cards -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="content-card">
-            <div class="p-3">
-                <div class="d-flex align-items-center">
-                    <div class="stat-icon bg-primary">
-                        <i class="bi bi-cart-check"></i>
-                    </div>
-                    <div class="ms-3">
-                        <p class="text-muted small mb-1">{{ __('report.total_sales_count') }}</p>
-                        <h4 class="mb-0">{{ $monthlyData['totals']->total_sales_count }}</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="content-card">
-            <div class="p-3">
-                <div class="d-flex align-items-center">
-                    <div class="stat-icon bg-success">
-                        <i class="bi bi-currency-dollar"></i>
-                    </div>
-                    <div class="ms-3">
-                        <p class="text-muted small mb-1">{{ __('report.total_revenue') }}</p>
-                        <h4 class="mb-0">{{ number_format($monthlyData['totals']->total_revenue, 2) }}</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="content-card">
-            <div class="p-3">
-                <div class="d-flex align-items-center">
-                    @php $yearProfit = $monthlyData['totals']->total_profit; @endphp
-                    <div class="stat-icon {{ $yearProfit >= 0 ? 'bg-success' : 'bg-danger' }}">
-                        <i class="bi bi-graph-{{ $yearProfit >= 0 ? 'up' : 'down' }}-arrow"></i>
-                    </div>
-                    <div class="ms-3">
-                        <p class="text-muted small mb-1">{{ __('report.total_profit') }}</p>
-                        <h4 class="mb-0 {{ $yearProfit >= 0 ? 'text-success' : 'text-danger' }}">{{ number_format($yearProfit, 2) }}</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="content-card">
-            <div class="p-3">
-                <div class="d-flex align-items-center">
-                    <div class="stat-icon bg-info">
-                        <i class="bi bi-percent"></i>
-                    </div>
-                    <div class="ms-3">
-                        <p class="text-muted small mb-1">{{ __('report.profit_margin') }}</p>
-                        <h4 class="mb-0">{{ $monthlyData['totals']->profit_margin }}%</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-@php
-    $monthNames = [
-        1 => __('report.month_jan'), 2 => __('report.month_feb'), 3 => __('report.month_mar'),
-        4 => __('report.month_apr'), 5 => __('report.month_may'), 6 => __('report.month_jun'),
-        7 => __('report.month_jul'), 8 => __('report.month_aug'), 9 => __('report.month_sep'),
-        10 => __('report.month_oct'), 11 => __('report.month_nov'), 12 => __('report.month_dec'),
-    ];
-    $rowsByMonth = $monthlyData['rows']->keyBy('month_number');
-@endphp
-
-<!-- Monthly Profit Trend Chart -->
-<div class="content-card mb-4">
-    <div class="content-card-header">
-        <h5 class="content-card-title">
-            <i class="bi bi-bar-chart-fill"></i>
-            {{ __('report.profit_trend') }}
-            <small class="text-muted ms-2">({{ $monthlyData['year'] }})</small>
-        </h5>
-    </div>
-    <div class="p-4">
-        <canvas id="profitTrendChart" height="80"></canvas>
-    </div>
-</div>
-
-<!-- Monthly P&L Table -->
-<div class="content-card">
-    <div class="content-card-header">
-        <h5 class="content-card-title">
-            <i class="bi bi-table"></i>
-            {{ __('report.monthly_pnl_table') }}
-            <small class="text-muted ms-2">({{ $monthlyData['year'] }})</small>
-        </h5>
-    </div>
-    <div class="table-responsive">
-    @if($monthlyData['rows']->count() > 0)
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>{{ __('report.month') }}</th>
-                    <th class="text-center">{{ __('report.total_sales_count') }}</th>
-                    <th class="text-end">{{ __('report.total_revenue') }}</th>
-                    <th class="text-end">{{ __('report.total_cost') }}</th>
-                    <th class="text-end">{{ __('report.total_profit') }}</th>
-                    <th class="text-center">{{ __('report.profit_margin') }}</th>
-                    <th class="text-center">{{ __('report.pnl_status') }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for($m = 1; $m <= 12; $m++)
-                    @php $row = $rowsByMonth->get($m); @endphp
-                    @if($row)
-                    <tr>
-                        <td class="fw-semibold">{{ $monthNames[$m] }}</td>
-                        <td class="text-center">{{ $row->total_sales_count }}</td>
-                        <td class="text-end">{{ number_format($row->total_revenue, 2) }}</td>
-                        <td class="text-end">{{ number_format($row->total_cost, 2) }}</td>
-                        <td class="text-end {{ $row->total_profit >= 0 ? 'text-success' : 'text-danger' }} fw-semibold">
-                            {{ number_format($row->total_profit, 2) }}
-                        </td>
-                        <td class="text-center">
-                            <span class="badge {{ $row->profit_margin >= 20 ? 'bg-success' : ($row->profit_margin >= 0 ? 'bg-warning' : 'bg-danger') }}">
-                                {{ $row->profit_margin }}%
-                            </span>
-                        </td>
-                        <td class="text-center">
-                            @if($row->total_profit > 0)
-                                <span class="badge bg-success"><i class="bi bi-arrow-up-short"></i> {{ __('report.profit_label') }}</span>
-                            @elseif($row->total_profit < 0)
-                                <span class="badge bg-danger"><i class="bi bi-arrow-down-short"></i> {{ __('report.loss_label') }}</span>
-                            @else
-                                <span class="badge bg-secondary">{{ __('report.breakeven_label') }}</span>
-                            @endif
-                        </td>
-                    </tr>
-
-                    {{-- Per-shop comparison rows --}}
-                    @if(empty($filters['shop_id']) && $monthlyData['shopBreakdown']->count() > 0)
-                    <tr>
-                        <td colspan="7" class="p-0 border-0">
-                            <div class="px-3 py-1">
-                                <a class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" href="#month-{{ $m }}" role="button" aria-expanded="false">
-                                    <i class="bi bi-chevron-expand"></i> {{ __('report.per_shop_comparison') }}
-                                </a>
-                            </div>
-                            <div class="collapse" id="month-{{ $m }}">
-                                <table class="table table-sm mb-0 ms-4" style="background:#f8fafc;">
-                                    <thead>
-                                        <tr class="text-muted small">
-                                            <th>{{ __('report.shop_name') }}</th>
-                                            <th class="text-center">{{ __('report.total_sales_count') }}</th>
-                                            <th class="text-end">{{ __('report.total_revenue') }}</th>
-                                            <th class="text-end">{{ __('report.total_cost') }}</th>
-                                            <th class="text-end">{{ __('report.total_profit') }}</th>
-                                            <th class="text-center">{{ __('report.profit_margin') }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($monthlyData['shopBreakdown'] as $breakdown)
-                                            @php $shopRow = $breakdown->rows->firstWhere('month_number', $m); @endphp
-                                            @if($shopRow)
-                                            <tr>
-                                                <td><span class="badge bg-primary">{{ $breakdown->shop->name }}</span></td>
-                                                <td class="text-center">{{ $shopRow->total_sales_count }}</td>
-                                                <td class="text-end">{{ number_format($shopRow->total_revenue, 2) }}</td>
-                                                <td class="text-end">{{ number_format($shopRow->total_cost, 2) }}</td>
-                                                <td class="text-end {{ $shopRow->total_profit >= 0 ? 'text-success' : 'text-danger' }} fw-semibold">
-                                                    {{ number_format($shopRow->total_profit, 2) }}
-                                                </td>
-                                                <td class="text-center">
-                                                    <span class="badge {{ $shopRow->profit_margin >= 20 ? 'bg-success' : ($shopRow->profit_margin >= 0 ? 'bg-warning' : 'bg-danger') }}">
-                                                        {{ $shopRow->profit_margin }}%
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                            @endif
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        </td>
-                    </tr>
-                    @endif
-
-                    @else
-                    <tr class="text-muted">
-                        <td>{{ $monthNames[$m] }}</td>
-                        <td class="text-center">0</td>
-                        <td class="text-end">0.00</td>
-                        <td class="text-end">0.00</td>
-                        <td class="text-end">0.00</td>
-                        <td class="text-center"><span class="badge bg-light text-muted">0%</span></td>
-                        <td class="text-center"><span class="badge bg-light text-muted">&mdash;</span></td>
-                    </tr>
-                    @endif
-                @endfor
-            </tbody>
-            <tfoot class="table-light">
-                <tr class="fw-bold">
-                    <td>{{ __('report.yearly_total') }}</td>
-                    <td class="text-center">{{ $monthlyData['totals']->total_sales_count }}</td>
-                    <td class="text-end">{{ number_format($monthlyData['totals']->total_revenue, 2) }}</td>
-                    <td class="text-end">{{ number_format($monthlyData['totals']->total_cost, 2) }}</td>
-                    <td class="text-end {{ $monthlyData['totals']->total_profit >= 0 ? 'text-success' : 'text-danger' }}">
-                        {{ number_format($monthlyData['totals']->total_profit, 2) }}
-                    </td>
-                    <td class="text-center">
-                        <span class="badge {{ $monthlyData['totals']->profit_margin >= 20 ? 'bg-success' : ($monthlyData['totals']->profit_margin >= 0 ? 'bg-warning' : 'bg-danger') }}">
-                            {{ $monthlyData['totals']->profit_margin }}%
-                        </span>
-                    </td>
-                    <td class="text-center">
-                        @if($monthlyData['totals']->total_profit > 0)
-                            <span class="badge bg-success"><i class="bi bi-arrow-up-short"></i> {{ __('report.profit_label') }}</span>
-                        @elseif($monthlyData['totals']->total_profit < 0)
-                            <span class="badge bg-danger"><i class="bi bi-arrow-down-short"></i> {{ __('report.loss_label') }}</span>
-                        @else
-                            <span class="badge bg-secondary">{{ __('report.breakeven_label') }}</span>
-                        @endif
-                    </td>
-                </tr>
-            </tfoot>
-        </table>
-    @else
-        <div class="p-5 text-center text-muted">
-            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-            <p class="mb-0">{{ __('report.no_monthly_data') }}</p>
-        </div>
-    @endif
-    </div>
-</div>
-@endsection
-
 @push('styles')
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@600;700&display=swap');
+
+    .monthly-shell {
+        font-family: 'Manrope', 'Segoe UI', sans-serif;
+        color: #0f172a;
+    }
+
+    .monthly-shell::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background:
+            radial-gradient(700px 420px at 90% 5%, rgba(14, 116, 144, 0.14), transparent 60%),
+            radial-gradient(580px 360px at 5% 8%, rgba(251, 146, 60, 0.14), transparent 60%),
+            linear-gradient(180deg, #f7fafc 0%, #eff4f8 100%);
+    }
+
+    .page-title {
+        font-family: 'Outfit', 'Segoe UI', sans-serif;
+        font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+        margin: 0;
+    }
+
+    .panel {
+        background: #fff;
+        border: 1px solid #dce6ef;
+        border-radius: 14px;
+    }
+
+    .panel-head {
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid #e7eef5;
+        font-size: 0.8rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #475569;
+    }
+
+    .panel-body {
+        padding: 1rem;
+    }
+
+    .kpi {
+        border: 1px solid #dde7f0;
+        border-radius: 12px;
+        padding: 0.8rem;
+        background: #fff;
+        height: 100%;
+    }
+
+    .kpi-label {
+        margin: 0;
+        font-size: 0.78rem;
+        color: #64748b;
+    }
+
+    .kpi-value {
+        margin: 0.2rem 0 0;
+        font-weight: 800;
+        font-size: 1.1rem;
+    }
+
+    .pill {
+        font-size: 0.72rem;
+        border-radius: 999px;
+        padding: 0.25rem 0.5rem;
+        font-weight: 700;
+    }
+
+    .pill-good { background: #dcfce7; color: #166534; }
+    .pill-mid { background: #fef3c7; color: #92400e; }
+    .pill-bad { background: #fee2e2; color: #991b1b; }
+
+    .compact-table th {
+        background: #f7fbff;
+        font-size: 0.76rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #64748b;
+    }
+
+    .compact-table td,
+    .compact-table th {
+        padding: 0.65rem 0.75rem;
+        border-color: #e6eef5;
+        white-space: nowrap;
+    }
+
+    .report-modal {
+        border: 0;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .report-modal .modal-header {
+        background: linear-gradient(135deg, #f8fbff 0%, #eef6ff 100%);
+        border-bottom: 1px solid #dbe7f3;
+    }
+
+    .modal-kicker {
+        font-size: 0.74rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #64748b;
+        margin: 0 0 0.2rem;
+        font-weight: 700;
+    }
+
+    .modal-toolbar {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-bottom: 0.75rem;
+    }
+
+    .chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+    }
+
+    .stat-chip {
+        border: 1px solid #d9e7f3;
+        background: #f8fbff;
+        border-radius: 999px;
+        padding: 0.32rem 0.62rem;
+        font-size: 0.78rem;
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .stat-chip strong {
+        font-weight: 800;
+    }
+
+    .modal-search {
+        min-width: 220px;
+        max-width: 300px;
+    }
+
+    .modal-search .form-control {
+        border-radius: 10px;
+        border-color: #d6e3ef;
+    }
+
+    .modal-table-wrap {
+        border: 1px solid #e3edf7;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .modal-sales-table th {
+        background: #f3f8fe;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #64748b;
+        white-space: nowrap;
+    }
+
+    .modal-sales-table td {
+        white-space: nowrap;
+        font-size: 0.85rem;
+    }
+
     @media print {
         .top-header,
         .sidebar,
         .sidebar-toggle,
-        .content-card.mb-4:has(.bi-funnel),
-        .content-card.mb-4:has(#profitTrendChart),
-        .alert,
         .btn,
-        a.btn {
+        a.btn,
+        .panel:first-of-type {
             display: none !important;
         }
+
         .main-content {
             margin-left: 0 !important;
             padding-top: 0 !important;
         }
+
         body {
-            background: white !important;
+            background: #fff !important;
             font-size: 11px;
         }
-        .content-card {
-            border: none !important;
-            box-shadow: none !important;
-        }
-        .table { font-size: 10px; }
     }
 </style>
 @endpush
 
+@section('content')
+<div class="monthly-shell">
+    <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h1 class="page-title"><i class="bi bi-calendar-range me-1"></i>{{ __('report.monthly_pnl') }}</h1>
+            @php
+                $currentShop = $shops->firstWhere('id', $filters['shop_id']);
+                $shopDisplay = $currentShop ? $currentShop->name : __('report.all_shops');
+            @endphp
+            <p class="mb-0 text-muted">{{ __('report.monthly_pnl_subtitle') }} • <strong>{{ __('report.shop') }}:</strong> {{ $shopDisplay }}</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ route('report.export.monthly-pdf', request()->query()) }}" class="btn btn-danger btn-sm">
+                <i class="bi bi-file-earmark-pdf"></i> {{ __('report.download_pdf') }}
+            </a>
+            <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-printer"></i> {{ __('report.print') }}
+            </button>
+            <a href="{{ route('report.index') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> {{ __('report.back_to_reports') }}
+            </a>
+        </div>
+    </div>
+
+    <div class="panel mb-3">
+        <div class="panel-head"><i class="bi bi-funnel me-1"></i>{{ __('report.filters') }}</div>
+        <div class="panel-body">
+            <form action="{{ route('report.monthly') }}" method="GET">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label for="shop_id" class="form-label small fw-semibold">{{ __('report.shop') }}</label>
+                        <select class="form-select" id="shop_id" name="shop_id">
+                            <option value="">{{ __('report.all_shops') }}</option>
+                            @foreach($shops as $shop)
+                                <option value="{{ $shop->id }}" {{ ($filters['shop_id'] ?? '') == $shop->id ? 'selected' : '' }}>
+                                    {{ $shop->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="year" class="form-label small fw-semibold">{{ __('report.year') }}</label>
+                        <select class="form-select" id="year" name="year">
+                            @for($y = now()->format('Y'); $y >= now()->format('Y') - 5; $y--)
+                                <option value="{{ $y }}" {{ $filters['year'] == $y ? 'selected' : '' }}>{{ $y }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> {{ __('report.apply_filters') }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @php
+        $totals = $monthlyData['totals'];
+        $monthNames = [
+            1 => __('report.month_jan'), 2 => __('report.month_feb'), 3 => __('report.month_mar'),
+            4 => __('report.month_apr'), 5 => __('report.month_may'), 6 => __('report.month_jun'),
+            7 => __('report.month_jul'), 8 => __('report.month_aug'), 9 => __('report.month_sep'),
+            10 => __('report.month_oct'), 11 => __('report.month_nov'), 12 => __('report.month_dec'),
+        ];
+        $rowsByMonth = $monthlyData['rows']->keyBy('month_number');
+    @endphp
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-3"><div class="kpi"><p class="kpi-label">{{ __('report.total_sales_count') }}</p><p class="kpi-value">{{ $totals->total_sales_count }}</p></div></div>
+        <div class="col-md-3"><div class="kpi"><p class="kpi-label">{{ __('report.total_revenue') }}</p><p class="kpi-value">{{ number_format($totals->total_revenue, 2) }}</p></div></div>
+        <div class="col-md-3"><div class="kpi"><p class="kpi-label">{{ __('report.total_cost') }}</p><p class="kpi-value">{{ number_format($totals->total_cost, 2) }}</p></div></div>
+        <div class="col-md-3"><div class="kpi"><p class="kpi-label">{{ __('report.total_profit') }}</p><p class="kpi-value {{ $totals->total_profit >= 0 ? 'text-success' : 'text-danger' }}">{{ number_format($totals->total_profit, 2) }}</p></div></div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head"><i class="bi bi-table me-1"></i>{{ __('report.monthly_pnl_table') }}</div>
+        <div class="table-responsive">
+            <table class="table compact-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>{{ __('report.month') }}</th>
+                        <th class="text-center">{{ __('report.total_sales_count') }}</th>
+                        <th class="text-end">{{ __('report.total_revenue') }}</th>
+                        <th class="text-end">{{ __('report.total_cost') }}</th>
+                        <th class="text-end">{{ __('report.total_profit') }}</th>
+                        <th class="text-center">{{ __('report.profit_margin') }}</th>
+                        <th class="text-center">{{ __('report.action') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for($m = 1; $m <= 12; $m++)
+                        @php
+                            $row = $rowsByMonth->get($m);
+                            $monthLabel = $monthNames[$m];
+                            $monthSales = ($monthlyDetailsByMonth[(string) $m] ?? collect())
+                                ->map(function ($sale) {
+                                    return [
+                                        'shop' => $sale->shop->name ?? '-',
+                                        'product' => $sale->product->name ?? '-',
+                                        'customer_name' => $sale->customer_name ?: '-',
+                                        'customer_phone' => $sale->customer_phone ?: '-',
+                                        'customer_address' => $sale->customer_address ?: '-',
+                                        'quantity' => $sale->quantity,
+                                        'sale_price' => (float) $sale->sale_price,
+                                        'discount' => (float) ($sale->discount ?? 0),
+                                        'total_amount' => (float) $sale->total_amount,
+                                        'profit' => (float) $sale->profit,
+                                        'sale_date' => $sale->sale_date->format('Y-m-d'),
+                                    ];
+                                })
+                                ->values();
+                        @endphp
+                        <tr>
+                            <td>{{ $monthLabel }}</td>
+                            <td class="text-center">{{ $row->total_sales_count ?? 0 }}</td>
+                            <td class="text-end">{{ number_format($row->total_revenue ?? 0, 2) }}</td>
+                            <td class="text-end">{{ number_format($row->total_cost ?? 0, 2) }}</td>
+                            <td class="text-end {{ ($row->total_profit ?? 0) >= 0 ? 'text-success' : 'text-danger' }}">{{ number_format($row->total_profit ?? 0, 2) }}</td>
+                            @php $margin = $row->profit_margin ?? 0; @endphp
+                            <td class="text-center">
+                                <span class="pill {{ $margin >= 20 ? 'pill-good' : ($margin >= 0 ? 'pill-mid' : 'pill-bad') }}">{{ $margin }}%</span>
+                            </td>
+                            <td class="text-center">
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-primary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#monthlyRowDetailsModal"
+                                    data-period-label="{{ $monthLabel }} {{ $filters['year'] }}"
+                                    data-sales='@json($monthSales, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_HEX_TAG)'
+                                >
+                                    <i class="bi bi-eye me-1"></i>{{ __('report.view') }}
+                                </button>
+                            </td>
+                        </tr>
+                    @endfor
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold bg-light">
+                        <td>{{ __('report.yearly_total') }}</td>
+                        <td class="text-center">{{ $totals->total_sales_count }}</td>
+                        <td class="text-end">{{ number_format($totals->total_revenue, 2) }}</td>
+                        <td class="text-end">{{ number_format($totals->total_cost, 2) }}</td>
+                        <td class="text-end {{ $totals->total_profit >= 0 ? 'text-success' : 'text-danger' }}">{{ number_format($totals->total_profit, 2) }}</td>
+                        <td class="text-center">
+                            <span class="pill {{ $totals->profit_margin >= 20 ? 'pill-good' : ($totals->profit_margin >= 0 ? 'pill-mid' : 'pill-bad') }}">{{ $totals->profit_margin }}%</span>
+                        </td>
+                        <td class="text-center">-</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="monthlyRowDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content report-modal">
+                <div class="modal-header">
+                    <div>
+                        <p class="modal-kicker">{{ __('report.sale_details') }}</p>
+                        <h5 class="modal-title mb-0" id="monthlyRowDetailsModalTitle">{{ __('report.sale_details') }}</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-toolbar">
+                        <div class="chip-list">
+                            <span class="stat-chip">{{ __('report.records') }}: <strong id="monthlyRowSalesCount">0</strong></span>
+                            <span class="stat-chip">{{ __('report.total_revenue') }}: <strong id="monthlyRowSalesRevenue">0.00</strong></span>
+                            <span class="stat-chip">{{ __('report.total_profit') }}: <strong id="monthlyRowSalesProfit">0.00</strong></span>
+                        </div>
+                        <div class="modal-search">
+                            <input id="monthlyRowSalesSearch" type="text" class="form-control form-control-sm" placeholder="{{ __('report.search_placeholder') }}">
+                        </div>
+                    </div>
+                    <div class="table-responsive modal-table-wrap">
+                        <table class="table table-sm align-middle mb-0 modal-sales-table">
+                            <thead>
+                                <tr>
+                                    <th>{{ __('report.sale_date') }}</th>
+                                    <th>{{ __('report.shop') }}</th>
+                                    <th>{{ __('report.product_name') }}</th>
+                                    <th>{{ __('report.customer_name') }}</th>
+                                    <th>{{ __('report.customer_phone') }}</th>
+                                    <th>{{ __('report.customer_address') }}</th>
+                                    <th class="text-center">{{ __('report.quantity') }}</th>
+                                    <th class="text-end">{{ __('report.sale_price') }}</th>
+                                    <th class="text-end">{{ __('report.discount') }}</th>
+                                    <th class="text-end">{{ __('report.total_amount') }}</th>
+                                    <th class="text-end">{{ __('report.total_profit') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="monthlyRowDetailsModalBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const ctx = document.getElementById('profitTrendChart');
-    if (!ctx) return;
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalEl = document.getElementById('monthlyRowDetailsModal');
+        if (!modalEl) {
+            return;
+        }
 
-    const monthLabels = @json(array_values($monthNames));
-    const profitData = [];
-    const revenueData = [];
-    const costData = [];
-    const bgColors = [];
+        const modalTitle = document.getElementById('monthlyRowDetailsModalTitle');
+        const modalBody = document.getElementById('monthlyRowDetailsModalBody');
+        const salesCount = document.getElementById('monthlyRowSalesCount');
+        const salesRevenue = document.getElementById('monthlyRowSalesRevenue');
+        const salesProfit = document.getElementById('monthlyRowSalesProfit');
+        const salesSearch = document.getElementById('monthlyRowSalesSearch');
+        const emptyMessage = @json(__('report.no_sales_found'));
+        const detailsPrefix = @json(__('report.sale_details_for'));
+        let allSales = [];
 
-    @for($m = 1; $m <= 12; $m++)
-        @php $chartRow = $rowsByMonth->get($m); @endphp
-        profitData.push({{ $chartRow ? $chartRow->total_profit : 0 }});
-        revenueData.push({{ $chartRow ? $chartRow->total_revenue : 0 }});
-        costData.push({{ $chartRow ? $chartRow->total_cost : 0 }});
-        bgColors.push({{ $chartRow && $chartRow->total_profit >= 0 ? "'rgba(25,135,84,0.7)'" : "'rgba(220,53,69,0.7)'" }});
-    @endfor
+        const escapeHtml = (value) => {
+            return String(value ?? '-')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        };
 
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: monthLabels,
-            datasets: [
-                {
-                    label: '{{ __("report.total_profit") }}',
-                    data: profitData,
-                    backgroundColor: bgColors,
-                    borderRadius: 4,
-                    order: 1
-                },
-                {
-                    label: '{{ __("report.total_revenue") }}',
-                    data: revenueData,
-                    type: 'line',
-                    borderColor: 'rgba(37,99,235,0.8)',
-                    backgroundColor: 'rgba(37,99,235,0.1)',
-                    borderWidth: 2,
-                    pointRadius: 3,
-                    tension: 0.3,
-                    fill: false,
-                    order: 0
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            interaction: { mode: 'index', intersect: false },
-            plugins: {
-                legend: { position: 'top' },
-                tooltip: {
-                    callbacks: {
-                        label: function(ctx) {
-                            return ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return '' + value.toLocaleString();
-                        }
-                    }
-                }
+        const renderRows = (sales) => {
+            if (!Array.isArray(sales) || sales.length === 0) {
+                modalBody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-3">${escapeHtml(emptyMessage)}</td></tr>`;
+                return;
             }
+
+            modalBody.innerHTML = sales.map((sale) => `
+                <tr>
+                    <td>${escapeHtml(sale.sale_date)}</td>
+                    <td>${escapeHtml(sale.shop)}</td>
+                    <td>${escapeHtml(sale.product)}</td>
+                    <td>${escapeHtml(sale.customer_name)}</td>
+                    <td>${escapeHtml(sale.customer_phone)}</td>
+                    <td>${escapeHtml(sale.customer_address)}</td>
+                    <td class="text-center">${escapeHtml(sale.quantity)}</td>
+                    <td class="text-end">${Number(sale.sale_price || 0).toFixed(2)}</td>
+                    <td class="text-end">${Number(sale.discount || 0).toFixed(2)}</td>
+                    <td class="text-end">${Number(sale.total_amount || 0).toFixed(2)}</td>
+                    <td class="text-end ${Number(sale.profit || 0) >= 0 ? 'text-success' : 'text-danger'}">${Number(sale.profit || 0).toFixed(2)}</td>
+                </tr>
+            `).join('');
+        };
+
+        const applySearch = () => {
+            const keyword = (salesSearch?.value || '').trim().toLowerCase();
+            if (!keyword) {
+                renderRows(allSales);
+                return;
+            }
+
+            const filtered = allSales.filter((sale) => {
+                return [sale.shop, sale.product, sale.customer_name, sale.customer_phone, sale.customer_address, sale.sale_date]
+                    .join(' ')
+                    .toLowerCase()
+                    .includes(keyword);
+            });
+
+            renderRows(filtered);
+        };
+
+        modalEl.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            if (!button) {
+                return;
+            }
+
+            const periodLabel = button.getAttribute('data-period-label') || '';
+            allSales = JSON.parse(button.getAttribute('data-sales') || '[]');
+            modalTitle.textContent = `${detailsPrefix}: ${periodLabel}`;
+
+            const totalRevenue = allSales.reduce((sum, row) => sum + Number(row.total_amount || 0), 0);
+            const totalProfit = allSales.reduce((sum, row) => sum + Number(row.profit || 0), 0);
+            salesCount.textContent = allSales.length;
+            salesRevenue.textContent = totalRevenue.toFixed(2);
+            salesProfit.textContent = totalProfit.toFixed(2);
+            if (salesSearch) {
+                salesSearch.value = '';
+            }
+            renderRows(allSales);
+        });
+
+        if (salesSearch) {
+            salesSearch.addEventListener('input', applySearch);
         }
     });
-});
 </script>
 @endpush

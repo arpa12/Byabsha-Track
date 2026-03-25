@@ -17,15 +17,20 @@ class Sale extends Model
         'product_id',
         'quantity',
         'sale_price',
+        'discount',
         'total_amount',
         'profit',
         'sale_date',
+        'customer_name',
+        'customer_phone',
+        'customer_address',
     ];
 
     protected $casts = [
         'sale_date' => 'date',
         'quantity' => 'integer',
         'sale_price' => 'decimal:2',
+        'discount' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'profit' => 'decimal:2',
     ];

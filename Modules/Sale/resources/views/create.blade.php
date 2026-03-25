@@ -2,9 +2,172 @@
 
 @section('title', __('sale.create_title'))
 
+@push('styles')
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+    :root {
+        --sale-form-ink-900: #0f172a;
+        --sale-form-ink-700: #334155;
+        --sale-form-ink-500: #64748b;
+        --sale-form-brand: #0f766e;
+        --sale-form-brand-deep: #155e75;
+        --sale-form-line: #d8e4ee;
+    }
+
+    .sale-form-shell {
+        position: relative;
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+        color: var(--sale-form-ink-900);
+    }
+
+    .sale-form-shell::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background:
+            radial-gradient(900px 500px at 85% -5%, rgba(15, 118, 110, 0.19), transparent 60%),
+            radial-gradient(650px 420px at -5% 8%, rgba(245, 158, 11, 0.16), transparent 55%),
+            linear-gradient(180deg, #f7fafc 0%, #f1f6f9 60%, #edf3f8 100%);
+    }
+
+    .display-font {
+        font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+        letter-spacing: -0.03em;
+    }
+
+    .form-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.48rem;
+        background: rgba(15, 118, 110, 0.12);
+        color: var(--sale-form-brand);
+        border: 1px solid rgba(15, 118, 110, 0.22);
+        border-radius: 999px;
+        padding: 0.42rem 0.92rem;
+        font-size: 0.76rem;
+        font-weight: 700;
+        margin-bottom: 0.8rem;
+        box-shadow: 0 8px 18px rgba(15, 118, 110, 0.13);
+    }
+
+    .page-title {
+        font-size: clamp(1.55rem, 3.2vw, 2.3rem);
+        line-height: 1.1;
+        color: var(--sale-form-ink-900);
+        margin-bottom: 0.45rem;
+    }
+
+    .page-subtitle {
+        color: var(--sale-form-ink-700);
+        line-height: 1.75;
+        font-size: 0.98rem;
+        margin-bottom: 0;
+    }
+
+    .content-card {
+        background: #ffffff;
+        border: 1px solid var(--sale-form-line);
+        border-radius: 20px;
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+    }
+
+    .content-card-header {
+        background: #f7fbff;
+        border-bottom: 1px solid #dce8f3;
+        padding: 0.9rem 1.2rem;
+    }
+
+    .content-card-title {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #36506b;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+    }
+
+    .form-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #475569;
+        margin-bottom: 0.48rem;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 11px;
+        border: 1px solid #d6e2ee;
+        background: #fbfdff;
+        color: var(--sale-form-ink-900);
+        font-size: 0.94rem;
+        padding-top: 0.62rem;
+        padding-bottom: 0.62rem;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #53a89f;
+        box-shadow: 0 0 0 0.2rem rgba(15, 118, 110, 0.14);
+        background: #ffffff;
+    }
+
+    .btn-back {
+        border-radius: 999px;
+        border: 1px solid #cedce9;
+        background: rgba(255, 255, 255, 0.8);
+        color: #3f556c;
+        font-size: 0.82rem;
+        font-weight: 700;
+        padding: 0.58rem 1rem;
+    }
+
+    .btn-back:hover {
+        background: #ffffff;
+        color: #1e293b;
+        border-color: #97b0c8;
+    }
+
+    .btn-submit {
+        background: linear-gradient(140deg, var(--sale-form-brand), var(--sale-form-brand-deep));
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 0.6rem 1.15rem;
+        font-size: 0.84rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        box-shadow: 0 14px 28px rgba(15, 118, 110, 0.28);
+    }
+
+    .btn-submit:hover {
+        color: #fff;
+    }
+
+    @media (max-width: 991.98px) {
+        .sale-form-shell .col-md-8,
+        .sale-form-shell .col-md-4 {
+            width: 100%;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
+<div class="sale-form-shell">
 <div class="mb-4">
-    <h1 class="page-title">{{ __('sale.create_title') }}</h1>
+    <span class="form-kicker"><i class="bi bi-plus-circle"></i>{{ __('sale.create_title') }}</span>
+    <h1 class="page-title display-font">{{ __('sale.create_title') }}</h1>
     <p class="page-subtitle">{{ __('sale.create_subtitle') }}</p>
 </div>
 
@@ -91,10 +254,10 @@
                     </div>
 
                     <div class="d-flex justify-content-between mt-4 pt-3 border-top">
-                        <a href="{{ route('sale.index') }}" class="btn btn-secondary">
+                        <a href="{{ route('sale.index') }}" class="btn btn-back">
                             <i class="bi bi-arrow-left"></i> {{ __('sale.back_to_list') }}
                         </a>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-submit">
                             <i class="bi bi-check-circle"></i> {{ __('sale.create_btn') }}
                         </button>
                     </div>
@@ -246,4 +409,5 @@ document.getElementById('product_id').addEventListener('change', updateCalcPrevi
 document.getElementById('quantity').addEventListener('input', updateCalcPreview);
 document.addEventListener('DOMContentLoaded', filterProductsByShop);
 </script>
+</div>
 @endsection

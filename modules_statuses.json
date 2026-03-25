@@ -1,6 +1,8 @@
 {
     "Auth": true,
     "Capital": true,
+    "Brand": true,
+    "Category": true,
     "Dashboard": true,
     "Landing": true,
     "Product": true,

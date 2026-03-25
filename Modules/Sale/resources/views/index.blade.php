@@ -1,123 +1,374 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', __('sale.title'))
 
+@push('styles')
+<style>
+    .shop-switcher .btn {
+        border-radius: 999px;
+        font-weight: 700;
+    }
+
+    .shop-switcher .btn.active {
+        background: #0f766e;
+        color: #fff;
+        border-color: #0f766e;
+    }
+
+    .product-table-wrap {
+        background: #fff;
+        border: 1px solid #d8e4ee;
+        border-radius: 16px;
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+    }
+
+    #shopProductsTable thead th {
+        white-space: nowrap;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .profit-positive {
+        color: #047857;
+        font-weight: 700;
+    }
+
+    .profit-negative {
+        color: #b91c1c;
+        font-weight: 700;
+    }
+
+    .profit-neutral {
+        color: #475569;
+        font-weight: 700;
+    }
+
+    .stock-hint {
+        font-size: 0.86rem;
+        color: #64748b;
+    }
+</style>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+@endpush
+
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="page-title">{{ __('sale.title') }}</h1>
-        <p class="page-subtitle">{{ __('sale.subtitle') }}</p>
+<div class="sale-shell">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 sale-header">
+        <div>
+            <span class="sale-kicker"><i class="bi bi-receipt-cutoff"></i>{{ __('sale.title') }}</span>
+            <h1 class="page-title display-font">{{ __('sale.shop_products_title') }}</h1>
+            <p class="page-subtitle mb-0">{{ __('sale.shop_products_subtitle') }}</p>
+        </div>
+        <a href="{{ route('sale.create') }}" class="btn-new-sale">
+            <i class="bi bi-plus-circle"></i> {{ __('sale.new_sale') }}
+        </a>
     </div>
-    <a href="{{ route('sale.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> {{ __('sale.new_sale') }}
-    </a>
+
+    <div class="content-card mb-3 p-3">
+        <div class="d-flex flex-wrap align-items-center gap-2 shop-switcher" id="shopSwitcher">
+            @foreach($shops as $shop)
+                <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm {{ (int) $selectedShopId === (int) $shop->id ? 'active' : '' }}"
+                    data-shop-id="{{ $shop->id }}"
+                    data-shop-name="{{ $shop->name }}"
+                >
+                    {{ $shop->name }}
+                </button>
+            @endforeach
+        </div>
+        @if($shops->isEmpty())
+            <div class="text-muted small">{{ __('sale.no_shops_found') }}</div>
+        @endif
+    </div>
+
+    <div class="product-table-wrap p-3">
+        <table id="shopProductsTable" class="table table-striped table-bordered mb-0" style="width:100%">
+            <thead>
+                <tr>
+                    <th>{{ __('sale.table_product_name') }}</th>
+                    <th>{{ __('sale.table_buying_price') }}</th>
+                    <th>{{ __('sale.table_category') }}</th>
+                    <th>{{ __('sale.table_stock') }}</th>
+                    <th>{{ __('sale.table_profit') }}</th>
+                    <th>{{ __('sale.table_loss') }}</th>
+                    <th>{{ __('sale.col_actions') }}</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 </div>
 
-{{-- Calculation Legend --}}
-<div class="alert alert-light border mb-3 py-2 px-3" style="font-size:0.8rem;">
-    <span class="fw-semibold text-muted"><i class="bi bi-calculator me-1"></i>{{ __('sale.how_calculated') }} &nbsp;</span>
-    <span class="text-muted">
-        {{ __('sale.total_formula') }} &nbsp;|&nbsp;
-        {{ __('sale.profit_formula') }} &nbsp;|&nbsp;
-        {{ __('sale.margin_formula') }}
-    </span>
-</div>
+<div class="modal fade" id="quickSaleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ __('sale.quick_sale_title') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="quickSaleForm">
+                @csrf
+                <div class="modal-body">
+                    <input type="hidden" id="qsShopId" name="shop_id">
+                    <input type="hidden" id="qsProductId" name="product_id">
 
-<div class="content-card">
-    @if($sales->count() > 0)
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>{{ __('sale.col_date') }}</th>
-                        <th>{{ __('sale.col_shop') }}</th>
-                        <th>{{ __('sale.col_product') }}</th>
-                        <th class="text-center">{{ __('sale.col_quantity') }}</th>
-                        <th class="text-end">{{ __('sale.col_sale_price') }}</th>
-                        <th class="text-end">{{ __('sale.col_total') }}</th>
-                        <th class="text-end">{{ __('sale.col_profit') }}</th>
-                        <th class="text-center">{{ __('sale.col_actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($sales as $sale)
-                    <tr>
-                        <td>{{ $sale->sale_date->format('d M Y') }}</td>
-                        <td>
-                            <span class="badge bg-primary">{{ $sale->shop?->name ?? 'Deleted shop' }}</span>
-                        </td>
-                        <td>{{ $sale->product?->name ?? 'Deleted product' }}</td>
-                        <td class="text-center">{{ $sale->quantity }}</td>
-                        <td class="text-end">{{ number_format($sale->sale_price, 2) }}</td>
-                        <td class="text-end"><strong>{{ number_format($sale->total_amount, 2) }}</strong></td>
-                        <td class="text-end">
-                            <span class="badge {{ $sale->profit > 0 ? 'bg-success' : ($sale->profit < 0 ? 'bg-danger' : 'bg-secondary') }}">
-                                {{ number_format($sale->profit, 2) }}
-                            </span>
-                        </td>
-                        <td class="text-center">
-                            <div class="btn-group btn-group-sm" role="group">
-                                <a href="{{ route('sale.show', $sale->id) }}"
-                                   class="btn btn-outline-primary"
-                                   title="View">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a href="{{ route('sale.edit', $sale->id) }}"
-                                   class="btn btn-outline-secondary"
-                                   title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <form action="{{ route('sale.destroy', $sale->id) }}"
-                                      method="POST"
-                                      class="d-inline"
-                                      onsubmit="return confirm('{{ __("sale.confirm_delete") }}')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit"
-                                            class="btn btn-outline-danger"
-                                            title="Delete">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-                <tfoot class="table-light fw-semibold">
-                    @php
-                        $pageTotal  = $sales->sum('total_amount');
-                        $pageProfit = $sales->sum('profit');
-                        $pageQty    = $sales->sum('quantity');
-                    @endphp
-                    <tr>
-                        <td colspan="3" class="text-muted small">{{ __('sale.page_totals') }} ({{ $sales->count() }} {{ __('sale.records') }})</td>
-                        <td class="text-center">{{ number_format($pageQty) }}</td>
-                        <td></td>
-                        <td class="text-end">{{ number_format($pageTotal, 2) }}</td>
-                        <td class="text-end">
-                            <span class="{{ $pageProfit > 0 ? 'text-success' : 'text-danger' }}">
-                                {{ number_format($pageProfit, 2) }}
-                            </span>
-                        </td>
-                        <td></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
+                    <div class="mb-2">
+                        <strong id="qsProductName"></strong>
+                    </div>
+                    <div class="mb-3 stock-hint" id="qsStockHint"></div>
 
-        <div class="p-3">
-            {{ $sales->links() }}
+                    <div class="mb-3">
+                        <label for="qsSalePrice" class="form-label">{{ __('sale.quick_sale_price') }}</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="qsSalePrice" name="sale_price" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="qsDiscount" class="form-label">{{ __('sale.quick_sale_discount') }}</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="qsDiscount" name="discount" value="0">
+                        <div class="form-text">{{ __('sale.quick_sale_discount_hint') }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="qsQuantity" class="form-label">{{ __('sale.quick_sale_quantity') }}</label>
+                        <input type="number" min="1" class="form-control" id="qsQuantity" name="quantity" value="1" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="qsCustomerName" class="form-label">{{ __('sale.quick_sale_customer_name') }}</label>
+                        <input type="text" class="form-control" id="qsCustomerName" name="customer_name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="qsCustomerPhone" class="form-label">{{ __('sale.quick_sale_customer_phone') }}</label>
+                        <input type="text" class="form-control" id="qsCustomerPhone" name="customer_phone">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="qsCustomerAddress" class="form-label">{{ __('sale.quick_sale_customer_address') }}</label>
+                        <input type="text" class="form-control" id="qsCustomerAddress" name="customer_address">
+                    </div>
+
+                    <div class="border rounded p-3 bg-light">
+                        <div class="d-flex justify-content-between">
+                            <span>{{ __('sale.quick_sale_effective_unit_price') }}</span>
+                            <strong id="qsEffectiveUnitPrice">0.00</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>{{ __('sale.quick_sale_total_amount') }}</span>
+                            <strong id="qsTotalAmount">0.00</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span>{{ __('sale.quick_sale_total_cost') }}</span>
+                            <strong id="qsTotalCost">0.00</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span>{{ __('sale.quick_sale_profit_loss') }}</span>
+                            <strong id="qsProfitLoss" class="profit-neutral">0.00</strong>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="qsSaleDate" class="form-label">{{ __('sale.sale_date_label') }}</label>
+                        <input type="date" class="form-control" id="qsSaleDate" name="sale_date" value="{{ now()->toDateString() }}">
+                    </div>
+
+                    <div class="alert alert-danger d-none" id="quickSaleError"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('app.cancel') }}</button>
+                    <button type="submit" class="btn btn-success" id="quickSaleSubmitBtn">
+                        <i class="bi bi-check-circle"></i> {{ __('sale.quick_sale_submit') }}
+                    </button>
+                </div>
+            </form>
         </div>
-    @else
-        <div class="empty-state">
-            <i class="bi bi-receipt"></i>
-            <h3>{{ __('sale.no_sales') }}</h3>
-            <p>{{ __('sale.no_sales_sub') }}</p>
-            <a href="{{ route('sale.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> {{ __('sale.new_sale') }}
-            </a>
-        </div>
-    @endif
+    </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    let selectedShopId = @json($selectedShopId);
+    const productsTableUrl = @json(route('sale.products-table'));
+    const quickSaleUrl = @json(route('sale.quick-sale'));
+    const quickSaleModalEl = document.getElementById('quickSaleModal');
+    const quickSaleModal = new bootstrap.Modal(quickSaleModalEl);
+    const qsSalePriceEl = document.getElementById('qsSalePrice');
+    const qsDiscountEl = document.getElementById('qsDiscount');
+    const qsQuantityEl = document.getElementById('qsQuantity');
+    const qsEffectiveUnitPriceEl = document.getElementById('qsEffectiveUnitPrice');
+    const qsTotalAmountEl = document.getElementById('qsTotalAmount');
+    const qsTotalCostEl = document.getElementById('qsTotalCost');
+    const qsProfitLossEl = document.getElementById('qsProfitLoss');
+    let currentPurchasePrice = 0;
+
+    const numberFormatter = new Intl.NumberFormat(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+
+    const table = $('#shopProductsTable').DataTable({
+        processing: true,
+        serverSide: true,
+        searching: true,
+        ajax: {
+            url: productsTableUrl,
+            data: function (d) {
+                d.shop_id = selectedShopId;
+            }
+        },
+        columns: [
+            { data: 'name', name: 'name' },
+            { data: 'purchase_price', name: 'purchase_price', className: 'text-end' },
+            { data: 'category_name', name: 'category_name' },
+            { data: 'stock_quantity', name: 'stock_quantity', className: 'text-end' },
+            {
+                data: 'latest_profit',
+                name: 'latest_profit',
+                className: 'text-end',
+                render: function (data, type) {
+                    const value = parseFloat(data || 0);
+                    if (type !== 'display') {
+                        return value;
+                    }
+                    const klass = value > 0 ? 'profit-positive' : (value < 0 ? 'profit-negative' : 'profit-neutral');
+                    return '<span class="' + klass + '">' + numberFormatter.format(value) + '</span>';
+                }
+            },
+            {
+                data: 'latest_loss',
+                name: 'latest_loss',
+                className: 'text-end',
+                orderable: false,
+                searchable: false,
+                render: function (data, type) {
+                    const value = parseFloat(data || 0);
+                    if (type !== 'display') {
+                        return value;
+                    }
+                    return '<span class="' + (value > 0 ? 'profit-negative' : 'profit-neutral') + '">' + numberFormatter.format(value) + '</span>';
+                }
+            },
+            { data: 'actions', name: 'actions', orderable: false, searchable: false, className: 'text-center' },
+        ],
+        order: [[0, 'asc']],
+    });
+
+    function recalculateQuickSalePreview() {
+        const salePrice = parseFloat(qsSalePriceEl.value || '0');
+        const discount = parseFloat(qsDiscountEl.value || '0');
+        const quantity = parseInt(qsQuantityEl.value || '0', 10);
+        const effectiveUnitPrice = Math.max(salePrice - (isNaN(discount) ? 0 : discount), 0);
+        const totalAmount = effectiveUnitPrice * quantity;
+        const totalCost = currentPurchasePrice * quantity;
+        const profitLoss = totalAmount - totalCost;
+
+        qsEffectiveUnitPriceEl.textContent = numberFormatter.format(isNaN(effectiveUnitPrice) ? 0 : effectiveUnitPrice);
+        qsTotalAmountEl.textContent = numberFormatter.format(isNaN(totalAmount) ? 0 : totalAmount);
+        qsTotalCostEl.textContent = numberFormatter.format(isNaN(totalCost) ? 0 : totalCost);
+        qsProfitLossEl.textContent = numberFormatter.format(isNaN(profitLoss) ? 0 : profitLoss);
+
+        qsProfitLossEl.classList.remove('profit-positive', 'profit-negative', 'profit-neutral');
+        if (profitLoss > 0) {
+            qsProfitLossEl.classList.add('profit-positive');
+        } else if (profitLoss < 0) {
+            qsProfitLossEl.classList.add('profit-negative');
+        } else {
+            qsProfitLossEl.classList.add('profit-neutral');
+        }
+    }
+
+    document.getElementById('shopSwitcher').addEventListener('click', function (event) {
+        const button = event.target.closest('button[data-shop-id]');
+        if (!button) {
+            return;
+        }
+
+        selectedShopId = parseInt(button.dataset.shopId, 10);
+
+        document.querySelectorAll('#shopSwitcher button[data-shop-id]').forEach((item) => {
+            item.classList.remove('active');
+        });
+        button.classList.add('active');
+
+        table.ajax.reload();
+    });
+
+    document.addEventListener('click', function (event) {
+        const saleBtn = event.target.closest('.js-sale-btn');
+        if (!saleBtn) {
+            return;
+        }
+
+        const stock = parseInt(saleBtn.dataset.stock || '0', 10);
+        currentPurchasePrice = parseFloat(saleBtn.dataset.purchasePrice || '0');
+        const defaultSalePrice = currentPurchasePrice;
+
+        document.getElementById('qsShopId').value = saleBtn.dataset.shopId;
+        document.getElementById('qsProductId').value = saleBtn.dataset.productId;
+        document.getElementById('qsProductName').textContent = saleBtn.dataset.productName;
+        document.getElementById('qsStockHint').textContent = '{{ __('sale.available_stock') }}: ' + stock;
+        document.getElementById('qsQuantity').max = stock;
+        document.getElementById('qsQuantity').value = 1;
+        document.getElementById('qsSalePrice').value = Number.isFinite(defaultSalePrice) ? defaultSalePrice : 0;
+        document.getElementById('qsDiscount').value = 0;
+        document.getElementById('qsCustomerName').value = '';
+        document.getElementById('qsCustomerPhone').value = '';
+        document.getElementById('qsCustomerAddress').value = '';
+        document.getElementById('quickSaleError').classList.add('d-none');
+        document.getElementById('quickSaleError').textContent = '';
+
+        recalculateQuickSalePreview();
+
+        quickSaleModal.show();
+    });
+
+    qsSalePriceEl.addEventListener('input', recalculateQuickSalePreview);
+    qsDiscountEl.addEventListener('input', recalculateQuickSalePreview);
+    qsQuantityEl.addEventListener('input', recalculateQuickSalePreview);
+
+    document.getElementById('quickSaleForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        const submitBtn = document.getElementById('quickSaleSubmitBtn');
+        const errorEl = document.getElementById('quickSaleError');
+        const formData = new FormData(event.target);
+
+        submitBtn.disabled = true;
+        errorEl.classList.add('d-none');
+        errorEl.textContent = '';
+
+        try {
+            const response = await fetch(quickSaleUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                },
+                body: formData,
+            });
+
+            const payload = await response.json();
+
+            if (!response.ok) {
+                const message = payload.message || '{{ __('app.validation_error') }}';
+                throw new Error(message);
+            }
+
+            quickSaleModal.hide();
+            table.ajax.reload(null, false);
+        } catch (error) {
+            errorEl.textContent = error.message;
+            errorEl.classList.remove('d-none');
+        } finally {
+            submitBtn.disabled = false;
+        }
+    });
+</script>
+@endpush

@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Shop\Http\Controllers\ShopController;
 
-Route::middleware('auth')->prefix('shops')->name('shop.')->group(function () {
+Route::middleware(['auth', 'module.access:shop'])->prefix('shops')->name('shop.')->group(function () {
     Route::get('/', [ShopController::class, 'index'])->name('index');
     Route::get('/create', [ShopController::class, 'create'])->name('create');
     Route::post('/', [ShopController::class, 'store'])->name('store');

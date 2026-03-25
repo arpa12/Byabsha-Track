@@ -17,7 +17,10 @@ return [
     // Layout - Sidebar links
     'dashboard'       => 'Dashboard',
     'shops'           => 'Shops',
+    'brands'          => 'Brands',
+    'categories'      => 'Categories',
     'products'        => 'Products',
+    'product_attributes' => 'Product Attributes',
     'stocks'          => 'Stocks',
     'sales'           => 'Sales',
     'capitals'        => 'Capitals',

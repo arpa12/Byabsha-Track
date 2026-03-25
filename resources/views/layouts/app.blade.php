@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Byabsha Track') - Business Tracking System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -12,12 +15,19 @@
     <style>
         :root {
             --sidebar-width: 260px;
-            --header-height: 60px;
-            --primary-color: #2563eb;
-            --primary-dark: #1e40af;
-            --sidebar-bg: #1e293b;
-            --sidebar-hover: #334155;
-            --text-muted: #64748b;
+            --header-height: 68px;
+            --bg: #f4f8fb;
+            --ink-900: #0f172a;
+            --ink-700: #334155;
+            --ink-500: #64748b;
+            --brand: #0f766e;
+            --brand-deep: #155e75;
+            --line: #d8e4ee;
+            --primary-color: var(--brand);
+            --primary-dark: var(--brand-deep);
+            --sidebar-bg: linear-gradient(180deg, #0f766e 0%, #0b5f58 52%, #0a4f4a 100%);
+            --sidebar-hover: rgba(255, 255, 255, 0.14);
+            --text-muted: var(--ink-500);
         }
 
         * {
@@ -27,9 +37,18 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+            background:
+                radial-gradient(900px 500px at 85% -5%, rgba(15, 118, 110, 0.15), transparent 60%),
+                radial-gradient(650px 420px at -5% 8%, rgba(245, 158, 11, 0.16), transparent 55%),
+                linear-gradient(180deg, #f7fafc 0%, #f1f6f9 60%, #edf3f8 100%);
+            color: var(--ink-900);
             overflow-x: hidden;
+        }
+
+        .display-font {
+            font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+            letter-spacing: -0.03em;
         }
 
         /* Header */
@@ -39,32 +58,41 @@
             left: 0;
             right: 0;
             height: var(--header-height);
-            background: white;
-            border-bottom: 1px solid #e2e8f0;
+            background: rgba(250, 252, 254, 0.9);
+            border-bottom: 1px solid rgba(100, 116, 139, 0.17);
+            backdrop-filter: blur(12px);
             display: flex;
             align-items: center;
             padding: 0 1.5rem;
             z-index: 1000;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
         }
 
         .header-brand {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--primary-color);
+            font-size: 1.14rem;
+            font-weight: 800;
+            color: var(--ink-900);
             text-decoration: none;
             margin-right: 2rem;
         }
 
-        .header-brand i {
-            font-size: 1.5rem;
+        .brand-chip {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(145deg, var(--brand), var(--brand-deep));
+            color: #fff;
+            box-shadow: 0 10px 26px rgba(15, 118, 110, 0.34);
         }
 
         .header-brand:hover {
-            color: var(--primary-dark);
+            color: var(--ink-900);
         }
 
         .header-right {
@@ -75,22 +103,34 @@
         }
 
         .header-time {
-            color: var(--text-muted);
-            font-size: 0.875rem;
+            color: var(--ink-700);
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.42rem 0.8rem;
+            border-radius: 999px;
+            background: rgba(15, 118, 110, 0.09);
+            border: 1px solid rgba(15, 118, 110, 0.18);
         }
 
         .header-user {
             display: flex;
             align-items: center;
             font-size: 0.875rem;
-            color: var(--text-muted);
+            color: var(--ink-700);
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 0.35rem 0.4rem 0.35rem 0.7rem;
         }
 
         .lang-switcher {
             display: inline-flex;
             align-items: center;
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
+            background: #e6eef5;
+            border: 1px solid #d2deea;
             border-radius: 20px;
             padding: 3px;
             gap: 2px;
@@ -102,34 +142,38 @@
             padding: 4px 12px;
             border-radius: 16px;
             font-size: 0.78rem;
-            font-weight: 600;
+            font-weight: 700;
             text-decoration: none;
-            color: #64748b;
+            color: #55657a;
             transition: background .2s, color .2s, box-shadow .2s;
             white-space: nowrap;
             letter-spacing: .01em;
         }
         .lang-btn:hover:not(.active) {
-            background: #e2e8f0;
-            color: #1e293b;
+            background: #d8e5f1;
+            color: #0f172a;
         }
         .lang-btn.active {
-            background: #2563eb;
+            background: #0f766e;
             color: #fff;
-            box-shadow: 0 1px 4px rgba(37,99,235,.3);
+            box-shadow: 0 1px 4px rgba(15, 118, 110, .3);
         }
 
         /* Sidebar */
         .sidebar {
             position: fixed;
             top: var(--header-height);
-            left: 0;
+            left: 10px;
             width: var(--sidebar-width);
-            height: calc(100vh - var(--header-height));
+            height: calc(100vh - var(--header-height) - 10px);
             background: var(--sidebar-bg);
             overflow-y: auto;
             z-index: 999;
             transition: transform 0.3s ease;
+            border: 1px solid rgba(8, 82, 76, 0.75);
+            border-radius: 18px;
+            box-shadow: 0 20px 35px rgba(6, 54, 50, 0.28);
+            backdrop-filter: blur(8px);
         }
 
         .sidebar::-webkit-scrollbar {
@@ -137,24 +181,24 @@
         }
 
         .sidebar::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.34);
             border-radius: 3px;
         }
 
         .sidebar-nav {
-            padding: 1.5rem 0;
+            padding: 1.2rem 0;
         }
 
         .nav-section-title {
-            color: rgba(255,255,255,0.5);
+            color: rgba(214, 245, 237, 0.82);
             font-size: 0.75rem;
             text-transform: uppercase;
-            font-weight: 600;
-            letter-spacing: 0.05em;
+            font-weight: 700;
+            letter-spacing: 0.08em;
             padding: 0 1.5rem;
             margin-bottom: 0.5rem;
             margin-top: 1rem;
@@ -168,11 +212,13 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            padding: 0.75rem 1.5rem;
-            color: rgba(255,255,255,0.8);
+            padding: 0.66rem 1rem;
+            margin: 0.2rem 0.75rem;
+            border-radius: 12px;
+            color: rgba(240, 255, 251, 0.9);
             text-decoration: none;
             transition: all 0.2s;
-            border-left: 3px solid transparent;
+            border: 1px solid transparent;
         }
 
         .nav-link-custom i {
@@ -182,13 +228,15 @@
 
         .nav-link-custom:hover {
             background: var(--sidebar-hover);
-            color: white;
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
         .nav-link-custom.active {
-            background: rgba(37,99,235,0.1);
-            color: white;
-            border-left-color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.24);
+            box-shadow: inset 3px 0 0 #ffffff;
         }
 
         /* Submenu Styles */
@@ -200,25 +248,29 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            padding: 0.75rem 1.5rem;
-            color: rgba(255,255,255,0.8);
+            padding: 0.66rem 1rem;
+            margin: 0.2rem 0.75rem;
+            border-radius: 12px;
+            color: rgba(240, 255, 251, 0.9);
             text-decoration: none;
             transition: all 0.2s;
-            border-left: 3px solid transparent;
+            border: 1px solid transparent;
             cursor: pointer;
             justify-content: space-between;
         }
 
         .nav-link-parent:hover {
             background: var(--sidebar-hover);
-            color: white;
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
         .nav-link-parent.active,
         .nav-link-parent[aria-expanded="true"] {
-            background: rgba(37,99,235,0.1);
-            color: white;
-            border-left-color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.24);
+            box-shadow: inset 3px 0 0 #ffffff;
         }
 
         .nav-link-parent .left-content {
@@ -237,12 +289,15 @@
         }
 
         .submenu {
-            background: rgba(0,0,0,0.2);
+            background: rgba(7, 67, 62, 0.38);
             overflow: hidden;
+            border-radius: 12px;
+            margin: 0.1rem 0.75rem;
         }
 
         .submenu .nav-link-custom {
-            padding-left: 3.5rem;
+            margin: 0.16rem 0.4rem;
+            padding-left: 2.4rem;
             font-size: 0.9rem;
         }
 
@@ -252,7 +307,7 @@
 
         /* Main Content */
         .main-content {
-            margin-left: var(--sidebar-width);
+            margin-left: calc(var(--sidebar-width) + 10px);
             margin-top: var(--header-height);
             padding: 2rem;
             min-height: calc(100vh - var(--header-height));
@@ -281,7 +336,7 @@
             background: none;
             border: none;
             font-size: 1.5rem;
-            color: #333;
+            color: #41556a;
             cursor: pointer;
             margin-right: 1rem;
         }
@@ -290,6 +345,9 @@
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
+                left: 0;
+                height: calc(100vh - var(--header-height));
+                border-radius: 0 18px 18px 0;
             }
 
             .sidebar.show {
@@ -317,16 +375,19 @@
 
         .notification-bell .btn {
             position: relative;
-            background: transparent;
-            border: none;
+            background: rgba(255, 255, 255, 0.76);
+            border: 1px solid var(--line);
             font-size: 1.25rem;
-            color: #64748b;
-            padding: 0.5rem;
+            color: #49627a;
+            padding: 0.42rem 0.58rem;
             cursor: pointer;
+            border-radius: 999px;
         }
 
         .notification-bell .btn:hover {
             color: var(--primary-color);
+            background: #ffffff;
+            border-color: #bfd3e4;
         }
 
         .notification-badge {
@@ -349,9 +410,10 @@
             right: 0;
             width: 380px;
             max-height: 500px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            background: #fdfefe;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            box-shadow: 0 24px 40px rgba(15, 23, 42, 0.14);
             display: none;
             z-index: 1001;
             overflow: hidden;
@@ -363,17 +425,18 @@
 
         .notification-dropdown-header {
             padding: 1rem 1.25rem;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid #dde7f0;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: rgba(15, 118, 110, 0.06);
         }
 
         .notification-dropdown-header h6 {
             margin: 0;
             font-size: 1rem;
-            font-weight: 600;
-            color: #1e293b;
+            font-weight: 700;
+            color: #102438;
         }
 
         .notification-dropdown-body {
@@ -383,7 +446,7 @@
 
         .notification-item {
             padding: 1rem 1.25rem;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid #edf3f8;
             display: flex;
             gap: 0.75rem;
             cursor: pointer;
@@ -393,15 +456,15 @@
         }
 
         .notification-item:hover {
-            background: #f8fafc;
+            background: #f1f7fb;
         }
 
         .notification-item.unread {
-            background: #eff6ff;
+            background: #e8f4fb;
         }
 
         .notification-item.unread:hover {
-            background: #dbeafe;
+            background: #dcedf8;
         }
 
         .notification-icon {
@@ -416,7 +479,7 @@
         .notification-title {
             font-size: 0.875rem;
             font-weight: 600;
-            color: #1e293b;
+            color: #102438;
             margin-bottom: 0.25rem;
         }
 
@@ -429,12 +492,12 @@
 
         .notification-time {
             font-size: 0.75rem;
-            color: #94a3b8;
+            color: #70879d;
         }
 
         .notification-dropdown-footer {
             padding: 0.75rem 1.25rem;
-            border-top: 1px solid #e2e8f0;
+            border-top: 1px solid #dde7f0;
             text-align: center;
         }
 
@@ -452,7 +515,7 @@
         .notification-empty {
             padding: 3rem 1.25rem;
             text-align: center;
-            color: #94a3b8;
+            color: #70879d;
         }
 
         .notification-empty i {
@@ -464,14 +527,32 @@
         /* Page Title */
         .page-title {
             font-size: 1.75rem;
-            font-weight: 600;
-            color: #1e293b;
+            font-weight: 700;
+            color: #102438;
             margin-bottom: 0.5rem;
         }
 
         .page-subtitle {
             color: var(--text-muted);
             margin-bottom: 2rem;
+        }
+
+        .btn-outline-primary {
+            --bs-btn-color: #0f766e;
+            --bs-btn-border-color: #0f766e;
+            --bs-btn-hover-bg: #0f766e;
+            --bs-btn-hover-border-color: #0f766e;
+            --bs-btn-active-bg: #155e75;
+            --bs-btn-active-border-color: #155e75;
+            --bs-btn-disabled-color: #0f766e;
+            --bs-btn-disabled-border-color: #0f766e;
+        }
+
+        .btn-outline-danger {
+            --bs-btn-color: #b91c1c;
+            --bs-btn-border-color: #f0b3b3;
+            --bs-btn-hover-bg: #b91c1c;
+            --bs-btn-hover-border-color: #b91c1c;
         }
     </style>
     @stack('styles')
@@ -483,8 +564,10 @@
             <i class="bi bi-list"></i>
         </button>
         <a href="{{ url('/') }}" class="header-brand">
-            <i class="bi bi-graph-up-arrow"></i>
-            <span>Byabsha Track</span>
+            <span class="brand-chip">
+                <i class="bi bi-graph-up-arrow"></i>
+            </span>
+            <span class="display-font">Byabsha Track</span>
         </a>
         <div class="header-right">
             <span class="header-time">
@@ -567,56 +650,95 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <nav class="sidebar-nav">
+            @php $sidebarUser = auth()->user(); @endphp
             <div class="nav-section-title">{{ __('app.main_menu') }}</div>
-            <a href="{{ route('dashboard.index') }}" class="nav-link-custom {{ request()->is('dashboard*') ? 'active' : '' }}">
-                <i class="bi bi-speedometer2"></i>
-                <span>{{ __('app.dashboard') }}</span>
-            </a>
-            <a href="{{ route('user.profile.edit') }}" class="nav-link-custom {{ request()->is('profile') ? 'active' : '' }}">
+            @if($sidebarUser->hasModuleAccess('dashboard'))
+                <a href="{{ route('dashboard.index') }}" class="nav-link-custom {{ request()->routeIs('dashboard.*') ? 'active' : '' }}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>{{ __('app.dashboard') }}</span>
+                </a>
+            @endif
+            <a href="{{ route('user.profile.edit') }}" class="nav-link-custom {{ request()->routeIs('user.profile.*') ? 'active' : '' }}">
                 <i class="bi bi-person-gear"></i>
                 <span>{{ __('user.profile_title') }}</span>
             </a>
 
             <div class="nav-section-title">{{ __('app.management') }}</div>
-            <a href="{{ route('shop.index') }}" class="nav-link-custom {{ request()->is('shops*') ? 'active' : '' }}">
-                <i class="bi bi-shop"></i>
-                <span>{{ __('app.shops') }}</span>
-            </a>
-            <a href="{{ route('product.index') }}" class="nav-link-custom {{ request()->is('products*') ? 'active' : '' }}">
-                <i class="bi bi-box-seam"></i>
-                <span>{{ __('app.products') }}</span>
-            </a>
-            <a href="{{ route('stock.index') }}" class="nav-link-custom {{ request()->is('stocks*') ? 'active' : '' }}">
-                <i class="bi bi-boxes"></i>
-                <span>{{ __('app.stocks') }}</span>
-            </a>
-            <a href="{{ route('sale.index') }}" class="nav-link-custom {{ request()->is('sales*') ? 'active' : '' }}">
-                <i class="bi bi-cart-check"></i>
-                <span>{{ __('app.sales') }}</span>
-            </a>
-            <a href="{{ route('capital.index') }}" class="nav-link-custom {{ request()->is('capitals*') ? 'active' : '' }}">
-                <i class="bi bi-cash-coin"></i>
-                <span>{{ __('app.capitals') }}</span>
-            </a>
-            <a href="{{ route('restock.index') }}" class="nav-link-custom {{ request()->is('restocks*') ? 'active' : '' }}">
-                <i class="bi bi-arrow-repeat"></i>
-                <span>{{ __('app.restocks') }}</span>
-            </a>
+            @if($sidebarUser->hasModuleAccess('shop'))
+                <a href="{{ route('shop.index') }}" class="nav-link-custom {{ request()->routeIs('shop.*') ? 'active' : '' }}">
+                    <i class="bi bi-shop"></i>
+                    <span>{{ __('app.shops') }}</span>
+                </a>
+            @endif
+            @if($sidebarUser->hasModuleAccess('brand'))
+                <a href="{{ route('brand.index') }}" class="nav-link-custom {{ request()->routeIs('brand.*') ? 'active' : '' }}">
+                    <i class="bi bi-bookmark-star"></i>
+                    <span>{{ __('app.brands') }}</span>
+                </a>
+            @endif
+            @if($sidebarUser->hasModuleAccess('category'))
+                <a href="{{ route('category.index') }}" class="nav-link-custom {{ request()->routeIs('category.*') ? 'active' : '' }}">
+                    <i class="bi bi-tags"></i>
+                    <span>{{ __('app.categories') }}</span>
+                </a>
+            @endif
+            @if($sidebarUser->hasModuleAccess('product'))
+                <a href="{{ route('product.index') }}" class="nav-link-custom {{ request()->routeIs('product.*') && !request()->routeIs('product.dynamic-fields.*') ? 'active' : '' }}">
+                    <i class="bi bi-box-seam"></i>
+                    <span>{{ __('app.products') }}</span>
+                </a>
+                <a href="{{ route('product.dynamic-fields.index') }}" class="nav-link-custom {{ request()->routeIs('product.dynamic-fields.*') ? 'active' : '' }}">
+                    <i class="bi bi-sliders"></i>
+                    <span>{{ __('app.product_attributes') }}</span>
+                </a>
+            @endif
+            @if($sidebarUser->hasModuleAccess('stock'))
+                <a href="{{ route('stock.index') }}" class="nav-link-custom {{ request()->routeIs('stock.*') ? 'active' : '' }}">
+                    <i class="bi bi-boxes"></i>
+                    <span>{{ __('app.stocks') }}</span>
+                </a>
+            @endif
+            @if($sidebarUser->hasModuleAccess('sale'))
+                <a href="{{ route('sale.index') }}" class="nav-link-custom {{ request()->routeIs('sale.*') ? 'active' : '' }}">
+                    <i class="bi bi-cart-check"></i>
+                    <span>{{ __('app.sales') }}</span>
+                </a>
+            @endif
+            @if($sidebarUser->hasModuleAccess('capital'))
+                <a href="{{ route('capital.index') }}" class="nav-link-custom {{ request()->routeIs('capital.*') ? 'active' : '' }}">
+                    <i class="bi bi-cash-coin"></i>
+                    <span>{{ __('app.capitals') }}</span>
+                </a>
+            @endif
+            @if($sidebarUser->hasModuleAccess('restock'))
+                <a href="{{ route('restock.index') }}" class="nav-link-custom {{ request()->routeIs('restock.*') ? 'active' : '' }}">
+                    <i class="bi bi-arrow-repeat"></i>
+                    <span>{{ __('app.restocks') }}</span>
+                </a>
+            @endif
 
             @if(auth()->user()->isSuperAdmin())
             <div class="nav-section-title">{{ __('app.system') }}</div>
-            <a href="{{ route('user.index') }}" class="nav-link-custom {{ request()->is('users*') ? 'active' : '' }}">
-                <i class="bi bi-people"></i>
-                <span>{{ __('app.users') }}</span>
-            </a>
+            @php
+                $isUserManagementRoute = request()->routeIs('user.index')
+                    || request()->routeIs('user.create')
+                    || request()->routeIs('user.store')
+                    || request()->routeIs('user.show')
+                    || request()->routeIs('user.edit')
+                    || request()->routeIs('user.update')
+                    || request()->routeIs('user.destroy')
+                    || request()->routeIs('user.restore')
+                    || request()->routeIs('user.force-delete');
+                $isSettingsMenuOpen = request()->routeIs('settings.*') || $isUserManagementRoute;
+            @endphp
 
             <!-- Settings Submenu -->
             <div class="nav-item-submenu">
-                <a class="nav-link-parent {{ request()->is('settings*') ? 'active' : '' }}"
+                <a class="nav-link-parent {{ $isSettingsMenuOpen ? 'active' : '' }}"
                    data-bs-toggle="collapse"
                    href="#settingsSubmenu"
                    role="button"
-                   aria-expanded="{{ request()->is('settings*') ? 'true' : 'false' }}"
+                   aria-expanded="{{ $isSettingsMenuOpen ? 'true' : 'false' }}"
                    aria-controls="settingsSubmenu">
                     <div class="left-content">
                         <i class="bi bi-gear"></i>
@@ -624,36 +746,38 @@
                     </div>
                     <i class="bi bi-chevron-down"></i>
                 </a>
-                <div class="collapse submenu {{ request()->is('settings*') ? 'show' : '' }}" id="settingsSubmenu">
-                    <a href="{{ route('settings.index') }}?tab=general" class="nav-link-custom {{ request()->is('settings*') && (request()->get('tab', 'general') === 'general') ? 'active' : '' }}">
+                <div class="collapse submenu {{ $isSettingsMenuOpen ? 'show' : '' }}" id="settingsSubmenu">
+                    <a href="{{ route('settings.general') }}" class="nav-link-custom {{ request()->routeIs('settings.general') || request()->routeIs('settings.index') ? 'active' : '' }}">
                         <i class="bi bi-sliders"></i>
                         <span>{{ __('settings.general_settings') }}</span>
                     </a>
-                    <a href="{{ route('settings.index') }}?tab=business" class="nav-link-custom {{ request()->is('settings*') && request()->get('tab') === 'business' ? 'active' : '' }}">
-                        <i class="bi bi-briefcase"></i>
-                        <span>{{ __('settings.business_settings') }}</span>
-                    </a>
-                    <a href="{{ route('settings.index') }}?tab=system" class="nav-link-custom {{ request()->is('settings*') && request()->get('tab') === 'system' ? 'active' : '' }}">
+                    <a href="{{ route('settings.system') }}" class="nav-link-custom {{ request()->routeIs('settings.system') ? 'active' : '' }}">
                         <i class="bi bi-cpu"></i>
                         <span>{{ __('settings.system_settings') }}</span>
+                    </a>
+                    <a href="{{ route('user.index') }}" class="nav-link-custom {{ $isUserManagementRoute ? 'active' : '' }}">
+                        <i class="bi bi-people"></i>
+                        <span>{{ __('app.users') }}</span>
                     </a>
                 </div>
             </div>
             @endif
 
-            <div class="nav-section-title">{{ __('app.analytics') }}</div>
-            <a href="{{ route('report.index') }}" class="nav-link-custom {{ request()->is('reports') || request()->is('reports/sales*') || request()->is('reports/products*') || request()->is('reports/shops*') ? 'active' : '' }}">
-                <i class="bi bi-bar-chart-line"></i>
-                <span>{{ __('app.reports') }}</span>
-            </a>
-            <a href="{{ route('report.daily') }}" class="nav-link-custom {{ request()->is('reports/daily*') ? 'active' : '' }}">
-                <i class="bi bi-calendar-check"></i>
-                <span>{{ __('app.daily_pnl') }}</span>
-            </a>
-            <a href="{{ route('report.monthly') }}" class="nav-link-custom {{ request()->is('reports/monthly*') ? 'active' : '' }}">
-                <i class="bi bi-calendar-range"></i>
-                <span>{{ __('app.monthly_pnl') }}</span>
-            </a>
+            @if($sidebarUser->hasModuleAccess('report'))
+                <div class="nav-section-title">{{ __('app.analytics') }}</div>
+                <a href="{{ route('report.index') }}" class="nav-link-custom {{ request()->routeIs('report.index') || request()->routeIs('report.sales') || request()->routeIs('report.products') || request()->routeIs('report.shops') ? 'active' : '' }}">
+                    <i class="bi bi-bar-chart-line"></i>
+                    <span>{{ __('app.reports') }}</span>
+                </a>
+                <a href="{{ route('report.daily') }}" class="nav-link-custom {{ request()->routeIs('report.daily') || request()->routeIs('report.export.daily-pdf') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-check"></i>
+                    <span>{{ __('app.daily_pnl') }}</span>
+                </a>
+                <a href="{{ route('report.monthly') }}" class="nav-link-custom {{ request()->routeIs('report.monthly') || request()->routeIs('report.export.monthly-pdf') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-range"></i>
+                    <span>{{ __('app.monthly_pnl') }}</span>
+                </a>
+            @endif
         </nav>
     </aside>
 

@@ -8,6 +8,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Modules\Shop\Database\Seeders\ShopSeeder;
+// use Modules\Category\Database\Seeders\CategorySeeder;
 
 class DatabaseSeeder extends Seeder
 {

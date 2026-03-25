@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
+            'module.access' => \App\Http\Middleware\CheckModuleAccess::class,
             'maintenance.restrict' => \App\Http\Middleware\RestrictDuringMaintenanceMode::class,
         ]);
     })

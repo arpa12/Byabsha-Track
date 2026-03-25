@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Report\Http\Controllers\ReportController;
 
-Route::middleware('auth')->prefix('reports')->name('report.')->group(function () {
+Route::middleware(['auth', 'module.access:report'])->prefix('reports')->name('report.')->group(function () {
     Route::get('/', [ReportController::class, 'index'])->name('index');
     Route::get('/sales', [ReportController::class, 'sales'])->name('sales');
     Route::get('/products', [ReportController::class, 'products'])->name('products');

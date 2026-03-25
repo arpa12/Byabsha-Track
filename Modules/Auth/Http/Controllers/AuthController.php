@@ -13,9 +13,13 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (Auth::check()) {
-            return redirect()->route('dashboard.index');
+            $user = Auth::user();
+            $homeRouteName = $user instanceof User ? $user->homeRouteName() : 'dashboard.index';
+
+            return redirect()->route($homeRouteName);
         }
-        return view('auth::login');
+
+        return redirect()->route('landing.index', ['auth' => 'login']);
     }
 
     public function login(Request $request)
@@ -27,21 +31,27 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended(route('dashboard.index'));
+            $user = Auth::user();
+            $homeRouteName = $user instanceof User ? $user->homeRouteName() : 'dashboard.index';
+
+            return redirect()->intended(route($homeRouteName));
         }
 
         return back()->withErrors([
             'email' => 'Invalid credentials. Please try again.',
-        ])->withInput($request->only('email'));
+        ])->withInput($request->only('email', '_form'));
     }
 
     public function showRegister()
     {
         if (Auth::check()) {
-            return redirect()->route('dashboard.index');
+            $user = Auth::user();
+            $homeRouteName = $user instanceof User ? $user->homeRouteName() : 'dashboard.index';
+
+            return redirect()->route($homeRouteName);
         }
 
-        return view('auth::register');
+        return redirect()->route('landing.index', ['auth' => 'register']);
     }
 
     public function register(Request $request)
@@ -62,7 +72,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard.index')
+        return redirect()->route($user->homeRouteName())
             ->with('success', __('auth.register_success'));
     }
 

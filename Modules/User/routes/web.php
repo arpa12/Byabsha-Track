@@ -16,7 +16,10 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('users')->name('user.')->
     Route::get('/{id}', [UserController::class, 'show'])->name('show');
     Route::get('/{id}/edit', [UserController::class, 'edit'])->name('edit');
     Route::put('/{id}', [UserController::class, 'update'])->name('update');
+    Route::post('/{id}/deactivate', [UserController::class, 'deactivate'])->name('deactivate');
+    Route::post('/{id}/activate', [UserController::class, 'activate'])->name('activate');
+
+    // Backward compatibility routes
     Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
     Route::post('/{id}/restore', [UserController::class, 'restore'])->name('restore');
-    Route::delete('/{id}/force', [UserController::class, 'forceDelete'])->name('force-delete');
 });

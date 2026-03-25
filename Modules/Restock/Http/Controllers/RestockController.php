@@ -3,6 +3,7 @@
 namespace Modules\Restock\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Log;
 use Modules\Restock\Services\RestockService;
 use Modules\Shop\Models\Shop;
 use Modules\Product\Models\Product;
@@ -108,10 +109,16 @@ class RestockController extends Controller
      */
     public function destroy($id)
     {
-        $this->restockService->deleteRestock($id);
-
-        return redirect()->route('restock.index')
-            ->with('success', __('restock.deleted'));
+        Log::info('Destroy method called with ID: ' . $id);
+        try {
+            $this->restockService->deleteRestock($id);
+            Log::info('Restock deleted successfully');
+            return redirect()->route('restock.index')
+                ->with('success', __('restock.deleted'));
+        } catch (\Exception $e) {
+            Log::error('Delete failed: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     /**

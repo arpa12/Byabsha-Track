@@ -282,6 +282,55 @@ class ReportService
     }
 
     /**
+     * Detailed sales rows grouped by date for the report index modal.
+     */
+    public function getSalesDetailsForDates($filters = [], $dates = [])
+    {
+        if (empty($dates)) {
+            return collect();
+        }
+
+        $query = Sale::with(['shop:id,name', 'product:id,name'])
+            ->whereIn(DB::raw('DATE(sale_date)'), $dates)
+            ->orderBy('sale_date', 'desc')
+            ->orderBy('id', 'desc');
+
+        if (!empty($filters['shop_id'])) {
+            $query->where('shop_id', $filters['shop_id']);
+        }
+
+        if (!empty($filters['start_date'])) {
+            $query->whereDate('sale_date', '>=', $filters['start_date']);
+        }
+
+        if (!empty($filters['end_date'])) {
+            $query->whereDate('sale_date', '<=', $filters['end_date']);
+        }
+
+        return $query->get()->groupBy(function ($sale) {
+            return $sale->sale_date->format('Y-m-d');
+        });
+    }
+
+    /**
+     * Detailed sales rows for a date range (used by daily/monthly modals).
+     */
+    public function getSalesDetailsByDateRange($filters = [], $startDate, $endDate)
+    {
+        $query = Sale::with(['shop:id,name', 'product:id,name'])
+            ->whereDate('sale_date', '>=', $startDate)
+            ->whereDate('sale_date', '<=', $endDate)
+            ->orderBy('sale_date', 'desc')
+            ->orderBy('id', 'desc');
+
+        if (!empty($filters['shop_id'])) {
+            $query->where('shop_id', $filters['shop_id']);
+        }
+
+        return $query->get();
+    }
+
+    /**
      * Daily Profit/Loss report for a given month.
      */
     public function getDailyProfitLoss($filters = [])

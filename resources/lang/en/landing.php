@@ -46,11 +46,26 @@ return [
     'feat6_title'      => 'Multi-Shop Support',
     'feat6_desc'       => 'Manage multiple shops from a single dashboard. Each shop gets its own metrics, products and sales.',
 
+    // Usage flow section
+    'usage_badge'      => 'Usage Flow',
+    'usage_title'      => 'From Shop Setup to Daily Profit Clarity',
+    'usage_sub'        => 'This reflects the actual workflow defined in the project documentation and modules.',
+    'flow1_title'      => 'Create Shops',
+    'flow1_desc'       => 'Set up one or many business locations from a single account.',
+    'flow2_title'      => 'Manage Products',
+    'flow2_desc'       => 'Track stock, purchase price, sale price, and product metadata.',
+    'flow3_title'      => 'Record Sales & Restocks',
+    'flow3_desc'       => 'Stock and capital update automatically with each transaction.',
+    'flow4_title'      => 'Review Reports',
+    'flow4_desc'       => 'Analyze performance and export reports to PDF when needed.',
+
     // CTA
     'cta_title'        => 'Ready to Track Your Business?',
     'cta_sub'          => 'Sign in now and get a complete view of your business performance.',
     'cta_btn'          => 'Sign In to Dashboard',
 
     // Footer
-    'footer_built'     => 'Built with Laravel & Bootstrap 5  Modular Business Tracking System',
+    'footer_built'     => 'Built with Laravel & Bootstrap 5 - Modular Business Tracking System',
+    'footer_developer' => 'Developed by Arpa Nihan',
+    'footer_copyright' => 'Byabsha Track. All rights reserved.',
 ];

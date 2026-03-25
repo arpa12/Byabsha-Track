@@ -1,5 +1,5 @@
 <div class="shop-details-modal-content">
-    <h4 class="mb-3"><i class="bi bi-shop-window"></i> {{ $shop->name }}</h4>
+    <h4 class="shop-details-title mb-3"><i class="bi bi-shop-window"></i> {{ $shop->name }}</h4>
     <div class="row mb-3">
         <div class="col-md-4">
             <div class="detail-box">
@@ -50,7 +50,7 @@
         @foreach($shop->products->take(5) as $product)
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 {{ $product->name }}
-                <span class="badge bg-primary">Stock: {{ $product->stock_quantity }}</span>
+                <span class="badge stock-badge">Stock: {{ $product->stock_quantity }}</span>
             </li>
         @endforeach
         @if($shop->products->count() == 0)
@@ -70,28 +70,66 @@
     </ul>
 </div>
 <style>
-.shop-details-modal-content .detail-box {
-    background: #f8fafc;
+.shop-details-modal-content .shop-details-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.shop-details-modal-content .shop-details-title i {
+    width: 30px;
+    height: 30px;
     border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #0f766e;
+    background: rgba(15, 118, 110, 0.12);
+    border: 1px solid rgba(15, 118, 110, 0.22);
+}
+
+.shop-details-modal-content .detail-box {
+    background: #f8fbff;
+    border: 1px solid #d8e4ee;
+    border-radius: 12px;
     padding: 1rem;
     margin-bottom: 1rem;
     text-align: center;
+    height: 100%;
 }
 .shop-details-modal-content .detail-label {
     display: block;
-    font-size: 0.95rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     color: #64748b;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.2rem;
 }
 .shop-details-modal-content .detail-value {
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: 1.15rem;
+    font-weight: 700;
     color: #0f172a;
 }
 .shop-details-modal-content .detail-formula {
     display: block;
-    font-size: 0.73rem;
+    font-size: 0.68rem;
     color: #94a3b8;
     margin-top: 0.2rem;
+}
+
+.shop-details-modal-content .list-group-item {
+    border-color: #e2e8f0;
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
+}
+
+.shop-details-modal-content .stock-badge {
+    background: rgba(15, 118, 110, 0.12);
+    color: #155e75;
+    font-weight: 600;
 }
 </style>

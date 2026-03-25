@@ -11,7 +11,7 @@ use Throwable;
 class RestrictDuringMaintenanceMode
 {
     /**
-     * Block manager/owner access when app maintenance mode is enabled in settings.
+    * Block owner/user access when app maintenance mode is enabled in settings.
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -29,7 +29,7 @@ class RestrictDuringMaintenanceMode
             return $next($request);
         }
 
-        if (!in_array($user->role, ['manager', 'owner'], true)) {
+        if (!in_array($user->role, ['owner', 'user'], true)) {
             return $next($request);
         }
 

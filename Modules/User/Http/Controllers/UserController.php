@@ -11,6 +11,43 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
+    private function moduleAccessOptions(): array
+    {
+        return [
+            'dashboard' => __('app.dashboard'),
+            'shop' => __('app.shops'),
+            'brand' => __('app.brands'),
+            'category' => __('app.categories'),
+            'product' => __('app.products'),
+            'stock' => __('app.stocks'),
+            'sale' => __('app.sales'),
+            'capital' => __('app.capitals'),
+            'restock' => __('app.restocks'),
+            'report' => __('app.reports'),
+        ];
+    }
+
+    private function normalizeModuleAccess(array $validated): array
+    {
+        $allowedKeys = User::availableModuleAccessKeys();
+
+        if (($validated['role'] ?? null) === 'superadmin') {
+            $validated['module_access'] = null;
+
+            return $validated;
+        }
+
+        $selected = $validated['module_access'] ?? null;
+
+        if (!is_array($selected) || count($selected) === 0) {
+            $selected = $allowedKeys;
+        }
+
+        $validated['module_access'] = array_values(array_intersect($allowedKeys, $selected));
+
+        return $validated;
+    }
+
     public function profile()
     {
         $user = User::findOrFail(Auth::id());
@@ -61,7 +98,9 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('user::create');
+        $moduleAccessOptions = $this->moduleAccessOptions();
+
+        return view('user::create', compact('moduleAccessOptions'));
     }
 
     /**
@@ -69,13 +108,18 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $allowedModuleKeys = User::availableModuleAccessKeys();
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'role' => ['required', Rule::in(['superadmin', 'manager', 'owner'])],
+            'role' => ['required', Rule::in(['superadmin', 'owner'])],
+            'module_access' => 'nullable|array',
+            'module_access.*' => ['string', Rule::in($allowedModuleKeys)],
         ]);
 
+        $validated = $this->normalizeModuleAccess($validated);
         $validated['password'] = Hash::make($validated['password']);
 
         User::create($validated);
@@ -99,7 +143,9 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = User::findOrFail($id);
-        return view('user::edit', compact('user'));
+        $moduleAccessOptions = $this->moduleAccessOptions();
+
+        return view('user::edit', compact('user', 'moduleAccessOptions'));
     }
 
     /**
@@ -108,12 +154,15 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
+        $allowedModuleKeys = User::availableModuleAccessKeys();
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => ['required', Rule::in(['superadmin', 'manager', 'owner'])],
+            'role' => ['required', Rule::in(['superadmin', 'owner'])],
+            'module_access' => 'nullable|array',
+            'module_access.*' => ['string', Rule::in($allowedModuleKeys)],
         ]);
 
         if (!empty($validated['password'])) {
@@ -121,6 +170,8 @@ class UserController extends Controller
         } else {
             unset($validated['password']);
         }
+
+        $validated = $this->normalizeModuleAccess($validated);
 
         $user->update($validated);
 
@@ -131,31 +182,47 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage (soft delete).
      */
-    public function destroy($id)
+    public function deactivate($id)
     {
         $user = User::findOrFail($id);
 
-        // Prevent self-deletion
+        // Prevent self-deactivation
         if ($user->id === Auth::id()) {
-            return back()->withErrors(['error' => __('user.cannot_delete_self')]);
+            return back()->withErrors(['error' => __('user.cannot_deactivate_self')]);
         }
 
         $user->delete();
 
         return redirect()->route('user.index')
-            ->with('success', __('user.deleted'));
+            ->with('success', __('user.deactivated'));
     }
 
     /**
      * Restore a soft-deleted user.
      */
-    public function restore($id)
+    public function activate($id)
     {
         $user = User::withTrashed()->findOrFail($id);
         $user->restore();
 
         return redirect()->route('user.index')
-            ->with('success', __('user.restored'));
+            ->with('success', __('user.activated'));
+    }
+
+    /**
+     * Backward compatibility for previous route/action naming.
+     */
+    public function destroy($id)
+    {
+        return $this->deactivate($id);
+    }
+
+    /**
+     * Backward compatibility for previous route/action naming.
+     */
+    public function restore($id)
+    {
+        return $this->activate($id);
     }
 
     /**

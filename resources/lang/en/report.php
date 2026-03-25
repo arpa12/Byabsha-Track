@@ -3,6 +3,25 @@
 return [
     'title'               => 'Business Reports',
     'subtitle'            => 'Comprehensive analytics and insights',
+    'compact_subtitle'    => 'Simple overview with quick links to daily and monthly reports',
+    'quick_access'        => 'Quick Access',
+    'this_month_profit'   => 'This Month Profit',
+    'this_year_profit'    => 'This Year Profit',
+    'view_daily_report'   => 'Open daily report for selected shop',
+    'view_monthly_report' => 'Open monthly report for selected shop',
+    'recent_daily_performance' => 'Recent Daily Performance',
+    'no_data_short'       => 'No data found for this filter.',
+    'action'              => 'Action',
+    'view'                => 'View',
+    'sale_details'        => 'Sales Details',
+    'sale_details_for'    => 'Sales Details For',
+    'customer_name'       => 'Customer Name',
+    'customer_phone'      => 'Customer Phone',
+    'customer_address'    => 'Customer Address',
+    'sale_date'           => 'Sale Date',
+    'discount'            => 'Discount',
+    'records'             => 'Records',
+    'search_placeholder'  => 'Search by shop, product, customer, phone...',
 
     // Filters
     'filters'             => 'Filters',
@@ -132,6 +151,11 @@ return [
     'month_nov'               => 'November',
     'month_dec'               => 'December',
     'per_shop_comparison'     => 'Per-shop comparison',
+
+    // Product Breakdown
+    'top_products'            => 'Top Products Sold',
+    'product_name'            => 'Product Name',
+    'quantity_sold'           => 'Qty Sold',
 
     // PDF Export
     'download_pdf'            => 'Download PDF',

@@ -18,27 +18,35 @@ class ReportController extends Controller
 
     public function index(Request $request)
     {
-        // Get filter parameters
         $filters = [
             'shop_id' => $request->input('shop_id'),
-            'start_date' => $request->input('start_date', now()->startOfMonth()->format('Y-m-d')),
+            'start_date' => $request->input('start_date', now()->subDays(6)->format('Y-m-d')),
             'end_date' => $request->input('end_date', now()->format('Y-m-d')),
         ];
 
-        // Get report data
         $salesSummary = $this->reportService->getSalesSummary($filters);
-        $salesByShop = $this->reportService->getSalesByShop($filters);
-        $topProducts = $this->reportService->getTopSellingProducts($filters, 10);
-        $stockSummary = $this->reportService->getStockSummary($filters);
         $dailySales = $this->reportService->getDailySales($filters);
+        $dailyDates = collect($dailySales)
+            ->pluck('date')
+            ->map(fn ($date) => \Carbon\Carbon::parse($date)->format('Y-m-d'))
+            ->all();
+        $dailySalesDetails = $this->reportService->getSalesDetailsForDates($filters, $dailyDates);
+        $monthlyOverview = $this->reportService->getDailyProfitLoss([
+            'shop_id' => $filters['shop_id'],
+            'month' => now()->format('Y-m'),
+        ]);
+        $yearlyOverview = $this->reportService->getMonthlyProfitLoss([
+            'shop_id' => $filters['shop_id'],
+            'year' => now()->format('Y'),
+        ]);
         $shops = $this->reportService->getShops();
 
         return view('report::index', compact(
             'salesSummary',
-            'salesByShop',
-            'topProducts',
-            'stockSummary',
             'dailySales',
+            'dailySalesDetails',
+            'monthlyOverview',
+            'yearlyOverview',
             'shops',
             'filters'
         ));
@@ -93,9 +101,14 @@ class ReportController extends Controller
         ];
 
         $dailyData = $this->reportService->getDailyProfitLoss($filters);
+        $startDate = $filters['month'] . '-01';
+        $endDate = date('Y-m-t', strtotime($startDate));
+        $dailyDetailsByDate = $this->reportService
+            ->getSalesDetailsByDateRange($filters, $startDate, $endDate)
+            ->groupBy(fn ($sale) => $sale->sale_date->format('Y-m-d'));
         $shops = $this->reportService->getShops();
 
-        return view('report::daily', compact('dailyData', 'shops', 'filters'));
+        return view('report::daily', compact('dailyData', 'dailyDetailsByDate', 'shops', 'filters'));
     }
 
     public function monthly(Request $request)
@@ -106,9 +119,14 @@ class ReportController extends Controller
         ];
 
         $monthlyData = $this->reportService->getMonthlyProfitLoss($filters);
+        $startDate = $filters['year'] . '-01-01';
+        $endDate = $filters['year'] . '-12-31';
+        $monthlyDetailsByMonth = $this->reportService
+            ->getSalesDetailsByDateRange($filters, $startDate, $endDate)
+            ->groupBy(fn ($sale) => $sale->sale_date->format('n'));
         $shops = $this->reportService->getShops();
 
-        return view('report::monthly', compact('monthlyData', 'shops', 'filters'));
+        return view('report::monthly', compact('monthlyData', 'monthlyDetailsByMonth', 'shops', 'filters'));
     }
 
     public function exportDailyPdf(Request $request)
