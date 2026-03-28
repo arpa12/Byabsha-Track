@@ -21,8 +21,14 @@ class SaleController extends Controller
     }
     public function index(Request $request)
     {
-        $shops = Shop::orderBy('name')->get(['id', 'name']);
+        $user = auth()->user();
+        $shops = Shop::forUser($user)->orderBy('name')->get(['id', 'name']);
         $selectedShopId = $request->integer('shop_id', (int) optional($shops->first())->id);
+
+        // Ensure the selected shop belongs to the user
+        if ($selectedShopId && !$user->ownsShop($selectedShopId)) {
+            $selectedShopId = (int) optional($shops->first())->id;
+        }
 
         return view('sale::index', compact('shops', 'selectedShopId'));
     }
@@ -34,6 +40,7 @@ class SaleController extends Controller
         ]);
 
         $shopId = (int) $validated['shop_id'];
+        abort_unless(auth()->user()->ownsShop($shopId), 403, 'You do not have access to this shop.');
 
         $products = Product::query()
             ->where('shop_id', $shopId)
@@ -144,6 +151,8 @@ class SaleController extends Controller
             'customer_address' => 'nullable|string|max:500',
         ]);
 
+        abort_unless(auth()->user()->ownsShop((int) $validated['shop_id']), 403, 'You do not have access to this shop.');
+
         $product = Product::query()
             ->where('id', $validated['product_id'])
             ->where('shop_id', $validated['shop_id'])
@@ -197,8 +206,9 @@ class SaleController extends Controller
 
     public function create()
     {
-        $shops = Shop::all();
-        $products = Product::with('shop')->get();
+        $user = auth()->user();
+        $shops = Shop::forUser($user)->get();
+        $products = Product::with('shop')->whereIn('shop_id', $user->accessibleShopIds())->get();
         return view('sale::create', compact('shops', 'products'));
     }
 
@@ -210,6 +220,8 @@ class SaleController extends Controller
             'quantity' => 'required|integer|min:1',
             'sale_date' => 'required|date',
         ]);
+
+        abort_unless(auth()->user()->ownsShop((int) $validated['shop_id']), 403, 'You do not have access to this shop.');
 
         // Get the product
         $product = Product::findOrFail($validated['product_id']);
@@ -259,12 +271,16 @@ class SaleController extends Controller
     public function show($id)
     {
         $sale = Sale::with(['shop', 'product'])->findOrFail($id);
+        abort_unless(auth()->user()->ownsShop((int) $sale->shop_id), 403, 'You do not have access to this shop.');
         return view('sale::show', compact('sale'));
     }
 
     public function productSales(Request $request, $productId)
     {
+        $user = auth()->user();
         $product = Product::with('shop')->findOrFail($productId);
+        abort_unless($user->ownsShop((int) $product->shop_id), 403, 'You do not have access to this shop.');
+
         $shopId = $request->integer('shop_id');
 
         $salesQuery = Sale::query()
@@ -292,8 +308,10 @@ class SaleController extends Controller
     public function edit($id)
     {
         $sale = Sale::findOrFail($id);
-        $shops = Shop::all();
-        $products = Product::with('shop')->get();
+        $user = auth()->user();
+        abort_unless($user->ownsShop((int) $sale->shop_id), 403, 'You do not have access to this shop.');
+        $shops = Shop::forUser($user)->get();
+        $products = Product::with('shop')->whereIn('shop_id', $user->accessibleShopIds())->get();
         return view('sale::edit', compact('sale', 'shops', 'products'));
     }
 
@@ -306,7 +324,12 @@ class SaleController extends Controller
             'sale_date' => 'required|date',
         ]);
 
+        $user = auth()->user();
+        abort_unless($user->ownsShop((int) $validated['shop_id']), 403, 'You do not have access to this shop.');
+
         $sale = Sale::findOrFail($id);
+        abort_unless($user->ownsShop((int) $sale->shop_id), 403, 'You do not have access to this shop.');
+
         $product = Product::findOrFail($validated['product_id']);
 
         // Ensure selected product belongs to selected shop
@@ -364,6 +387,8 @@ class SaleController extends Controller
     public function destroy($id)
     {
         $sale = Sale::findOrFail($id);
+        abort_unless(auth()->user()->ownsShop((int) $sale->shop_id), 403, 'You do not have access to this shop.');
+
         $shopId = $sale->shop_id;
 
         DB::transaction(function () use ($sale) {
@@ -389,7 +414,10 @@ class SaleController extends Controller
      */
     public function productsByShop(Request $request)
     {
-        $products = Product::where('shop_id', $request->shop_id)
+        $shopId = (int) $request->shop_id;
+        abort_unless(auth()->user()->ownsShop($shopId), 403, 'You do not have access to this shop.');
+
+        $products = Product::where('shop_id', $shopId)
             ->select('id', 'shop_id', 'name', 'purchase_price', 'sale_price', 'stock_quantity')
             ->orderBy('name')
             ->get();

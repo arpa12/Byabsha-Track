@@ -16,8 +16,25 @@ class ReportController extends Controller
         $this->reportService = $reportService;
     }
 
+    private function authorizedFilters(Request $request, array $extra = []): array
+    {
+        $user = auth()->user();
+        $shopIds = $user->accessibleShopIds();
+
+        $shopId = $request->input('shop_id');
+        if ($shopId && !$user->ownsShop((int) $shopId)) {
+            abort(403, 'You do not have access to this shop.');
+        }
+
+        return array_merge([
+            'shop_id'  => $shopId,
+            'shop_ids' => $shopIds,
+        ], $extra);
+    }
+
     public function index(Request $request)
     {
+
         $filters = [
             'shop_id' => $request->input('shop_id'),
             'start_date' => $request->input('start_date', now()->subDays(6)->format('Y-m-d')),
@@ -52,53 +69,90 @@ class ReportController extends Controller
         ));
     }
 
+    public function printIndex(Request $request)
+    {
+        $filters = $this->authorizedFilters($request, [
+            'start_date' => $request->input('start_date', now()->subDays(6)->format('Y-m-d')),
+            'end_date'   => $request->input('end_date', now()->format('Y-m-d')),
+        ]);
+
+        $salesSummary = $this->reportService->getSalesSummary($filters);
+        $dailySales = $this->reportService->getDailySales($filters);
+        $dailyDates = collect($dailySales)
+            ->pluck('date')
+            ->map(fn ($date) => \Carbon\Carbon::parse($date)->format('Y-m-d'))
+            ->all();
+        $dailySalesDetails = $this->reportService->getSalesDetailsForDates($filters, $dailyDates);
+        $monthlyOverview = $this->reportService->getDailyProfitLoss([
+            'shop_id'  => $filters['shop_id'],
+            'shop_ids' => $filters['shop_ids'],
+            'month'    => now()->format('Y-m'),
+        ]);
+        $yearlyOverview = $this->reportService->getMonthlyProfitLoss([
+            'shop_id'  => $filters['shop_id'],
+            'shop_ids' => $filters['shop_ids'],
+            'year'     => now()->format('Y'),
+        ]);
+        $shops = $this->reportService->getShops($filters['shop_ids']);
+        $shopName = $filters['shop_id']
+            ? ($shops->firstWhere('id', $filters['shop_id'])->name ?? __('report.all_shops'))
+            : __('report.all_shops');
+
+        return view('report::print-index', compact(
+            'salesSummary',
+            'dailySales',
+            'dailySalesDetails',
+            'monthlyOverview',
+            'yearlyOverview',
+            'shops',
+            'filters',
+            'shopName'
+        ));
+    }
+
     public function sales(Request $request)
     {
-        $filters = [
-            'shop_id' => $request->input('shop_id'),
+        $filters = $this->authorizedFilters($request, [
             'start_date' => $request->input('start_date', now()->startOfMonth()->format('Y-m-d')),
-            'end_date' => $request->input('end_date', now()->format('Y-m-d')),
-        ];
+            'end_date'   => $request->input('end_date', now()->format('Y-m-d')),
+        ]);
 
         $sales = $this->reportService->getPaginatedSales($filters);
         $salesSummary = $this->reportService->getSalesSummary($filters);
-        $shops = $this->reportService->getShops();
+        $shops = $this->reportService->getShops($filters['shop_ids']);
 
         return view('report::sales', compact('sales', 'salesSummary', 'shops', 'filters'));
     }
 
     public function products(Request $request)
     {
-        $filters = [
-            'shop_id' => $request->input('shop_id'),
-        ];
+        $filters = $this->authorizedFilters($request);
 
         $products = $this->reportService->getProductReport($filters);
         $stockSummary = $this->reportService->getStockSummary($filters);
-        $shops = $this->reportService->getShops();
+        $shops = $this->reportService->getShops($filters['shop_ids']);
 
         return view('report::products', compact('products', 'stockSummary', 'shops', 'filters'));
     }
 
     public function shops(Request $request)
     {
-        $filters = [
+        $filters = $this->authorizedFilters($request, [
             'start_date' => $request->input('start_date', now()->startOfMonth()->format('Y-m-d')),
-            'end_date' => $request->input('end_date', now()->format('Y-m-d')),
-        ];
+            'end_date'   => $request->input('end_date', now()->format('Y-m-d')),
+        ]);
 
         $shopData = $this->reportService->getShopComparison($filters);
-        $shops = $this->reportService->getShops();
+        $shops = $this->reportService->getShops($filters['shop_ids']);
 
         return view('report::shops', compact('shopData', 'shops', 'filters'));
     }
 
     public function daily(Request $request)
     {
-        $filters = [
-            'shop_id' => $request->input('shop_id'),
+        $filters = $this->authorizedFilters($request, [
             'month' => $request->input('month', now()->format('Y-m')),
-        ];
+        ]);
 
         $dailyData = $this->reportService->getDailyProfitLoss($filters);
         $startDate = $filters['month'] . '-01';
@@ -106,17 +160,16 @@ class ReportController extends Controller
         $dailyDetailsByDate = $this->reportService
             ->getSalesDetailsByDateRange($filters, $startDate, $endDate)
             ->groupBy(fn ($sale) => $sale->sale_date->format('Y-m-d'));
-        $shops = $this->reportService->getShops();
+        $shops = $this->reportService->getShops($filters['shop_ids']);
 
         return view('report::daily', compact('dailyData', 'dailyDetailsByDate', 'shops', 'filters'));
     }
 
     public function monthly(Request $request)
     {
-        $filters = [
-            'shop_id' => $request->input('shop_id'),
+        $filters = $this->authorizedFilters($request, [
             'year' => $request->input('year', now()->format('Y')),
-        ];
+        ]);
 
         $monthlyData = $this->reportService->getMonthlyProfitLoss($filters);
         $startDate = $filters['year'] . '-01-01';
@@ -124,20 +177,19 @@ class ReportController extends Controller
         $monthlyDetailsByMonth = $this->reportService
             ->getSalesDetailsByDateRange($filters, $startDate, $endDate)
             ->groupBy(fn ($sale) => $sale->sale_date->format('n'));
-        $shops = $this->reportService->getShops();
+        $shops = $this->reportService->getShops($filters['shop_ids']);
 
         return view('report::monthly', compact('monthlyData', 'monthlyDetailsByMonth', 'shops', 'filters'));
     }
 
     public function exportDailyPdf(Request $request)
     {
-        $filters = [
-            'shop_id' => $request->input('shop_id'),
+        $filters = $this->authorizedFilters($request, [
             'month' => $request->input('month', now()->format('Y-m')),
-        ];
+        ]);
 
         $dailyData = $this->reportService->getDailyProfitLoss($filters);
-        $shops = $this->reportService->getShops();
+        $shops = $this->reportService->getShops($filters['shop_ids']);
         $shopName = $filters['shop_id']
             ? ($shops->firstWhere('id', $filters['shop_id'])->name ?? __('report.all_shops'))
             : __('report.all_shops');
@@ -152,13 +204,12 @@ class ReportController extends Controller
 
     public function exportMonthlyPdf(Request $request)
     {
-        $filters = [
-            'shop_id' => $request->input('shop_id'),
+        $filters = $this->authorizedFilters($request, [
             'year' => $request->input('year', now()->format('Y')),
-        ];
+        ]);
 
         $monthlyData = $this->reportService->getMonthlyProfitLoss($filters);
-        $shops = $this->reportService->getShops();
+        $shops = $this->reportService->getShops($filters['shop_ids']);
         $shopName = $filters['shop_id']
             ? ($shops->firstWhere('id', $filters['shop_id'])->name ?? __('report.all_shops'))
             : __('report.all_shops');
@@ -173,15 +224,14 @@ class ReportController extends Controller
 
     public function exportSalesPdf(Request $request)
     {
-        $filters = [
-            'shop_id' => $request->input('shop_id'),
+        $filters = $this->authorizedFilters($request, [
             'start_date' => $request->input('start_date', now()->startOfMonth()->format('Y-m-d')),
-            'end_date' => $request->input('end_date', now()->format('Y-m-d')),
-        ];
+            'end_date'   => $request->input('end_date', now()->format('Y-m-d')),
+        ]);
 
         $sales = $this->reportService->getPaginatedSales($filters, 1000);
         $salesSummary = $this->reportService->getSalesSummary($filters);
-        $shops = $this->reportService->getShops();
+        $shops = $this->reportService->getShops($filters['shop_ids']);
         $shopName = $filters['shop_id']
             ? ($shops->firstWhere('id', $filters['shop_id'])->name ?? __('report.all_shops'))
             : __('report.all_shops');
@@ -196,13 +246,11 @@ class ReportController extends Controller
 
     public function exportProductsPdf(Request $request)
     {
-        $filters = [
-            'shop_id' => $request->input('shop_id'),
-        ];
+        $filters = $this->authorizedFilters($request);
 
         $products = $this->reportService->getProductReport($filters);
         $stockSummary = $this->reportService->getStockSummary($filters);
-        $shops = $this->reportService->getShops();
+        $shops = $this->reportService->getShops($filters['shop_ids']);
         $shopName = $filters['shop_id']
             ? ($shops->firstWhere('id', $filters['shop_id'])->name ?? __('report.all_shops'))
             : __('report.all_shops');
@@ -217,13 +265,13 @@ class ReportController extends Controller
 
     public function exportShopsPdf(Request $request)
     {
-        $filters = [
+        $filters = $this->authorizedFilters($request, [
             'start_date' => $request->input('start_date', now()->startOfMonth()->format('Y-m-d')),
-            'end_date' => $request->input('end_date', now()->format('Y-m-d')),
-        ];
+            'end_date'   => $request->input('end_date', now()->format('Y-m-d')),
+        ]);
 
         $shopData = $this->reportService->getShopComparison($filters);
-        $shops = $this->reportService->getShops();
+        $shops = $this->reportService->getShops($filters['shop_ids']);
 
         $pdf = Pdf::loadView('report::pdf.shops-pdf', compact('shopData', 'shops', 'filters'))
             ->setPaper('a4', 'landscape');

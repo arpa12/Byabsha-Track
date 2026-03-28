@@ -10,7 +10,8 @@ class ShopController extends Controller
 {
     public function index()
     {
-        $shops = Shop::withCount(['products', 'sales'])->latest()->get();
+        $user = auth()->user();
+        $shops = Shop::forUser($user)->withCount(['products', 'sales'])->latest()->get();
         return view('shop::index', compact('shops'));
     }
 
@@ -25,6 +26,8 @@ class ShopController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
+        $validated['user_id'] = auth()->id();
+
         Shop::create($validated);
 
         return redirect()->route('shop.index')
@@ -33,7 +36,8 @@ class ShopController extends Controller
 
     public function show($id)
     {
-        $shop = Shop::withCount(['products', 'sales'])
+        $user = auth()->user();
+        $shop = Shop::forUser($user)->withCount(['products', 'sales'])
             ->with(['products' => function($query) {
                 $query->latest()->take(10);
             }])
@@ -44,13 +48,15 @@ class ShopController extends Controller
 
     public function edit($id)
     {
-        $shop = Shop::findOrFail($id);
+        $user = auth()->user();
+        $shop = Shop::forUser($user)->findOrFail($id);
         return view('shop::edit', compact('shop'));
     }
 
     public function update(Request $request, $id)
     {
-        $shop = Shop::findOrFail($id);
+        $user = auth()->user();
+        $shop = Shop::forUser($user)->findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -64,7 +70,8 @@ class ShopController extends Controller
 
     public function destroy($id)
     {
-        $shop = Shop::findOrFail($id);
+        $user = auth()->user();
+        $shop = Shop::forUser($user)->findOrFail($id);
         $shop->delete();
 
         return redirect()->route('shop.index')

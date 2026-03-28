@@ -25,11 +25,19 @@ class ProductController extends Controller
     }
     public function index(Request $request)
     {
-        $shops = Shop::query()
+        $user = auth()->user();
+        $allowedShopIds = $user->accessibleShopIds();
+
+        $shops = Shop::forUser($user)
             ->withCount('products')
             ->orderBy('name')
             ->get(['id', 'name']);
         $selectedShopId = $request->filled('shop_id') ? $request->integer('shop_id') : null;
+
+        // Prevent accessing a shop the user doesn't own
+        if ($selectedShopId && !in_array($selectedShopId, $allowedShopIds)) {
+            abort(403, 'You do not have access to this shop.');
+        }
         $selectedCategoryId = $request->filled('category_id') ? $request->integer('category_id') : null;
         $searchTerm = trim((string) $request->input('search', ''));
         $supportsModelName = Schema::hasColumn('products', 'model_name');
@@ -161,9 +169,10 @@ class ProductController extends Controller
 
     public function create(Request $request)
     {
-        $shops = Shop::all();
-        $categories = Category::orderBy('name')->get();
-        $brands = Brand::orderBy('name')->get();
+        $user = auth()->user();
+        $shops = Shop::forUser($user)->get();
+        $categories = Category::forUser($user)->orderBy('name')->get();
+        $brands = Brand::forUser($user)->orderBy('name')->get();
         $selectedShopId = $request->integer('shop_id');
         $dynamicFieldsByCategory = $this->getDynamicFieldsByCategory();
         $dynamicFieldValues = old('custom_fields', []);
@@ -180,6 +189,9 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        $user = auth()->user();
+        abort_unless($user->ownsShop((int) $request->input('shop_id')), 403, 'You do not have access to this shop.');
+
         $supportsModelName = Schema::hasColumn('products', 'model_name');
 
         $validated = $request->validate([
@@ -226,15 +238,18 @@ class ProductController extends Controller
     public function show($id)
     {
         $product = Product::with(['shop', 'productCategory', 'dynamicValues.dynamicField'])->findOrFail($id);
+        abort_unless(auth()->user()->ownsShop((int) $product->shop_id), 403, 'You do not have access to this shop.');
         return view('product::show', compact('product'));
     }
 
     public function edit($id)
     {
+        $user = auth()->user();
         $product = Product::with('productCategory')->findOrFail($id);
-        $shops = Shop::all();
-        $categories = Category::orderBy('name')->get();
-        $brands = Brand::orderBy('name')->get();
+        abort_unless($user->ownsShop((int) $product->shop_id), 403, 'You do not have access to this shop.');
+        $shops = Shop::forUser($user)->get();
+        $categories = Category::forUser($user)->orderBy('name')->get();
+        $brands = Brand::forUser($user)->orderBy('name')->get();
         $dynamicFieldsByCategory = $this->getDynamicFieldsByCategory();
         $dynamicFieldValues = old(
             'custom_fields',
@@ -253,7 +268,11 @@ class ProductController extends Controller
 
     public function update(Request $request, $id)
     {
+        $user = auth()->user();
         $product = Product::findOrFail($id);
+        abort_unless($user->ownsShop((int) $product->shop_id), 403, 'You do not have access to this shop.');
+        abort_unless($user->ownsShop((int) $request->input('shop_id')), 403, 'You do not have access to this shop.');
+
         $supportsModelName = Schema::hasColumn('products', 'model_name');
 
         $validated = $request->validate([
@@ -308,6 +327,7 @@ class ProductController extends Controller
     public function destroy($id)
     {
         $product = Product::findOrFail($id);
+        abort_unless(auth()->user()->ownsShop((int) $product->shop_id), 403, 'You do not have access to this shop.');
         $shopId = $product->shop_id;
         $product->delete();
 

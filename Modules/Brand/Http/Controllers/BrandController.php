@@ -11,7 +11,7 @@ class BrandController extends Controller
 {
     public function index()
     {
-        $brands = Brand::withCount('products')->latest()->paginate(15);
+        $brands = Brand::forUser(auth()->user())->withCount('products')->latest()->paginate(15);
 
         return view('brand::index', compact('brands'));
     }
@@ -23,9 +23,18 @@ class BrandController extends Controller
 
     public function store(Request $request)
     {
+        $user = auth()->user();
+
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:brands,name',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('brands', 'name')->where('user_id', $user->isSuperAdmin() ? null : $user->id),
+            ],
         ]);
+
+        $validated['user_id'] = $user->id;
 
         Brand::create($validated);
 
@@ -35,28 +44,29 @@ class BrandController extends Controller
 
     public function show($id)
     {
-        $brand = Brand::withCount('products')->findOrFail($id);
+        $brand = Brand::forUser(auth()->user())->withCount('products')->findOrFail($id);
 
         return view('brand::show', compact('brand'));
     }
 
     public function edit($id)
     {
-        $brand = Brand::findOrFail($id);
+        $brand = Brand::forUser(auth()->user())->findOrFail($id);
 
         return view('brand::edit', compact('brand'));
     }
 
     public function update(Request $request, $id)
     {
-        $brand = Brand::findOrFail($id);
+        $user = auth()->user();
+        $brand = Brand::forUser($user)->findOrFail($id);
 
         $validated = $request->validate([
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('brands', 'name')->ignore($brand->id),
+                Rule::unique('brands', 'name')->ignore($brand->id)->where('user_id', $user->isSuperAdmin() ? null : $user->id),
             ],
         ]);
 
@@ -68,7 +78,7 @@ class BrandController extends Controller
 
     public function destroy($id)
     {
-        $brand = Brand::findOrFail($id);
+        $brand = Brand::forUser(auth()->user())->findOrFail($id);
 
         if ($brand->products()->exists()) {
             return redirect()->route('brand.index')

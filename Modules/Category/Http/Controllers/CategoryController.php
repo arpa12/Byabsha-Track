@@ -11,7 +11,7 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::withCount('products')->latest()->paginate(15);
+        $categories = Category::forUser(auth()->user())->withCount('products')->latest()->paginate(15);
 
         return view('category::index', compact('categories'));
     }
@@ -23,9 +23,18 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
+        $user = auth()->user();
+
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('categories', 'name')->where('user_id', $user->isSuperAdmin() ? null : $user->id),
+            ],
         ]);
+
+        $validated['user_id'] = $user->id;
 
         Category::create($validated);
 
@@ -35,28 +44,29 @@ class CategoryController extends Controller
 
     public function show($id)
     {
-        $category = Category::withCount('products')->findOrFail($id);
+        $category = Category::forUser(auth()->user())->withCount('products')->findOrFail($id);
 
         return view('category::show', compact('category'));
     }
 
     public function edit($id)
     {
-        $category = Category::findOrFail($id);
+        $category = Category::forUser(auth()->user())->findOrFail($id);
 
         return view('category::edit', compact('category'));
     }
 
     public function update(Request $request, $id)
     {
-        $category = Category::findOrFail($id);
+        $user = auth()->user();
+        $category = Category::forUser($user)->findOrFail($id);
 
         $validated = $request->validate([
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('categories', 'name')->ignore($category->id),
+                Rule::unique('categories', 'name')->ignore($category->id)->where('user_id', $user->isSuperAdmin() ? null : $user->id),
             ],
         ]);
 
@@ -68,7 +78,7 @@ class CategoryController extends Controller
 
     public function destroy($id)
     {
-        $category = Category::findOrFail($id);
+        $category = Category::forUser(auth()->user())->findOrFail($id);
 
         if ($category->products()->exists()) {
             return redirect()->route('category.index')

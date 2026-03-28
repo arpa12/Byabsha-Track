@@ -24,6 +24,11 @@ class RestockService
             'shop' => fn ($query) => $query->withTrashed(),
         ])->latest('restock_date');
 
+        // Always scope to allowed shop IDs when provided
+        if (!empty($filters['shop_ids'])) {
+            $query->whereIn('shop_id', $filters['shop_ids']);
+        }
+
         if (!empty($filters['shop_id'])) {
             $query->where('shop_id', $filters['shop_id']);
         }

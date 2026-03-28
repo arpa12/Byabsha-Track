@@ -4,6 +4,8 @@ namespace Modules\Dashboard\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Modules\Dashboard\Services\DashboardService;
+use Modules\Capital\Models\Capital;
+use Modules\Sale\Models\Sale;
 
 class DashboardController extends Controller
 {
@@ -19,8 +21,9 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        $shopMetrics = $this->dashboardService->getShopMetrics();
-        $overallMetrics = $this->dashboardService->getOverallMetrics();
+        $user = auth()->user();
+        $shopMetrics = $this->dashboardService->getShopMetrics($user);
+        $overallMetrics = $this->dashboardService->getOverallMetrics($user);
 
         return view('dashboard::index', compact('shopMetrics', 'overallMetrics'));
     }
@@ -30,15 +33,18 @@ class DashboardController extends Controller
      */
     public function shopDetails($shopId)
     {
+        $user = auth()->user();
+        abort_unless($user->ownsShop((int) $shopId), 403, 'You do not have access to this shop.');
+
         $shop = \Modules\Shop\Models\Shop::with(['products', 'sales'])->findOrFail($shopId);
-        $capital = \Modules\Capital\Models\Capital::where('shop_id', $shopId)->first();
-        $todaySales = \Modules\Sale\Models\Sale::where('shop_id', $shopId)
+        $capital = Capital::where('shop_id', $shopId)->first();
+        $todaySales = Sale::where('shop_id', $shopId)
             ->whereDate('sale_date', today())
             ->sum('total_amount');
-        $todayProfit = \Modules\Sale\Models\Sale::where('shop_id', $shopId)
+        $todayProfit = Sale::where('shop_id', $shopId)
             ->whereDate('sale_date', today())
             ->sum('profit');
-        $monthlyProfit = \Modules\Sale\Models\Sale::where('shop_id', $shopId)
+        $monthlyProfit = Sale::where('shop_id', $shopId)
             ->whereYear('sale_date', now()->year)
             ->whereMonth('sale_date', now()->month)
             ->sum('profit');

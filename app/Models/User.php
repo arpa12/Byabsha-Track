@@ -151,4 +151,37 @@ class User extends Authenticatable
     {
         return $this->notifications()->unread()->count();
     }
+
+    /**
+     * Get all shops owned by this user.
+     */
+    public function shops()
+    {
+        return $this->hasMany(\Modules\Shop\Models\Shop::class, 'user_id');
+    }
+
+    /**
+     * Check if user owns a specific shop (superadmin always passes).
+     */
+    public function ownsShop(int $shopId): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        return $this->shops()->whereKey($shopId)->exists();
+    }
+
+    /**
+     * Return an array of shop IDs this user is allowed to access.
+     * Superadmin gets all shop IDs via a DB query; owners get only their own.
+     */
+    public function accessibleShopIds(): array
+    {
+        if ($this->isSuperAdmin()) {
+            return \Modules\Shop\Models\Shop::pluck('id')->all();
+        }
+
+        return $this->shops()->pluck('id')->all();
+    }
 }

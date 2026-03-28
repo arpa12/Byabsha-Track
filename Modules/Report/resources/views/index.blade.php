@@ -238,9 +238,9 @@
             <h1 class="page-title"><i class="bi bi-grid-1x2-fill me-1"></i>{{ __('report.title') }}</h1>
             <p class="page-subtitle">{{ __('report.compact_subtitle') }}</p>
         </div>
-        <button onclick="window.print()" class="btn btn-outline-secondary">
-                <i class="bi bi-printer"></i> {{ __('report.print') }}
-        </button>
+        <a href="{{ route('report.print.index', request()->query()) }}" target="_blank" class="btn btn-outline-secondary">
+            <i class="bi bi-printer"></i> {{ __('report.print') }}
+        </a>
     </div>
 
     <div class="panel mb-3">

@@ -20,23 +20,38 @@ class RestockController extends Controller
 
     public function index(Request $request)
     {
+        $user = auth()->user();
+        $allowedShopIds = $user->accessibleShopIds();
+
         $filters = $request->only(['shop_id', 'date_from', 'date_to']);
+
+        // Prevent filtering by a shop the user doesn't own
+        if (!empty($filters['shop_id']) && !in_array((int) $filters['shop_id'], $allowedShopIds)) {
+            abort(403, 'You do not have access to this shop.');
+        }
+
+        // Inject allowed shop IDs so the service always scopes correctly
+        $filters['shop_ids'] = $allowedShopIds;
+
         $restocks = $this->restockService->getRestocks($filters);
-        $shops = Shop::all();
+        $shops = Shop::forUser($user)->get();
 
         return view('restock::index', compact('restocks', 'shops', 'filters'));
     }
 
     public function create()
     {
-        $shops = Shop::all();
-        $products = Product::with('shop')->get();
+        $user = auth()->user();
+        $shops = Shop::forUser($user)->get();
+        $products = Product::with('shop')->whereIn('shop_id', $user->accessibleShopIds())->get();
 
         return view('restock::create', compact('shops', 'products'));
     }
 
     public function store(Request $request)
     {
+        $user = auth()->user();
+
         $validated = $request->validate([
             'shop_id' => 'required|exists:shops,id',
             'product_id' => 'required|exists:products,id',
@@ -45,6 +60,8 @@ class RestockController extends Controller
             'restock_date' => 'required|date',
             'note' => 'nullable|string|max:1000',
         ]);
+
+        abort_unless($user->ownsShop((int) $validated['shop_id']), 403, 'You do not have access to this shop.');
 
         // Ensure product belongs to the selected shop
         $product = Product::where('id', $validated['product_id'])
@@ -67,9 +84,11 @@ class RestockController extends Controller
      */
     public function edit($id)
     {
+        $user = auth()->user();
         $restock = $this->restockService->getRestock($id);
-        $shops = Shop::all();
-        $products = Product::with('shop')->get();
+        abort_unless($user->ownsShop((int) $restock->shop_id), 403, 'You do not have access to this shop.');
+        $shops = Shop::forUser($user)->get();
+        $products = Product::with('shop')->whereIn('shop_id', $user->accessibleShopIds())->get();
 
         return view('restock::edit', compact('restock', 'shops', 'products'));
     }
@@ -79,6 +98,8 @@ class RestockController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $user = auth()->user();
+
         $validated = $request->validate([
             'shop_id' => 'required|exists:shops,id',
             'product_id' => 'required|exists:products,id',
@@ -87,6 +108,8 @@ class RestockController extends Controller
             'restock_date' => 'required|date',
             'note' => 'nullable|string|max:1000',
         ]);
+
+        abort_unless($user->ownsShop((int) $validated['shop_id']), 403, 'You do not have access to this shop.');
 
         // Ensure product belongs to the selected shop
         $product = Product::where('id', $validated['product_id'])
@@ -109,6 +132,10 @@ class RestockController extends Controller
      */
     public function destroy($id)
     {
+        $user = auth()->user();
+        $restock = $this->restockService->getRestock($id);
+        abort_unless($user->ownsShop((int) $restock->shop_id), 403, 'You do not have access to this shop.');
+
         Log::info('Destroy method called with ID: ' . $id);
         try {
             $this->restockService->deleteRestock($id);
@@ -126,7 +153,11 @@ class RestockController extends Controller
      */
     public function productsByShop(Request $request)
     {
-        $products = Product::where('shop_id', $request->shop_id)
+        $user = auth()->user();
+        $shopId = (int) $request->shop_id;
+        abort_unless($user->ownsShop($shopId), 403, 'You do not have access to this shop.');
+
+        $products = Product::where('shop_id', $shopId)
             ->select('id', 'name', 'purchase_price', 'stock_quantity')
             ->orderBy('name')
             ->get();

@@ -2,6 +2,7 @@
 
 namespace Modules\Dashboard\Services;
 
+use App\Models\User;
 use Modules\Shop\Models\Shop;
 use Modules\Product\Models\Product;
 use Modules\Sale\Models\Sale;
@@ -17,9 +18,10 @@ class DashboardService
     {
         $this->capitalService = $capitalService;
     }
-    public function getShopMetrics()
+
+    public function getShopMetrics(User $user)
     {
-        $shops = Shop::all();
+        $shops = Shop::forUser($user)->get();
         $metrics = [];
 
         foreach ($shops as $shop) {
@@ -59,10 +61,8 @@ class DashboardService
 
     public function getTotalCapital($shopId)
     {
-        // Check if capital record exists
         $capital = Capital::where('shop_id', $shopId)->first();
 
-        // If not exists, calculate and create it
         if (!$capital) {
             $this->capitalService->updateShopCapital($shopId);
             $capital = Capital::where('shop_id', $shopId)->first();
@@ -71,15 +71,17 @@ class DashboardService
         return $capital ? $capital->total_capital : 0;
     }
 
-    public function getOverallMetrics()
+    public function getOverallMetrics(User $user)
     {
+        $shopIds = $user->accessibleShopIds();
+
         return [
-            'total_shops' => Shop::count(),
-            'total_products' => Product::count(),
-            'total_sales_today' => Sale::whereDate('sale_date', today())->count(),
-            'total_revenue_today' => Sale::whereDate('sale_date', today())->sum('total_amount'),
-            'total_profit_today' => Sale::whereDate('sale_date', today())->sum('profit'),
-            'low_stock_count' => Product::where('stock_quantity', '<=', 5)->count(),
+            'total_shops' => count($shopIds),
+            'total_products' => Product::whereIn('shop_id', $shopIds)->count(),
+            'total_sales_today' => Sale::whereIn('shop_id', $shopIds)->whereDate('sale_date', today())->count(),
+            'total_revenue_today' => Sale::whereIn('shop_id', $shopIds)->whereDate('sale_date', today())->sum('total_amount'),
+            'total_profit_today' => Sale::whereIn('shop_id', $shopIds)->whereDate('sale_date', today())->sum('profit'),
+            'low_stock_count' => Product::whereIn('shop_id', $shopIds)->where('stock_quantity', '<=', 5)->count(),
         ];
     }
 }

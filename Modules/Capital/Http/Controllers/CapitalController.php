@@ -17,14 +17,18 @@ class CapitalController extends Controller
 
     public function index()
     {
-        $capitals = $this->capitalService->getAllShopCapitals();
+        $user = auth()->user();
+        $shopIds = $user->accessibleShopIds();
+        $capitals = $this->capitalService->getAllShopCapitals($shopIds);
 
         return view('capital::index', compact('capitals'));
     }
 
     public function updateAll()
     {
-        $this->capitalService->updateAllShopsCapital();
+        $user = auth()->user();
+        $shopIds = $user->accessibleShopIds();
+        $this->capitalService->updateAllShopsCapital($shopIds);
 
         return redirect()->route('capital.index')
             ->with('success', 'All shop capitals updated successfully!');
@@ -32,6 +36,9 @@ class CapitalController extends Controller
 
     public function updateShop($shopId)
     {
+        $user = auth()->user();
+        abort_unless($user->ownsShop((int) $shopId), 403, 'You do not have access to this shop.');
+
         $totalCapital = $this->capitalService->updateShopCapital($shopId);
 
         return redirect()->route('capital.index')

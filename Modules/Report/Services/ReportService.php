@@ -13,6 +13,10 @@ class ReportService
     {
         $query = Sale::with(['shop', 'product']);
 
+        if (!empty($filters['shop_ids'])) {
+            $query->whereIn('shop_id', $filters['shop_ids']);
+        }
+
         if (!empty($filters['shop_id'])) {
             $query->where('shop_id', $filters['shop_id']);
         }
@@ -39,6 +43,10 @@ class ReportService
     public function getSalesSummary($filters = [])
     {
         $query = DB::table('sales');
+
+        if (!empty($filters['shop_ids'])) {
+            $query->whereIn('shop_id', $filters['shop_ids']);
+        }
 
         if (!empty($filters['shop_id'])) {
             $query->where('shop_id', $filters['shop_id']);
@@ -77,6 +85,10 @@ class ReportService
                 DB::raw('SUM(sales.profit) as total_profit')
             )
             ->groupBy('shops.id', 'shops.name');
+
+        if (!empty($filters['shop_ids'])) {
+            $query->whereIn('sales.shop_id', $filters['shop_ids']);
+        }
 
         if (!empty($filters['start_date'])) {
             $query->whereDate('sales.sale_date', '>=', $filters['start_date']);
@@ -123,6 +135,10 @@ class ReportService
     {
         $query = Product::with('shop');
 
+        if (!empty($filters['shop_ids'])) {
+            $query->whereIn('shop_id', $filters['shop_ids']);
+        }
+
         if (!empty($filters['shop_id'])) {
             $query->where('shop_id', $filters['shop_id']);
         }
@@ -157,9 +173,13 @@ class ReportService
         ];
     }
 
-    public function getShops()
+    public function getShops(array $shopIds = [])
     {
-        return Shop::all();
+        $query = Shop::query();
+        if (!empty($shopIds)) {
+            $query->whereIn('id', $shopIds);
+        }
+        return $query->get();
     }
 
     /**
@@ -168,6 +188,10 @@ class ReportService
     public function getPaginatedSales($filters = [], $perPage = 25)
     {
         $query = Sale::with(['shop', 'product']);
+
+        if (!empty($filters['shop_ids'])) {
+            $query->whereIn('shop_id', $filters['shop_ids']);
+        }
 
         if (!empty($filters['shop_id'])) {
             $query->where('shop_id', $filters['shop_id']);
@@ -198,6 +222,10 @@ class ReportService
             )
             ->groupBy('products.id');
 
+        if (!empty($filters['shop_ids'])) {
+            $query->whereIn('products.shop_id', $filters['shop_ids']);
+        }
+
         if (!empty($filters['shop_id'])) {
             $query->where('products.shop_id', $filters['shop_id']);
         }
@@ -210,7 +238,12 @@ class ReportService
      */
     public function getShopComparison($filters = [])
     {
-        $shops = Shop::withCount('products')->get();
+        $shopIdsFilter = $filters['shop_ids'] ?? [];
+        $query = Shop::withCount('products');
+        if (!empty($shopIdsFilter)) {
+            $query->whereIn('id', $shopIdsFilter);
+        }
+        $shops = $query->get();
 
         $result = [];
 
@@ -266,6 +299,10 @@ class ReportService
             ->groupBy(DB::raw('DATE(sale_date)'))
             ->orderBy('date', 'desc');
 
+        if (!empty($filters['shop_ids'])) {
+            $query->whereIn('shop_id', $filters['shop_ids']);
+        }
+
         if (!empty($filters['shop_id'])) {
             $query->where('shop_id', $filters['shop_id']);
         }
@@ -295,6 +332,10 @@ class ReportService
             ->orderBy('sale_date', 'desc')
             ->orderBy('id', 'desc');
 
+        if (!empty($filters['shop_ids'])) {
+            $query->whereIn('shop_id', $filters['shop_ids']);
+        }
+
         if (!empty($filters['shop_id'])) {
             $query->where('shop_id', $filters['shop_id']);
         }
@@ -322,6 +363,10 @@ class ReportService
             ->whereDate('sale_date', '<=', $endDate)
             ->orderBy('sale_date', 'desc')
             ->orderBy('id', 'desc');
+
+        if (!empty($filters['shop_ids'])) {
+            $query->whereIn('shop_id', $filters['shop_ids']);
+        }
 
         if (!empty($filters['shop_id'])) {
             $query->where('shop_id', $filters['shop_id']);
@@ -363,14 +408,19 @@ class ReportService
         };
 
         $shopId = $filters['shop_id'] ?? null;
+        $shopIdsFilter = $filters['shop_ids'] ?? [];
 
         // Main (all or single shop) daily rows
-        $dailyRows = $buildQuery($shopId);
+        $dailyRows = $buildQuery($shopId, $shopIdsFilter);
 
         // Per-shop breakdown when "All Shops"
         $shopBreakdown = collect();
         if (empty($shopId)) {
-            $shops = Shop::all();
+            $shopQuery = Shop::query();
+            if (!empty($shopIdsFilter)) {
+                $shopQuery->whereIn('id', $shopIdsFilter);
+            }
+            $shops = $shopQuery->get();
             foreach ($shops as $shop) {
                 $rows = $buildQuery($shop->id);
                 if ($rows->isNotEmpty()) {
@@ -432,8 +482,9 @@ class ReportService
         };
 
         $shopId = $filters['shop_id'] ?? null;
+        $shopIdsFilter = $filters['shop_ids'] ?? [];
 
-        $monthlyRows = $buildQuery($shopId);
+        $monthlyRows = $buildQuery($shopId, $shopIdsFilter);
 
         // Add profit margin to each row
         $monthlyRows = $monthlyRows->map(function ($row) {
@@ -446,7 +497,11 @@ class ReportService
         // Per-shop breakdown when "All Shops"
         $shopBreakdown = collect();
         if (empty($shopId)) {
-            $shops = Shop::all();
+            $shopQuery = Shop::query();
+            if (!empty($shopIdsFilter)) {
+                $shopQuery->whereIn('id', $shopIdsFilter);
+            }
+            $shops = $shopQuery->get();
             foreach ($shops as $shop) {
                 $rows = $buildQuery($shop->id);
                 if ($rows->isNotEmpty()) {

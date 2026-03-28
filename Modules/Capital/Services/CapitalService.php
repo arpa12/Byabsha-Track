@@ -26,9 +26,13 @@ class CapitalService
         return $totalCapital;
     }
 
-    public function updateAllShopsCapital()
+    public function updateAllShopsCapital(array $shopIds = [])
     {
-        $shops = Shop::all();
+        $query = Shop::query();
+        if (!empty($shopIds)) {
+            $query->whereIn('id', $shopIds);
+        }
+        $shops = $query->get();
         $results = [];
         foreach ($shops as $shop) {
             $results[$shop->id] = $this->updateShopCapital($shop->id);
@@ -36,11 +40,13 @@ class CapitalService
         return $results;
     }
 
-    public function getAllShopCapitals()
+    public function getAllShopCapitals(array $shopIds = [])
     {
-        return Capital::with(['shop', 'shop.products'])
-            ->whereHas('shop')
-            ->get();
+        $query = Capital::with(['shop', 'shop.products'])->whereHas('shop');
+        if (!empty($shopIds)) {
+            $query->whereIn('shop_id', $shopIds);
+        }
+        return $query->get();
     }
 
     public function getShopCapital($shopId)
