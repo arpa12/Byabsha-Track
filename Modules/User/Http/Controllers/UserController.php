@@ -16,6 +16,7 @@ class UserController extends Controller
         return [
             'dashboard' => __('app.dashboard'),
             'shop' => __('app.shops'),
+            'branch' => __('app.branches'),
             'brand' => __('app.brands'),
             'category' => __('app.categories'),
             'product' => __('app.products'),

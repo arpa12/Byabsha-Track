@@ -9,8 +9,11 @@ return [
 
     // Table columns
     'col_name'         => 'দোকানের নাম',
+    'col_location'     => 'অবস্থান',
+    'col_address'      => 'ঠিকানা',
     'col_products'     => 'পণ্য',
     'col_sales'        => 'বিক্রয়',
+    'col_branches'     => 'শাখা',
     'col_created'      => 'তৈরির তারিখ',
     'col_actions'      => 'কার্যক্রম',
     'table_name'       => 'দোকানের নাম',
@@ -26,6 +29,14 @@ return [
     // Badges
     'products_badge'   => 'পণ্য',
     'sales_badge'      => 'বিক্রয়',
+    'branches_badge'   => 'শাখা',
+
+    'branches'         => 'শাখাসমূহ',
+    'branches_count'   => 'শাখা',
+    'manage_branches'  => 'শাখা পরিচালনা',
+    'add_branch'       => 'শাখা যোগ করুন',
+    'no_branches'      => 'এই দোকানে কোনো শাখা পাওয়া যায়নি।',
+    'no_branches_sub'  => 'প্রতিটি অবস্থান আলাদাভাবে সাজাতে শাখা তৈরি করুন।',
 
     // Create
     'create_title'     => 'নতুন দোকান তৈরি করুন',
@@ -70,6 +81,10 @@ return [
     'name'             => 'দোকানের নাম',
     'enter_shop_name'  => 'দোকানের নাম লিখুন',
     'name_placeholder' => 'দোকানের নাম লিখুন',
+    'location'         => 'অবস্থান',
+    'location_placeholder' => 'দোকানের অবস্থান লিখুন',
+    'address'          => 'ঠিকানা',
+    'address_placeholder' => 'দোকানের ঠিকানা লিখুন',
 
     // Navigation
     'back'             => 'পেছনে',

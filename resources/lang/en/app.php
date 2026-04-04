@@ -17,6 +17,7 @@ return [
     // Layout - Sidebar links
     'dashboard'       => 'Dashboard',
     'shops'           => 'Shops',
+    'branches'        => 'Branches',
     'brands'          => 'Brands',
     'categories'      => 'Categories',
     'products'        => 'Products',

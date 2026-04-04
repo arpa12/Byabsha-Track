@@ -222,6 +222,12 @@
         padding: 0.48rem 0.88rem;
         font-size: 0.78rem;
         font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        white-space: nowrap;
+        text-decoration: none;
+        line-height: 1;
     }
 
     .btn-create-first:hover {
@@ -260,8 +266,11 @@
             <thead>
                 <tr>
                     <th>{{ __('shop.col_name') }}</th>
+                    <th>{{ __('shop.col_location') }}</th>
+                    <th>{{ __('shop.col_address') }}</th>
                     <th>{{ __('shop.col_products') }}</th>
                     <th>{{ __('shop.col_sales') }}</th>
+                    <th>{{ __('shop.col_branches') }}</th>
                     <th>{{ __('shop.col_created') }}</th>
                     <th>{{ __('shop.col_actions') }}</th>
                 </tr>
@@ -272,11 +281,20 @@
                     <td>
                         <strong class="shop-name">{{ $shop->name }}</strong>
                     </td>
+                    <td class="text-muted">
+                        {{ $shop->location ?: '-' }}
+                    </td>
+                    <td class="text-muted">
+                        {{ $shop->address ?: '-' }}
+                    </td>
                     <td>
                         <span class="shop-badge shop-badge-products">{{ $shop->products_count }} {{ __('shop.products_badge') }}</span>
                     </td>
                     <td>
                         <span class="shop-badge shop-badge-sales">{{ $shop->sales_count }} {{ __('shop.sales_badge') }}</span>
+                    </td>
+                    <td>
+                        <span class="shop-badge shop-badge-branches">{{ $shop->branches_count }} {{ __('shop.branches_badge') }}</span>
                     </td>
                     <td class="shop-date">
                         {{ $shop->created_at->format('M d, Y') }}
@@ -310,7 +328,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5">
+                    <td colspan="8">
                         <div class="empty-state">
                             <i class="bi bi-shop"></i>
                             <p class="mb-2">{{ __('shop.no_shops') }}</p>

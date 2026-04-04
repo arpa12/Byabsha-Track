@@ -12,5 +12,6 @@
     "Restock": true,
     "User": true,
     "Settings": true,
-    "Stock": true
+    "Stock": true,
+    "Branch": true
 }

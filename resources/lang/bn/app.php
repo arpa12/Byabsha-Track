@@ -17,6 +17,7 @@ return [
     // Layout - Sidebar links
     'dashboard'       => 'ড্যাশবোর্ড',
     'shops'           => 'দোকানসমূহ',
+    'branches'        => 'শাখাসমূহ',
     'brands'          => 'ব্র্যান্ডসমূহ',
     'categories'      => 'বিভাগসমূহ',
     'products'        => 'পণ্যসমূহ',

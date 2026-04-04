@@ -17,6 +17,7 @@ class User extends Authenticatable
     public const MODULE_ACCESS_KEYS = [
         'dashboard',
         'shop',
+        'branch',
         'brand',
         'category',
         'product',
@@ -115,6 +116,7 @@ class User extends Authenticatable
         $moduleRouteMap = [
             'dashboard' => 'dashboard.index',
             'shop' => 'shop.index',
+            'branch' => 'branch.index',
             'brand' => 'brand.index',
             'category' => 'category.index',
             'product' => 'product.index',

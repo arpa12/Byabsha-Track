@@ -670,6 +670,12 @@
                     <span>{{ __('app.shops') }}</span>
                 </a>
             @endif
+            @if($sidebarUser->hasModuleAccess('branch'))
+                <a href="{{ route('branch.index') }}" class="nav-link-custom {{ request()->routeIs('branch.*') ? 'active' : '' }}">
+                    <i class="bi bi-diagram-3"></i>
+                    <span>{{ __('app.branches') }}</span>
+                </a>
+            @endif
             @if($sidebarUser->hasModuleAccess('brand'))
                 <a href="{{ route('brand.index') }}" class="nav-link-custom {{ request()->routeIs('brand.*') ? 'active' : '' }}">
                     <i class="bi bi-bookmark-star"></i>

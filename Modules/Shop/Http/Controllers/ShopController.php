@@ -3,6 +3,7 @@
 namespace Modules\Shop\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Modules\Shop\Models\Shop;
 use Illuminate\Http\Request;
 
@@ -10,8 +11,8 @@ class ShopController extends Controller
 {
     public function index()
     {
-        $user = auth()->user();
-        $shops = Shop::forUser($user)->withCount(['products', 'sales'])->latest()->get();
+        $user = Auth::user();
+        $shops = Shop::forUser($user)->withCount(['products', 'sales', 'branches'])->latest()->get();
         return view('shop::index', compact('shops'));
     }
 
@@ -24,9 +25,11 @@ class ShopController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'location' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
         ]);
 
-        $validated['user_id'] = auth()->id();
+        $validated['user_id'] = Auth::id();
 
         Shop::create($validated);
 
@@ -36,10 +39,12 @@ class ShopController extends Controller
 
     public function show($id)
     {
-        $user = auth()->user();
-        $shop = Shop::forUser($user)->withCount(['products', 'sales'])
+        $user = Auth::user();
+        $shop = Shop::forUser($user)->withCount(['products', 'sales', 'branches'])
             ->with(['products' => function($query) {
                 $query->latest()->take(10);
+            }, 'branches' => function ($query) {
+                $query->latest()->take(5);
             }])
             ->findOrFail($id);
 
@@ -48,18 +53,20 @@ class ShopController extends Controller
 
     public function edit($id)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $shop = Shop::forUser($user)->findOrFail($id);
         return view('shop::edit', compact('shop'));
     }
 
     public function update(Request $request, $id)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $shop = Shop::forUser($user)->findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'location' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
         ]);
 
         $shop->update($validated);
@@ -70,7 +77,7 @@ class ShopController extends Controller
 
     public function destroy($id)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $shop = Shop::forUser($user)->findOrFail($id);
         $shop->delete();
 

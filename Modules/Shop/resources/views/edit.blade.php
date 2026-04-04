@@ -2,6 +2,31 @@
 
 @section('title', __('shop.edit_title'))
 
+@push('styles')
+<style>
+    .btn-shop-theme {
+        background: linear-gradient(140deg, #0f766e, #155e75);
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 0.66rem 1.2rem;
+        font-size: 0.86rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 14px 28px rgba(15, 118, 110, 0.28);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-shop-theme:hover {
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 18px 30px rgba(15, 118, 110, 0.32);
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="mb-4">
     <h1 class="page-title">{{ __('shop.edit_title') }}</h1>
@@ -38,11 +63,40 @@
                         @enderror
                     </div>
 
+                    <div class="mb-4">
+                        <label for="location" class="form-label fw-semibold">
+                            {{ __('shop.location') }}
+                        </label>
+                        <input type="text"
+                               class="form-control @error('location') is-invalid @enderror"
+                               id="location"
+                               name="location"
+                               value="{{ old('location', $shop->location) }}"
+                               placeholder="{{ __('shop.location_placeholder') }}">
+                        @error('location')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="address" class="form-label fw-semibold">
+                            {{ __('shop.address') }}
+                        </label>
+                        <textarea class="form-control @error('address') is-invalid @enderror"
+                                  id="address"
+                                  name="address"
+                                  rows="3"
+                                  placeholder="{{ __('shop.address_placeholder') }}">{{ old('address', $shop->address) }}</textarea>
+                        @error('address')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     <div class="d-flex justify-content-between mt-4 pt-3 border-top">
                         <a href="{{ route('shop.index') }}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> {{ __('shop.back_to_list') }}
                         </a>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-shop-theme">
                             <i class="bi bi-check-circle"></i> {{ __('shop.update_btn') }}
                         </button>
                     </div>

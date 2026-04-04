@@ -3,6 +3,7 @@
 namespace Modules\Shop\Models;
 
 use App\Models\User;
+use Modules\Branch\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +17,8 @@ class Shop extends Model
 
     protected $fillable = [
         'name',
+        'location',
+        'address',
         'user_id',
     ];
 
@@ -41,5 +44,10 @@ class Shop extends Model
     public function sales()
     {
         return $this->hasMany(Sale::class);
+    }
+
+    public function branches()
+    {
+        return $this->hasMany(Branch::class);
     }
 }
