@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Byabsha Track') - Business Tracking System</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="alternate icon" href="{{ asset('favicon.ico') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -662,6 +664,19 @@
                 <i class="bi bi-person-gear"></i>
                 <span>{{ __('user.profile_title') }}</span>
             </a>
+            @if(!$sidebarUser->isSuperAdmin())
+            <a href="{{ route('subscription.plans') }}" class="nav-link-custom {{ request()->routeIs('subscription.*') ? 'active' : '' }}">
+                <i class="bi bi-stars"></i>
+                <span>Subscription</span>
+                @php
+                    $activeSub = $sidebarUser->activeSubscription();
+                    $subPlan = $activeSub?->plan;
+                @endphp
+                @if($subPlan && !$subPlan->isFree())
+                    <span class="ms-auto badge" style="background: rgba(255,255,255,0.22); font-size: 0.65rem; border-radius: 999px; letter-spacing: 0.03em;">{{ $subPlan->name }}</span>
+                @endif
+            </a>
+            @endif
 
             <div class="nav-section-title">{{ __('app.management') }}</div>
             @if($sidebarUser->hasModuleAccess('shop'))
@@ -735,7 +750,7 @@
                     || request()->routeIs('user.destroy')
                     || request()->routeIs('user.restore')
                     || request()->routeIs('user.force-delete');
-                $isSettingsMenuOpen = request()->routeIs('settings.*') || $isUserManagementRoute;
+                $isSettingsMenuOpen = request()->routeIs('settings.*') || $isUserManagementRoute || request()->routeIs('admin.subscriptions.*');
             @endphp
 
             <!-- Settings Submenu -->
@@ -764,6 +779,14 @@
                     <a href="{{ route('user.index') }}" class="nav-link-custom {{ $isUserManagementRoute ? 'active' : '' }}">
                         <i class="bi bi-people"></i>
                         <span>{{ __('app.users') }}</span>
+                    </a>
+                    <a href="{{ route('admin.subscriptions.index') }}" class="nav-link-custom {{ request()->routeIs('admin.subscriptions.*') ? 'active' : '' }}">
+                        <i class="bi bi-credit-card-2-front"></i>
+                        <span>Subscriptions</span>
+                        @php $pendingSubCount = \Modules\Subscription\Models\PaymentRequest::where('status','pending')->count(); @endphp
+                        @if($pendingSubCount > 0)
+                            <span class="ms-auto badge bg-warning text-dark" style="font-size: 0.65rem; border-radius: 999px;">{{ $pendingSubCount }}</span>
+                        @endif
                     </a>
                 </div>
             </div>

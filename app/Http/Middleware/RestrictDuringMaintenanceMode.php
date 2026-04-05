@@ -29,7 +29,7 @@ class RestrictDuringMaintenanceMode
             return $next($request);
         }
 
-        if (!in_array($user->role, ['owner', 'user'], true)) {
+        if (!in_array($user->role, ['owner', 'manager'], true)) {
             return $next($request);
         }
 

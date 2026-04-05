@@ -214,15 +214,53 @@
 
         <div class="mb-3">
             <label for="role" class="form-label">{{ __('user.role') }} <span class="text-danger">*</span></label>
-            <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required>
+            <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required onchange="toggleEditManagerFields()">
                 <option value="">{{ __('user.select_role') }}</option>
                 <option value="owner" {{ old('role', $user->role) === 'owner' ? 'selected' : '' }}>{{ __('user.role_owner') }}</option>
+                <option value="manager" {{ old('role', $user->role) === 'manager' ? 'selected' : '' }}>{{ __('user.role_manager') }}</option>
                 <option value="superadmin" {{ old('role', $user->role) === 'superadmin' ? 'selected' : '' }}>{{ __('user.role_superadmin') }}</option>
             </select>
             @error('role')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
             <small class="helper-text">{{ __('user.role_description') }}</small>
+        </div>
+
+        {{-- Manager-specific fields: shop & branch assignment --}}
+        @php $showManagerFields = in_array(old('role', $user->role), ['manager']); @endphp
+        <div id="editManagerFields" style="display:{{ $showManagerFields ? 'block' : 'none' }};">
+            <div class="mb-3">
+                <label for="shop_id" class="form-label">{{ __('user.assign_shop') }}</label>
+                <select class="form-select @error('shop_id') is-invalid @enderror" id="shop_id" name="shop_id" onchange="filterBranchesEdit()">
+                    <option value="">{{ __('user.select_shop') }}</option>
+                    @foreach($shops as $shop)
+                        <option value="{{ $shop->id }}" {{ old('shop_id', $user->shop_id) == $shop->id ? 'selected' : '' }}>
+                            {{ $shop->name }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('shop_id')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="mb-3">
+                <label for="branch_id" class="form-label">{{ __('user.assign_branch') }}</label>
+                <select class="form-select @error('branch_id') is-invalid @enderror" id="branch_id" name="branch_id">
+                    <option value="">{{ __('user.select_branch') }}</option>
+                    @foreach($branches as $branch)
+                        <option value="{{ $branch->id }}"
+                                data-shop-id="{{ $branch->shop_id }}"
+                                {{ old('branch_id', $user->branch_id) == $branch->id ? 'selected' : '' }}>
+                            {{ $branch->name }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('branch_id')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+                <small class="helper-text">{{ __('user.branch_shop_filter_hint') }}</small>
+            </div>
         </div>
 
         <div class="mb-3">
@@ -275,3 +313,34 @@
 </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    function toggleEditManagerFields() {
+        var role = document.getElementById('role').value;
+        document.getElementById('editManagerFields').style.display = role === 'manager' ? 'block' : 'none';
+        if (role === 'manager') {
+            filterBranchesEdit();
+        }
+    }
+
+    function filterBranchesEdit() {
+        var shopId = document.getElementById('shop_id').value;
+        var branchSelect = document.getElementById('branch_id');
+        var options = branchSelect.querySelectorAll('option[data-shop-id]');
+
+        options.forEach(function (opt) {
+            if (!shopId || opt.dataset.shopId === shopId) {
+                opt.style.display = '';
+            } else {
+                opt.style.display = 'none';
+                if (opt.selected) opt.selected = false;
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        filterBranchesEdit();
+    });
+</script>
+@endpush

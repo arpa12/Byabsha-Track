@@ -13,5 +13,6 @@
     "User": true,
     "Settings": true,
     "Stock": true,
-    "Branch": true
+    "Branch": true,
+    "Subscription": true
 }

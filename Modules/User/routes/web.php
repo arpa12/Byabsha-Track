@@ -19,6 +19,10 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('users')->name('user.')->
     Route::post('/{id}/deactivate', [UserController::class, 'deactivate'])->name('deactivate');
     Route::post('/{id}/activate', [UserController::class, 'activate'])->name('activate');
 
+    // Manager approval
+    Route::get('/{id}/approve', [UserController::class, 'approveForm'])->name('approve.form');
+    Route::post('/{id}/approve', [UserController::class, 'approve'])->name('approve');
+
     // Backward compatibility routes
     Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
     Route::post('/{id}/restore', [UserController::class, 'restore'])->name('restore');

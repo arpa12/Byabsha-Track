@@ -189,6 +189,12 @@
         border-color: rgba(15, 118, 110, 0.24);
     }
 
+    .badge-manager {
+        background: rgba(217, 119, 6, 0.12);
+        color: #d97706;
+        border-color: rgba(217, 119, 6, 0.26);
+    }
+
     .status-badge {
         display: inline-flex;
         align-items: center;
@@ -203,6 +209,12 @@
         background: rgba(16, 185, 129, 0.14);
         color: #047857;
         border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .status-pending {
+        background: rgba(245, 158, 11, 0.14);
+        color: #d97706;
+        border-color: rgba(245, 158, 11, 0.3);
     }
 
     .status-deactive {
@@ -335,22 +347,6 @@
     </a>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-
-@if($errors->any())
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @foreach($errors->all() as $error)
-            {{ $error }}<br>
-        @endforeach
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-
 <div class="content-card">
     <div class="table-responsive">
         <table class="table table-custom">
@@ -375,7 +371,7 @@
                         </td>
                         <td>{{ $user->email }}</td>
                         <td>
-                            <span class="role-badge {{ $user->role === 'superadmin' ? 'badge-superadmin' : 'badge-owner' }}">
+                            <span class="role-badge {{ $user->role === 'superadmin' ? 'badge-superadmin' : ($user->role === 'manager' ? 'badge-manager' : 'badge-owner') }}">
                                 {{ __('user.role_' . $user->role) }}
                             </span>
                         </td>
@@ -383,6 +379,8 @@
                         <td>
                             @if($user->trashed())
                                 <span class="status-badge status-deactive">{{ __('user.deactive') }}</span>
+                            @elseif($user->isPendingApproval())
+                                <span class="status-badge status-pending"><i class="bi bi-clock-history me-1"></i>{{ __('user.pending_approval') }}</span>
                             @else
                                 <span class="status-badge status-active">{{ __('user.active') }}</span>
                             @endif
@@ -398,6 +396,10 @@
                                         <i class="bi bi-arrow-counterclockwise"></i>
                                     </button>
                                 </form>
+                            @elseif($user->isPendingApproval())
+                                <a href="{{ route('user.approve.form', $user->id) }}" class="btn btn-sm btn-row-action" style="color:#d97706;border-color:rgba(217,119,6,.38);background:#fffbf5;" title="{{ __('user.approve_title') }}">
+                                    <i class="bi bi-person-check"></i>
+                                </a>
                             @else
                                 <a href="{{ route('user.edit', $user->id) }}" class="btn btn-sm btn-row-action btn-row-edit" title="{{ __('app.edit') }}">
                                     <i class="bi bi-pencil"></i>

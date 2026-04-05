@@ -39,6 +39,9 @@ class User extends Authenticatable
         'password',
         'role',
         'module_access',
+        'is_approved',
+        'shop_id',
+        'branch_id',
     ];
 
     /**
@@ -62,6 +65,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'module_access' => 'array',
+            'is_approved' => 'boolean',
+            'shop_id' => 'integer',
+            'branch_id' => 'integer',
         ];
     }
 
@@ -79,6 +85,22 @@ class User extends Authenticatable
     public function isOwner(): bool
     {
         return $this->role === 'owner';
+    }
+
+    /**
+     * Check if user is manager
+     */
+    public function isManager(): bool
+    {
+        return $this->role === 'manager';
+    }
+
+    /**
+     * Check if manager is pending admin approval (is_approved === false, not null).
+     */
+    public function isPendingApproval(): bool
+    {
+        return $this->isManager() && $this->is_approved === false;
     }
 
     public static function availableModuleAccessKeys(): array
@@ -155,11 +177,27 @@ class User extends Authenticatable
     }
 
     /**
-     * Get all shops owned by this user.
+     * Get all shops owned by this user (owner relationship).
      */
     public function shops()
     {
         return $this->hasMany(\Modules\Shop\Models\Shop::class, 'user_id');
+    }
+
+    /**
+     * Get the shop assigned to this manager.
+     */
+    public function assignedShop()
+    {
+        return $this->belongsTo(\Modules\Shop\Models\Shop::class, 'shop_id');
+    }
+
+    /**
+     * Get the branch assigned to this manager.
+     */
+    public function assignedBranch()
+    {
+        return $this->belongsTo(\Modules\Branch\Models\Branch::class, 'branch_id');
     }
 
     /**
@@ -171,12 +209,17 @@ class User extends Authenticatable
             return true;
         }
 
+        if ($this->isManager()) {
+            return (int) $this->shop_id === $shopId;
+        }
+
         return $this->shops()->whereKey($shopId)->exists();
     }
 
     /**
      * Return an array of shop IDs this user is allowed to access.
-     * Superadmin gets all shop IDs via a DB query; owners get only their own.
+     * Superadmin gets all shop IDs via a DB query; owners get only their own;
+     * managers get only their assigned shop.
      */
     public function accessibleShopIds(): array
     {
@@ -184,6 +227,102 @@ class User extends Authenticatable
             return \Modules\Shop\Models\Shop::pluck('id')->all();
         }
 
+        if ($this->isManager()) {
+            return $this->shop_id ? [(int) $this->shop_id] : [];
+        }
+
         return $this->shops()->pluck('id')->all();
+    }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(\Modules\Subscription\Models\Subscription::class);
+    }
+
+    public function activeSubscription(): ?\Modules\Subscription\Models\Subscription
+    {
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->where(function ($q) {
+                $q->whereNull('ends_at')->orWhere('ends_at', '>', now());
+            })
+            ->with('plan')
+            ->latest()
+            ->first();
+    }
+
+    public function currentPlan(): \Modules\Subscription\Models\SubscriptionPlan
+    {
+        return $this->activeSubscription()?->plan
+            ?? \Modules\Subscription\Models\SubscriptionPlan::freePlan()
+            ?? new \Modules\Subscription\Models\SubscriptionPlan([
+                'name'           => 'Free Trial',
+                'slug'           => 'free',
+                'price'          => 0,
+                'max_shops'      => 1,
+                'max_branches'   => 1,
+                'max_brands'     => 1,
+                'max_categories' => 5,
+                'max_sales'      => 100,
+                'has_capital'    => false,
+                'has_restock'    => false,
+                'has_reports'    => false,
+                'is_trial'       => true,
+                'trial_days'     => 30,
+            ]);
+    }
+
+    /** True while the user's free trial subscription is still active. */
+    public function onTrial(): bool
+    {
+        return $this->subscriptions()
+            ->whereHas('plan', fn($q) => $q->where('is_trial', true))
+            ->where('status', 'active')
+            ->where('ends_at', '>', now())
+            ->exists();
+    }
+
+    /** The date/time the user's trial ends, or null if no trial subscription exists. */
+    public function trialEndsAt(): ?\Illuminate\Support\Carbon
+    {
+        $trial = $this->subscriptions()
+            ->whereHas('plan', fn($q) => $q->where('is_trial', true))
+            ->latest()
+            ->first();
+
+        return $trial?->ends_at;
+    }
+
+    /**
+     * True when the free trial has expired and no active paid subscription exists.
+     * Superadmins are never considered expired.
+     */
+    public function isTrialExpired(): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return false;
+        }
+
+        $hasPaidSub = $this->subscriptions()
+            ->whereHas('plan', fn($q) => $q->where('is_trial', false)->where('price', '>', 0))
+            ->where('status', 'active')
+            ->where(fn($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))
+            ->exists();
+
+        if ($hasPaidSub) {
+            return false;
+        }
+
+        $trialSub = $this->subscriptions()
+            ->whereHas('plan', fn($q) => $q->where('is_trial', true))
+            ->latest()
+            ->first();
+
+        if (!$trialSub) {
+            // Account predates the subscription system — treat as expired if older than 30 days
+            return $this->created_at->lt(now()->subDays(30));
+        }
+
+        return $trialSub->ends_at && $trialSub->ends_at->isPast();
     }
 }

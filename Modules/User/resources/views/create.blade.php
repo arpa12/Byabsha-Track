@@ -213,15 +213,35 @@
 
         <div class="mb-3">
             <label for="role" class="form-label">{{ __('user.role') }} <span class="text-danger">*</span></label>
-            <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required>
+            <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required onchange="toggleManagerFields()">
                 <option value="">{{ __('user.select_role') }}</option>
                 <option value="owner" {{ old('role') === 'owner' ? 'selected' : '' }}>{{ __('user.role_owner') }}</option>
+                <option value="manager" {{ old('role') === 'manager' ? 'selected' : '' }}>{{ __('user.role_manager') }}</option>
                 <option value="superadmin" {{ old('role') === 'superadmin' ? 'selected' : '' }}>{{ __('user.role_superadmin') }}</option>
             </select>
             @error('role')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
             <small class="helper-text">{{ __('user.role_description') }}</small>
+        </div>
+
+        {{-- Manager-specific fields: shop & branch assignment --}}
+        <div id="managerFields" style="display:{{ old('role') === 'manager' ? 'block' : 'none' }};">
+            <div class="mb-3">
+                <label for="shop_id" class="form-label">{{ __('user.assign_shop') }}</label>
+                <select class="form-select @error('shop_id') is-invalid @enderror" id="shop_id" name="shop_id" onchange="filterBranchesCreate()">
+                    <option value="">{{ __('user.select_shop') }}</option>
+                    @foreach($shops as $shop)
+                        <option value="{{ $shop->id }}" {{ old('shop_id') == $shop->id ? 'selected' : '' }}>
+                            {{ $shop->name }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('shop_id')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+                <small class="helper-text">{{ __('user.manager_shop_hint') }}</small>
+            </div>
         </div>
 
         <div class="mb-3">
@@ -273,3 +293,16 @@
 </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    function toggleManagerFields() {
+        var role = document.getElementById('role').value;
+        document.getElementById('managerFields').style.display = role === 'manager' ? 'block' : 'none';
+    }
+
+    function filterBranchesCreate() {
+        // No branch listing on create, shop is enough — approval handles branch
+    }
+</script>
+@endpush

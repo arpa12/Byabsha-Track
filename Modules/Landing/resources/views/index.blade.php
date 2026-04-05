@@ -1103,6 +1103,13 @@
                 <h2 style="font-size:1.35rem;font-weight:700;color:#fff;text-align:center;margin-bottom:.3rem;">{{ __('auth.register_heading') }}</h2>
                 <p style="font-size:.85rem;color:#73879b;text-align:center;margin-bottom:1rem;">{{ __('auth.register_subtitle') }}</p>
 
+                @if(session('manager_pending'))
+                    <div style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:.75rem 1rem;color:#fcd34d;font-size:.875rem;display:flex;align-items:flex-start;gap:.5rem;margin-bottom:1rem;">
+                        <i class="bi bi-clock-history" style="margin-top:.1rem;flex-shrink:0;"></i>
+                        <span>{{ session('manager_pending') }}</span>
+                    </div>
+                @endif
+
                 @if($errors->any() && old('_form') === 'register')
                     <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:.75rem 1rem;color:#fca5a5;font-size:.875rem;display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;">
                         <i class="bi bi-exclamation-circle-fill"></i> {{ $errors->first() }}
@@ -1112,6 +1119,33 @@
                 <form action="{{ route('register.submit') }}" method="POST">
                     @csrf
                     <input type="hidden" name="_form" value="register">
+
+                    {{-- Role selector --}}
+                    <div class="mb-3">
+                        <label style="color:#94a3b8;font-size:.82rem;font-weight:500;display:block;margin-bottom:.55rem;">{{ __('auth.register_as') }}</label>
+                        <div style="display:flex;gap:.55rem;">
+                            <label style="flex:1;cursor:pointer;">
+                                <input type="radio" name="role" value="owner" id="regRoleOwner"
+                                    {{ (old('_form') !== 'register' || old('role', 'owner') === 'owner') ? 'checked' : '' }}
+                                    style="display:none;" onchange="updateRegisterRole()">
+                                <div id="regRoleOwnerBox" style="border:2px solid rgba(15,118,110,.6);border-radius:10px;padding:.65rem .55rem;text-align:center;transition:all .2s ease;background:rgba(15,118,110,.15);">
+                                    <i class="bi bi-shop" style="font-size:1.3rem;color:#34d399;display:block;margin-bottom:.25rem;"></i>
+                                    <div style="font-size:.8rem;font-weight:700;color:#e2e8f0;">{{ __('auth.role_owner') }}</div>
+                                    <div style="font-size:.7rem;color:#73879b;margin-top:.15rem;">{{ __('auth.role_owner_hint') }}</div>
+                                </div>
+                            </label>
+                            <label style="flex:1;cursor:pointer;">
+                                <input type="radio" name="role" value="manager" id="regRoleManager"
+                                    {{ (old('_form') === 'register' && old('role') === 'manager') ? 'checked' : '' }}
+                                    style="display:none;" onchange="updateRegisterRole()">
+                                <div id="regRoleManagerBox" style="border:2px solid rgba(100,116,139,.35);border-radius:10px;padding:.65rem .55rem;text-align:center;transition:all .2s ease;background:rgba(100,116,139,.08);">
+                                    <i class="bi bi-person-badge" style="font-size:1.3rem;color:#94a3b8;display:block;margin-bottom:.25rem;"></i>
+                                    <div style="font-size:.8rem;font-weight:700;color:#e2e8f0;">{{ __('auth.role_manager') }}</div>
+                                    <div style="font-size:.7rem;color:#73879b;margin-top:.15rem;">{{ __('auth.role_manager_hint') }}</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
 
                     <div class="mb-3">
                         <label style="color:#94a3b8;font-size:.82rem;font-weight:500;display:block;margin-bottom:.4rem;">{{ __('auth.full_name') }}</label>
@@ -1151,8 +1185,15 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn-login-modal">
-                        <i class="bi bi-person-plus"></i>{{ __('auth.register_as_owner') }}
+                    {{-- Manager note --}}
+                    <div id="managerNote" style="display:{{ (old('_form') === 'register' && old('role') === 'manager') ? 'flex' : 'none' }};align-items:flex-start;gap:.5rem;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.28);border-radius:10px;padding:.65rem .85rem;margin-bottom:.85rem;font-size:.82rem;color:#fcd34d;">
+                        <i class="bi bi-info-circle-fill" style="margin-top:.05rem;flex-shrink:0;"></i>
+                        <span>{{ __('auth.manager_register_note') }}</span>
+                    </div>
+
+                    <button type="submit" class="btn-login-modal" id="registerSubmitBtn">
+                        <i class="bi bi-person-plus" id="registerBtnIcon"></i>
+                        <span id="registerBtnText">{{ __('auth.register_as_owner') }}</span>
                     </button>
                 </form>
 
@@ -1222,6 +1263,38 @@
         i.type = i.type === 'password' ? 'text' : 'password';
         ic.className = i.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
     }
+
+    function updateRegisterRole() {
+        var isManager = document.getElementById('regRoleManager').checked;
+
+        // Highlight active role card
+        var ownerBox = document.getElementById('regRoleOwnerBox');
+        var managerBox = document.getElementById('regRoleManagerBox');
+        if (isManager) {
+            ownerBox.style.border = '2px solid rgba(100,116,139,.35)';
+            ownerBox.style.background = 'rgba(100,116,139,.08)';
+            ownerBox.querySelector('i').style.color = '#94a3b8';
+            managerBox.style.border = '2px solid rgba(245,158,11,.6)';
+            managerBox.style.background = 'rgba(245,158,11,.12)';
+            managerBox.querySelector('i').style.color = '#fcd34d';
+            document.getElementById('registerBtnText').textContent = '{{ __('auth.register_as_manager') }}';
+            document.getElementById('managerNote').style.display = 'flex';
+        } else {
+            ownerBox.style.border = '2px solid rgba(15,118,110,.6)';
+            ownerBox.style.background = 'rgba(15,118,110,.15)';
+            ownerBox.querySelector('i').style.color = '#34d399';
+            managerBox.style.border = '2px solid rgba(100,116,139,.35)';
+            managerBox.style.background = 'rgba(100,116,139,.08)';
+            managerBox.querySelector('i').style.color = '#94a3b8';
+            document.getElementById('registerBtnText').textContent = '{{ __('auth.register_as_owner') }}';
+            document.getElementById('managerNote').style.display = 'none';
+        }
+    }
+
+    // Run on page load to set correct initial state
+    document.addEventListener('DOMContentLoaded', function () {
+        updateRegisterRole();
+    });
 
     function toggleRCPwd() {
         var i = document.getElementById('rCPwd');

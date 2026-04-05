@@ -39,6 +39,10 @@ class Branch extends Model
             return $query;
         }
 
+        if ($user->isManager()) {
+            return $query->where('id', $user->branch_id);
+        }
+
         return $query->whereHas('shop', function (Builder $shopQuery) use ($user) {
             $shopQuery->where('user_id', $user->id);
         });

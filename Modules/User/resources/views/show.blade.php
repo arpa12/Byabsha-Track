@@ -168,6 +168,12 @@
         border-color: rgba(15, 118, 110, 0.24);
     }
 
+    .role-manager {
+        background: rgba(217, 119, 6, 0.12);
+        color: #d97706;
+        border-color: rgba(217, 119, 6, 0.26);
+    }
+
     .role-user {
         background: rgba(59, 130, 246, 0.12);
         color: #1d4ed8;
@@ -319,11 +325,36 @@
             <tr>
                 <th>{{ __('user.role') }}</th>
                 <td>
-                    <span class="role-badge {{ $user->role === 'superadmin' ? 'role-superadmin' : 'role-owner' }}">
+                    <span class="role-badge role-{{ $user->role }}">
                         {{ __('user.role_' . $user->role) }}
                     </span>
                 </td>
             </tr>
+            @if($user->isManager())
+            <tr>
+                <th>{{ __('user.approval_status') }}</th>
+                <td>
+                    @if($user->isPendingApproval())
+                        <span class="status-badge" style="background:rgba(245,158,11,.14);color:#d97706;border:1px solid rgba(245,158,11,.3);">
+                            <i class="bi bi-clock-history me-1"></i>{{ __('user.pending_approval') }}
+                        </span>
+                        <a href="{{ route('user.approve.form', $user->id) }}" class="btn btn-sm ms-2" style="border-radius:999px;padding:.3rem .8rem;font-size:.78rem;font-weight:700;background:rgba(217,119,6,.12);color:#d97706;border:1px solid rgba(217,119,6,.3);">
+                            <i class="bi bi-person-check"></i> {{ __('user.approve_btn') }}
+                        </a>
+                    @else
+                        <span class="status-badge status-active"><i class="bi bi-check-circle me-1"></i>{{ __('user.approved') }}</span>
+                    @endif
+                </td>
+            </tr>
+            <tr>
+                <th>{{ __('user.assigned_shop') }}</th>
+                <td>{{ $user->assignedShop?->name ?? '—' }}</td>
+            </tr>
+            <tr>
+                <th>{{ __('user.assigned_branch') }}</th>
+                <td>{{ $user->assignedBranch?->name ?? '—' }}</td>
+            </tr>
+            @endif
             <tr>
                 <th>{{ __('user.col_status') }}</th>
                 <td>

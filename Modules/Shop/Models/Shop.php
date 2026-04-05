@@ -33,6 +33,10 @@ class Shop extends Model
             return $query;
         }
 
+        if ($user->isManager()) {
+            return $query->where('id', $user->shop_id);
+        }
+
         return $query->where('user_id', $user->id);
     }
 
