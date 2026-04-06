@@ -584,6 +584,11 @@
                         </td>
                         <td class="text-center">
                             <div class="btn-group btn-group-sm" role="group">
+                                <a href="{{ route('product.batches', $product->id) }}"
+                                   class="btn btn-outline-success"
+                                   title="Batch Tracker">
+                                    <i class="bi bi-layers"></i>
+                                </a>
                                 <a href="{{ route('product.show', $product->id) }}"
                                    class="btn btn-outline-primary"
                                    title="View">

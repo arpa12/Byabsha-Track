@@ -17,6 +17,7 @@ class Sale extends Model
         'product_id',
         'quantity',
         'sale_price',
+        'purchase_price_per_unit',
         'discount',
         'total_amount',
         'profit',
@@ -30,6 +31,7 @@ class Sale extends Model
         'sale_date' => 'date',
         'quantity' => 'integer',
         'sale_price' => 'decimal:2',
+        'purchase_price_per_unit' => 'decimal:2',
         'discount' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'profit' => 'decimal:2',
@@ -43,5 +45,10 @@ class Sale extends Model
     public function product()
     {
         return $this->belongsTo(Product::class)->withTrashed();
+    }
+
+    public function batchItems()
+    {
+        return $this->hasMany(SaleBatchItem::class);
     }
 }

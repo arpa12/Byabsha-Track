@@ -19,6 +19,7 @@ Route::middleware(['auth', 'module.access:product'])->prefix('products')->name('
     });
 
     Route::get('/{id}', [ProductController::class, 'show'])->name('show');
+    Route::get('/{id}/batches', [ProductController::class, 'batches'])->name('batches');
     Route::get('/{id}/edit', [ProductController::class, 'edit'])->name('edit');
     Route::put('/{id}', [ProductController::class, 'update'])->name('update');
     Route::delete('/{id}', [ProductController::class, 'destroy'])->name('destroy');

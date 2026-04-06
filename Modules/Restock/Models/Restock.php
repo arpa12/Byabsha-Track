@@ -16,6 +16,7 @@ class Restock extends Model
         'product_id',
         'shop_id',
         'quantity',
+        'remaining_quantity',
         'purchase_price_per_unit',
         'total_cost',
         'restock_date',
@@ -25,6 +26,7 @@ class Restock extends Model
     protected $casts = [
         'restock_date' => 'date',
         'quantity' => 'integer',
+        'remaining_quantity' => 'integer',
         'purchase_price_per_unit' => 'decimal:2',
         'total_cost' => 'decimal:2',
     ];
@@ -37,5 +39,18 @@ class Restock extends Model
     public function shop()
     {
         return $this->belongsTo(Shop::class);
+    }
+
+    public function saleBatchItems()
+    {
+        return $this->hasMany(\Modules\Sale\Models\SaleBatchItem::class);
+    }
+
+    /**
+     * Units consumed from this batch (quantity - remaining_quantity).
+     */
+    public function getConsumedQuantityAttribute(): int
+    {
+        return $this->quantity - $this->remaining_quantity;
     }
 }

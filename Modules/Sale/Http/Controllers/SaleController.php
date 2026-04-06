@@ -4,8 +4,10 @@ namespace Modules\Sale\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Modules\Sale\Models\Sale;
+use Modules\Sale\Models\SaleBatchItem;
 use Modules\Shop\Models\Shop;
 use Modules\Product\Models\Product;
+use Modules\Restock\Models\Restock;
 use Modules\Capital\Services\CapitalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +20,81 @@ class SaleController extends Controller
     public function __construct(CapitalService $capitalService)
     {
         $this->capitalService = $capitalService;
+    }
+
+    /**
+     * Deduct $quantity units from restock batches using FIFO order.
+     *
+     * Must be called inside a DB::transaction with row-level locking.
+     *
+     * Returns an array with:
+     *   - 'items'                     => array of [restock_id, quantity, purchase_price_per_unit]
+     *   - 'weighted_avg_cost'         => total weighted-average cost per unit
+     */
+    private function deductFIFO(int $productId, int $shopId, int $quantity): array
+    {
+        $batches = Restock::where('product_id', $productId)
+            ->where('shop_id', $shopId)
+            ->where('remaining_quantity', '>', 0)
+            ->whereNull('deleted_at')
+            ->orderBy('restock_date', 'asc')
+            ->orderBy('id', 'asc')
+            ->lockForUpdate()
+            ->get();
+
+        $remaining = $quantity;
+        $items = [];
+        $totalCost = 0.0;
+
+        foreach ($batches as $batch) {
+            if ($remaining <= 0) {
+                break;
+            }
+
+            $take = min($remaining, $batch->remaining_quantity);
+            $batch->decrement('remaining_quantity', $take);
+
+            $items[] = [
+                'restock_id'              => $batch->id,
+                'quantity'                => $take,
+                'purchase_price_per_unit' => (float) $batch->purchase_price_per_unit,
+            ];
+
+            $totalCost += $take * (float) $batch->purchase_price_per_unit;
+            $remaining -= $take;
+        }
+
+        // If there are not enough batch units (e.g. data pre-dates batch tracking),
+        // fall back to the product's reference purchase_price for the unmatched qty.
+        if ($remaining > 0) {
+            $product = Product::withTrashed()->find($productId);
+            $fallbackPrice = $product ? (float) $product->purchase_price : 0.0;
+            $totalCost += $remaining * $fallbackPrice;
+            // No batch item is created for the fallback portion.
+        }
+
+        $weightedAvgCost = $quantity > 0 ? round($totalCost / $quantity, 2) : 0.0;
+
+        return [
+            'items'            => $items,
+            'weighted_avg_cost' => $weightedAvgCost,
+        ];
+    }
+
+    /**
+     * Restore batch quantities consumed by a sale (reverse FIFO deduction).
+     *
+     * Must be called inside a DB::transaction.
+     */
+    private function restoreBatchItems(Sale $sale): void
+    {
+        foreach ($sale->batchItems as $item) {
+            Restock::withTrashed()
+                ->where('id', $item->restock_id)
+                ->increment('remaining_quantity', $item->quantity);
+        }
+
+        $sale->batchItems()->delete();
     }
     public function index(Request $request)
     {
@@ -176,21 +253,40 @@ class SaleController extends Controller
             $discount = (float) ($validated['discount'] ?? 0);
             $discountedSalePrice = max($salePrice - $discount, 0);
             $totalAmount = $quantity * $discountedSalePrice;
-            $profit = ($discountedSalePrice - (float) $product->purchase_price) * $quantity;
 
-            Sale::create([
-                'shop_id' => $validated['shop_id'],
-                'product_id' => $validated['product_id'],
-                'quantity' => $quantity,
-                'sale_price' => $salePrice,
-                'discount' => $discount,
-                'total_amount' => $totalAmount,
-                'profit' => $profit,
-                'sale_date' => $validated['sale_date'] ?? now()->toDateString(),
-                'customer_name' => $validated['customer_name'],
-                'customer_phone' => $validated['customer_phone'] ?? null,
-                'customer_address' => $validated['customer_address'] ?? null,
+            // FIFO cost deduction
+            $fifo = $this->deductFIFO(
+                (int) $product->id,
+                (int) $validated['shop_id'],
+                $quantity
+            );
+            $purchasePricePerUnit = $fifo['weighted_avg_cost'];
+            $profit = ($discountedSalePrice - $purchasePricePerUnit) * $quantity;
+
+            $sale = Sale::create([
+                'shop_id'                  => $validated['shop_id'],
+                'product_id'               => $validated['product_id'],
+                'quantity'                 => $quantity,
+                'sale_price'               => $salePrice,
+                'purchase_price_per_unit'  => $purchasePricePerUnit,
+                'discount'                 => $discount,
+                'total_amount'             => $totalAmount,
+                'profit'                   => $profit,
+                'sale_date'                => $validated['sale_date'] ?? now()->toDateString(),
+                'customer_name'            => $validated['customer_name'],
+                'customer_phone'           => $validated['customer_phone'] ?? null,
+                'customer_address'         => $validated['customer_address'] ?? null,
             ]);
+
+            // Persist batch-level breakdown
+            foreach ($fifo['items'] as $item) {
+                SaleBatchItem::create([
+                    'sale_id'                  => $sale->id,
+                    'restock_id'               => $item['restock_id'],
+                    'quantity'                 => $item['quantity'],
+                    'purchase_price_per_unit'  => $item['purchase_price_per_unit'],
+                ]);
+            }
 
             $product->decrement('stock_quantity', $quantity);
         });
@@ -244,18 +340,37 @@ class SaleController extends Controller
             // Calculate amounts
             $salePrice = $product->sale_price;
             $totalAmount = $validated['quantity'] * $salePrice;
-            $profit = ($salePrice - $product->purchase_price) * $validated['quantity'];
+
+            // FIFO cost deduction
+            $fifo = $this->deductFIFO(
+                (int) $product->id,
+                (int) $validated['shop_id'],
+                (int) $validated['quantity']
+            );
+            $purchasePricePerUnit = $fifo['weighted_avg_cost'];
+            $profit = ($salePrice - $purchasePricePerUnit) * $validated['quantity'];
 
             // Create sale
-            Sale::create([
-                'shop_id' => $validated['shop_id'],
-                'product_id' => $validated['product_id'],
-                'quantity' => $validated['quantity'],
-                'sale_price' => $salePrice,
-                'total_amount' => $totalAmount,
-                'profit' => $profit,
-                'sale_date' => $validated['sale_date'],
+            $sale = Sale::create([
+                'shop_id'                 => $validated['shop_id'],
+                'product_id'              => $validated['product_id'],
+                'quantity'                => $validated['quantity'],
+                'sale_price'              => $salePrice,
+                'purchase_price_per_unit' => $purchasePricePerUnit,
+                'total_amount'            => $totalAmount,
+                'profit'                  => $profit,
+                'sale_date'               => $validated['sale_date'],
             ]);
+
+            // Persist batch-level breakdown
+            foreach ($fifo['items'] as $item) {
+                SaleBatchItem::create([
+                    'sale_id'                  => $sale->id,
+                    'restock_id'               => $item['restock_id'],
+                    'quantity'                 => $item['quantity'],
+                    'purchase_price_per_unit'  => $item['purchase_price_per_unit'],
+                ]);
+            }
 
             // Deduct stock
             $product->decrement('stock_quantity', $validated['quantity']);
@@ -353,25 +468,44 @@ class SaleController extends Controller
         }
 
         DB::transaction(function () use ($validated, $sale, $product) {
-            // Restore old stock
-            $oldProduct = Product::findOrFail($sale->product_id);
+            // Restore old batch quantities and product stock
+            $this->restoreBatchItems($sale);
+            $oldProduct = Product::withTrashed()->findOrFail($sale->product_id);
             $oldProduct->increment('stock_quantity', $sale->quantity);
 
-            // Calculate amounts
+            // Re-deduct using FIFO
             $salePrice = $product->sale_price;
             $totalAmount = $validated['quantity'] * $salePrice;
-            $profit = ($salePrice - $product->purchase_price) * $validated['quantity'];
+
+            $fifo = $this->deductFIFO(
+                (int) $product->id,
+                (int) $validated['shop_id'],
+                (int) $validated['quantity']
+            );
+            $purchasePricePerUnit = $fifo['weighted_avg_cost'];
+            $profit = ($salePrice - $purchasePricePerUnit) * $validated['quantity'];
 
             // Update sale
             $sale->update([
-                'shop_id' => $validated['shop_id'],
-                'product_id' => $validated['product_id'],
-                'quantity' => $validated['quantity'],
-                'sale_price' => $salePrice,
-                'total_amount' => $totalAmount,
-                'profit' => $profit,
-                'sale_date' => $validated['sale_date'],
+                'shop_id'                 => $validated['shop_id'],
+                'product_id'              => $validated['product_id'],
+                'quantity'                => $validated['quantity'],
+                'sale_price'              => $salePrice,
+                'purchase_price_per_unit' => $purchasePricePerUnit,
+                'total_amount'            => $totalAmount,
+                'profit'                  => $profit,
+                'sale_date'               => $validated['sale_date'],
             ]);
+
+            // Persist new batch items
+            foreach ($fifo['items'] as $item) {
+                SaleBatchItem::create([
+                    'sale_id'                  => $sale->id,
+                    'restock_id'               => $item['restock_id'],
+                    'quantity'                 => $item['quantity'],
+                    'purchase_price_per_unit'  => $item['purchase_price_per_unit'],
+                ]);
+            }
 
             // Deduct new stock
             $product->decrement('stock_quantity', $validated['quantity']);
@@ -392,7 +526,10 @@ class SaleController extends Controller
         $shopId = $sale->shop_id;
 
         DB::transaction(function () use ($sale) {
-            // Restore stock
+            // Restore batch quantities
+            $this->restoreBatchItems($sale);
+
+            // Restore product stock
             $product = Product::withTrashed()->find($sale->product_id);
             if ($product) {
                 $product->increment('stock_quantity', $sale->quantity);

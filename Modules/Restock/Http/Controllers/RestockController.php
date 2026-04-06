@@ -45,7 +45,11 @@ class RestockController extends Controller
         $shops = Shop::forUser($user)->get();
         $products = Product::with('shop')->whereIn('shop_id', $user->accessibleShopIds())->get();
 
-        return view('restock::create', compact('shops', 'products'));
+        // Pre-fill shop/product when arriving from the batch tracker page
+        $prefilledShopId    = request()->integer('shop_id') ?: null;
+        $prefilledProductId = request()->integer('product_id') ?: null;
+
+        return view('restock::create', compact('shops', 'products', 'prefilledShopId', 'prefilledProductId'));
     }
 
     public function store(Request $request)

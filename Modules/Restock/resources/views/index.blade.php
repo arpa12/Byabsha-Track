@@ -407,6 +407,12 @@
                             @endif
                         </td>
                         <td class="text-end">
+                            <a href="{{ route('product.batches', $restock->product_id) }}"
+                               class="btn btn-sm btn-row-action"
+                               style="color:#0f766e;border-color:rgba(15,118,110,.35);background:#fff;"
+                               title="View Batch Tracker">
+                                <i class="bi bi-layers"></i>
+                            </a>
                             <a href="{{ route('restock.edit', $restock->id) }}" class="btn btn-sm btn-row-action btn-row-edit" title="{{ __('app.edit') }}">
                                 <i class="bi bi-pencil"></i>
                             </a>

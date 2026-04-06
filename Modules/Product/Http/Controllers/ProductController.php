@@ -242,6 +242,40 @@ class ProductController extends Controller
         return view('product::show', compact('product'));
     }
 
+    public function batches($id)
+    {
+        $product = Product::with(['shop', 'productCategory'])->findOrFail($id);
+        abort_unless(auth()->user()->ownsShop((int) $product->shop_id), 403, 'You do not have access to this shop.');
+
+        $batches = \Modules\Restock\Models\Restock::where('product_id', $product->id)
+            ->where('shop_id', $product->shop_id)
+            ->withTrashed()
+            ->orderBy('restock_date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        $sales = \Modules\Sale\Models\Sale::with(['batchItems.restock'])
+            ->where('product_id', $product->id)
+            ->where('shop_id', $product->shop_id)
+            ->withTrashed()
+            ->orderByDesc('sale_date')
+            ->orderByDesc('id')
+            ->get();
+
+        $totalSold       = $sales->whereNull('deleted_at')->sum('quantity');
+        $totalRevenue    = $sales->whereNull('deleted_at')->sum('total_amount');
+        $totalProfit     = $sales->whereNull('deleted_at')->sum('profit');
+
+        return view('product::batches', compact(
+            'product',
+            'batches',
+            'sales',
+            'totalSold',
+            'totalRevenue',
+            'totalProfit'
+        ));
+    }
+
     public function edit($id)
     {
         $user = auth()->user();
