@@ -322,6 +322,56 @@
                         </div>
                     </div>
 
+                    <div class="content-card border rounded-3 p-3 mb-3">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="has_free_service" name="has_free_service" value="1" {{ old('has_free_service') ? 'checked' : '' }}>
+                            <label class="form-check-label fw-semibold" for="has_free_service">{{ __('product.free_service_available') }}</label>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="free_service_duration_value" class="form-label fw-semibold">{{ __('product.free_service_duration_value') }}</label>
+                                <input type="number"
+                                       class="form-control @error('free_service_duration_value') is-invalid @enderror"
+                                       id="free_service_duration_value"
+                                       name="free_service_duration_value"
+                                       min="1"
+                                       value="{{ old('free_service_duration_value') }}"
+                                       placeholder="6">
+                                @error('free_service_duration_value')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="free_service_duration_unit" class="form-label fw-semibold">{{ __('product.free_service_duration_unit') }}</label>
+                                <select class="form-select @error('free_service_duration_unit') is-invalid @enderror"
+                                        id="free_service_duration_unit"
+                                        name="free_service_duration_unit">
+                                    <option value="">{{ __('product.select_duration_unit') }}</option>
+                                    <option value="day" {{ old('free_service_duration_unit') === 'day' ? 'selected' : '' }}>{{ __('product.duration_day') }}</option>
+                                    <option value="month" {{ old('free_service_duration_unit') === 'month' ? 'selected' : '' }}>{{ __('product.duration_month') }}</option>
+                                    <option value="year" {{ old('free_service_duration_unit') === 'year' ? 'selected' : '' }}>{{ __('product.duration_year') }}</option>
+                                </select>
+                                @error('free_service_duration_unit')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-12 mb-0">
+                                <label for="free_service_terms" class="form-label fw-semibold">{{ __('product.free_service_terms') }}</label>
+                                <textarea class="form-control @error('free_service_terms') is-invalid @enderror"
+                                          id="free_service_terms"
+                                          name="free_service_terms"
+                                          rows="2"
+                                          placeholder="{{ __('product.free_service_terms_placeholder') }}">{{ old('free_service_terms') }}</textarea>
+                                @error('free_service_terms')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label fw-semibold">{{ __('product.custom_attributes') }}</label>
                         <div id="dynamicFieldsContainer" class="dynamic-fields-wrap">

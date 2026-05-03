@@ -25,6 +25,8 @@ return [
     'col_date'               => 'Date',
     'col_shop'               => 'Shop',
     'col_product'            => 'Product',
+    'batch_code'             => 'Batch',
+    'table_attributes'       => 'Attributes',
     'col_quantity'           => 'Qty',
     'col_price_per_unit'     => 'Price/Unit',
     'col_total_cost'         => 'Total Cost',
@@ -42,6 +44,7 @@ return [
     'deleted'                => 'Restock deleted successfully! Stock adjusted.',
     'confirm_delete'         => 'Are you sure you want to delete this restock? Stock will be adjusted.',
     'product_shop_mismatch'  => 'The selected product does not belong to the selected shop.',
+    'batch_already_sold'     => 'This restock batch already has sales and cannot be edited or deleted.',
     'page_totals'            => 'Page Totals',
     'records'                => 'records',
     'total_quantity'         => 'Total Quantity',
@@ -53,4 +56,6 @@ return [
     'current_stock_label'    => 'Current Stock',
     'stock_after_label'      => 'Stock After Restock',
     'product_purchase_price' => 'Product Purchase Price',
+    'attribute_combination'  => 'Attribute Combination',
+    'attribute_help'         => 'Select the exact attribute values for this restock batch.',
 ];

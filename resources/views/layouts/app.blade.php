@@ -307,6 +307,17 @@
             font-size: 1rem;
         }
 
+        .submenu-group-title {
+            font-size: 0.75rem;
+            color: rgba(240,255,251,0.6);
+            padding: 0.5rem 1.1rem;
+            margin-top: 0.6rem;
+            margin-bottom: 0.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+        }
+
         /* Main Content */
         .main-content {
             margin-left: calc(var(--sidebar-width) + 10px);
@@ -678,65 +689,132 @@
             </a>
             @endif
 
-            <div class="nav-section-title">{{ __('app.management') }}</div>
-            @if($sidebarUser->hasModuleAccess('shop'))
-                <a href="{{ route('shop.index') }}" class="nav-link-custom {{ request()->routeIs('shop.*') ? 'active' : '' }}">
-                    <i class="bi bi-shop"></i>
-                    <span>{{ __('app.shops') }}</span>
+            {{-- Setup submenu --}}
+            @php
+                $isSetupOpen = request()->routeIs('shop.*') || request()->routeIs('branch.*') || request()->routeIs('brand.*') || request()->routeIs('category.*');
+            @endphp
+            <div class="nav-item-submenu">
+                <a class="nav-link-parent {{ $isSetupOpen ? 'active' : '' }}"
+                   data-bs-toggle="collapse"
+                   href="#setupSubmenu"
+                   role="button"
+                   aria-expanded="{{ $isSetupOpen ? 'true' : 'false' }}"
+                   aria-controls="setupSubmenu">
+                    <div class="left-content">
+                        <i class="bi bi-gear-wide-connected"></i>
+                        <span>{{ __('app.setup') }}</span>
+                    </div>
+                    <i class="bi bi-chevron-down"></i>
                 </a>
-            @endif
-            @if($sidebarUser->hasModuleAccess('branch'))
-                <a href="{{ route('branch.index') }}" class="nav-link-custom {{ request()->routeIs('branch.*') ? 'active' : '' }}">
-                    <i class="bi bi-diagram-3"></i>
-                    <span>{{ __('app.branches') }}</span>
+                <div class="collapse submenu {{ $isSetupOpen ? 'show' : '' }}" id="setupSubmenu">
+                    @if($sidebarUser->hasModuleAccess('shop'))
+                        <a href="{{ route('shop.index') }}" class="nav-link-custom {{ request()->routeIs('shop.*') ? 'active' : '' }}">
+                            <i class="bi bi-shop"></i>
+                            <span>{{ __('app.shops') }}</span>
+                        </a>
+                    @endif
+                    @if($sidebarUser->hasModuleAccess('branch'))
+                        <a href="{{ route('branch.index') }}" class="nav-link-custom {{ request()->routeIs('branch.*') ? 'active' : '' }}">
+                            <i class="bi bi-diagram-3"></i>
+                            <span>{{ __('app.branches') }}</span>
+                        </a>
+                    @endif
+                    @if($sidebarUser->hasModuleAccess('brand'))
+                        <a href="{{ route('brand.index') }}" class="nav-link-custom {{ request()->routeIs('brand.*') ? 'active' : '' }}">
+                            <i class="bi bi-bookmark-star"></i>
+                            <span>{{ __('app.brands') }}</span>
+                        </a>
+                    @endif
+                    @if($sidebarUser->hasModuleAccess('category'))
+                        <a href="{{ route('category.index') }}" class="nav-link-custom {{ request()->routeIs('category.*') ? 'active' : '' }}">
+                            <i class="bi bi-tags"></i>
+                            <span>{{ __('app.categories') }}</span>
+                        </a>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Inventory submenu --}}
+            @php
+                $isInventoryOpen = request()->routeIs('product.*') || request()->routeIs('product.dynamic-fields.*') || request()->routeIs('stock.*');
+            @endphp
+            <div class="nav-item-submenu">
+                <a class="nav-link-parent {{ $isInventoryOpen ? 'active' : '' }}"
+                   data-bs-toggle="collapse"
+                   href="#inventorySubmenu"
+                   role="button"
+                   aria-expanded="{{ $isInventoryOpen ? 'true' : 'false' }}"
+                   aria-controls="inventorySubmenu">
+                    <div class="left-content">
+                        <i class="bi bi-boxes"></i>
+                        <span>{{ __('app.inventory') }}</span>
+                    </div>
+                    <i class="bi bi-chevron-down"></i>
                 </a>
-            @endif
-            @if($sidebarUser->hasModuleAccess('brand'))
-                <a href="{{ route('brand.index') }}" class="nav-link-custom {{ request()->routeIs('brand.*') ? 'active' : '' }}">
-                    <i class="bi bi-bookmark-star"></i>
-                    <span>{{ __('app.brands') }}</span>
+                <div class="collapse submenu {{ $isInventoryOpen ? 'show' : '' }}" id="inventorySubmenu">
+                    @if($sidebarUser->hasModuleAccess('product'))
+                        <a href="{{ route('product.index') }}" class="nav-link-custom {{ request()->routeIs('product.*') && !request()->routeIs('product.dynamic-fields.*') ? 'active' : '' }}">
+                            <i class="bi bi-box-seam"></i>
+                            <span>{{ __('app.products') }}</span>
+                        </a>
+                        <a href="{{ route('product.dynamic-fields.index') }}" class="nav-link-custom {{ request()->routeIs('product.dynamic-fields.*') ? 'active' : '' }}">
+                            <i class="bi bi-sliders"></i>
+                            <span>{{ __('app.product_attributes') }}</span>
+                        </a>
+                    @endif
+                    @if($sidebarUser->hasModuleAccess('stock'))
+                        <a href="{{ route('stock.index') }}" class="nav-link-custom {{ request()->routeIs('stock.*') ? 'active' : '' }}">
+                            <i class="bi bi-boxes"></i>
+                            <span>{{ __('app.stocks') }}</span>
+                        </a>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Operations submenu --}}
+            @php
+                $isOperationsOpen = request()->routeIs('sale.*') || request()->routeIs('capital.*') || request()->routeIs('restock.*') || request()->routeIs('damage.*');
+            @endphp
+            <div class="nav-item-submenu">
+                <a class="nav-link-parent {{ $isOperationsOpen ? 'active' : '' }}"
+                   data-bs-toggle="collapse"
+                   href="#operationsSubmenu"
+                   role="button"
+                   aria-expanded="{{ $isOperationsOpen ? 'true' : 'false' }}"
+                   aria-controls="operationsSubmenu">
+                    <div class="left-content">
+                        <i class="bi bi-gear-fill"></i>
+                        <span>{{ __('app.operations') }}</span>
+                    </div>
+                    <i class="bi bi-chevron-down"></i>
                 </a>
-            @endif
-            @if($sidebarUser->hasModuleAccess('category'))
-                <a href="{{ route('category.index') }}" class="nav-link-custom {{ request()->routeIs('category.*') ? 'active' : '' }}">
-                    <i class="bi bi-tags"></i>
-                    <span>{{ __('app.categories') }}</span>
-                </a>
-            @endif
-            @if($sidebarUser->hasModuleAccess('product'))
-                <a href="{{ route('product.index') }}" class="nav-link-custom {{ request()->routeIs('product.*') && !request()->routeIs('product.dynamic-fields.*') ? 'active' : '' }}">
-                    <i class="bi bi-box-seam"></i>
-                    <span>{{ __('app.products') }}</span>
-                </a>
-                <a href="{{ route('product.dynamic-fields.index') }}" class="nav-link-custom {{ request()->routeIs('product.dynamic-fields.*') ? 'active' : '' }}">
-                    <i class="bi bi-sliders"></i>
-                    <span>{{ __('app.product_attributes') }}</span>
-                </a>
-            @endif
-            @if($sidebarUser->hasModuleAccess('stock'))
-                <a href="{{ route('stock.index') }}" class="nav-link-custom {{ request()->routeIs('stock.*') ? 'active' : '' }}">
-                    <i class="bi bi-boxes"></i>
-                    <span>{{ __('app.stocks') }}</span>
-                </a>
-            @endif
-            @if($sidebarUser->hasModuleAccess('sale'))
-                <a href="{{ route('sale.index') }}" class="nav-link-custom {{ request()->routeIs('sale.*') ? 'active' : '' }}">
-                    <i class="bi bi-cart-check"></i>
-                    <span>{{ __('app.sales') }}</span>
-                </a>
-            @endif
-            @if($sidebarUser->hasModuleAccess('capital'))
-                <a href="{{ route('capital.index') }}" class="nav-link-custom {{ request()->routeIs('capital.*') ? 'active' : '' }}">
-                    <i class="bi bi-cash-coin"></i>
-                    <span>{{ __('app.capitals') }}</span>
-                </a>
-            @endif
-            @if($sidebarUser->hasModuleAccess('restock'))
-                <a href="{{ route('restock.index') }}" class="nav-link-custom {{ request()->routeIs('restock.*') ? 'active' : '' }}">
-                    <i class="bi bi-arrow-repeat"></i>
-                    <span>{{ __('app.restocks') }}</span>
-                </a>
-            @endif
+                <div class="collapse submenu {{ $isOperationsOpen ? 'show' : '' }}" id="operationsSubmenu">
+                    @if($sidebarUser->hasModuleAccess('sale'))
+                        <a href="{{ route('sale.index') }}" class="nav-link-custom {{ request()->routeIs('sale.*') ? 'active' : '' }}">
+                            <i class="bi bi-cart-check"></i>
+                            <span>{{ __('app.sales') }}</span>
+                        </a>
+                    @endif
+                    @if($sidebarUser->hasModuleAccess('capital'))
+                        <a href="{{ route('capital.index') }}" class="nav-link-custom {{ request()->routeIs('capital.*') ? 'active' : '' }}">
+                            <i class="bi bi-cash-coin"></i>
+                            <span>{{ __('app.capitals') }}</span>
+                        </a>
+                    @endif
+                    @if($sidebarUser->hasModuleAccess('restock'))
+                        <a href="{{ route('restock.index') }}" class="nav-link-custom {{ request()->routeIs('restock.*') ? 'active' : '' }}">
+                            <i class="bi bi-arrow-repeat"></i>
+                            <span>{{ __('app.restocks') }}</span>
+                        </a>
+                    @endif
+                    @if($sidebarUser->hasModuleAccess('damage'))
+                        <a href="{{ route('damage.index') }}" class="nav-link-custom {{ request()->routeIs('damage.*') ? 'active' : '' }}">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <span>{{ __('app.damages') }}</span>
+                        </a>
+                    @endif
+                </div>
+            </div>
 
             @if(auth()->user()->isSuperAdmin())
             <div class="nav-section-title">{{ __('app.system') }}</div>

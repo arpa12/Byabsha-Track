@@ -38,6 +38,8 @@ return [
     'items_sold'          => 'বিক্রীত আইটেম',
     'avg_sale'            => 'গড় বিক্রয়',
     'avg_profit'          => 'গড় লাভ',
+    'active_warranties'   => 'সক্রিয় ওয়ারেন্টি',
+    'total_exchanges'     => 'মোট এক্সচেঞ্জ',
     'revenue_formula'     => 'Σ(পরিমাণ × বিক্রয় মূল্য)',
     'profit_formula'      => 'Σ (বিক্রয় − ক্রয়) × পরিমাণ',
     'formulas'            => 'সূত্রসমূহ:',

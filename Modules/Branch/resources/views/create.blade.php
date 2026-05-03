@@ -4,6 +4,7 @@
 
 @push('styles')
 <style>
+<<<<<<< HEAD
     :root {
         --branch-brand: #0f766e;
         --branch-brand-deep: #155e75;
@@ -36,12 +37,62 @@
     .content-card {
         background: #fff;
         border: 1px solid var(--branch-line);
+=======
+    .branch-form-shell {
+        position: relative;
+    }
+
+    .branch-form-shell::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background:
+            radial-gradient(900px 500px at 85% -5%, rgba(15, 118, 110, 0.18), transparent 60%),
+            radial-gradient(650px 420px at -5% 8%, rgba(245, 158, 11, 0.14), transparent 55%),
+            linear-gradient(180deg, #f7fafc 0%, #f1f6f9 60%, #edf3f8 100%);
+    }
+
+    .branch-form-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.48rem;
+        background: rgba(15, 118, 110, 0.12);
+        color: #0f766e;
+        border: 1px solid rgba(15, 118, 110, 0.22);
+        border-radius: 999px;
+        padding: 0.42rem 0.92rem;
+        font-size: 0.76rem;
+        font-weight: 700;
+        margin-bottom: 0.8rem;
+        box-shadow: 0 8px 18px rgba(15, 118, 110, 0.13);
+    }
+
+    .branch-form-title {
+        font-size: clamp(1.55rem, 3.2vw, 2.3rem);
+        line-height: 1.1;
+        margin-bottom: 0.45rem;
+    }
+
+    .branch-form-subtitle {
+        color: #475569;
+        line-height: 1.75;
+        font-size: 0.98rem;
+        margin-bottom: 0;
+    }
+
+    .content-card {
+        background: #ffffff;
+        border: 1px solid #d8e4ee;
+>>>>>>> d42f583 (initial commit)
         border-radius: 20px;
         box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
         overflow: hidden;
     }
 
     .content-card-header {
+<<<<<<< HEAD
         padding: 1rem 1.4rem;
         border-bottom: 1px solid #e7edf4;
         background: #f7fbff;
@@ -85,11 +136,93 @@
 
     @media (max-width: 991.98px) {
         .tips-col { margin-top: 0; }
+=======
+        background: #f7fbff;
+        border-bottom: 1px solid #dce8f3;
+        padding: 0.9rem 1.2rem;
+    }
+
+    .content-card-title {
+        margin: 0;
+        font-size: 0.96rem;
+        font-weight: 700;
+        color: #36506b;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+    }
+
+    .form-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #475569;
+        margin-bottom: 0.48rem;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 11px;
+        border: 1px solid #d6e2ee;
+        background: #fbfdff;
+        color: #0f172a;
+        font-size: 0.94rem;
+        padding-top: 0.62rem;
+        padding-bottom: 0.62rem;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #53a89f;
+        box-shadow: 0 0 0 0.2rem rgba(15, 118, 110, 0.14);
+        background: #ffffff;
+    }
+
+    .btn-back {
+        border-radius: 999px;
+        border: 1px solid #cedce9;
+        background: rgba(255, 255, 255, 0.8);
+        color: #3f556c;
+        font-size: 0.82rem;
+        font-weight: 700;
+        padding: 0.58rem 1rem;
+    }
+
+    .btn-back:hover {
+        background: #ffffff;
+        color: #1e293b;
+        border-color: #97b0c8;
+    }
+
+    .btn-submit {
+        background: linear-gradient(140deg, #16a34a, #15803d);
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 0.6rem 1.15rem;
+        font-size: 0.84rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        box-shadow: 0 14px 28px rgba(22, 163, 74, 0.28);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-submit:hover {
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 18px 30px rgba(21, 128, 61, 0.34);
+>>>>>>> d42f583 (initial commit)
     }
 </style>
 @endpush
 
 @section('content')
+<<<<<<< HEAD
 <div class="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
     <div>
         <h1 class="page-title">{{ __('branch::branch.create_title') }}</h1>
@@ -119,6 +252,33 @@
                                 {{ __('branch::branch.shop') }} <span class="text-danger">*</span>
                             </label>
                             <select name="shop_id" class="form-select @error('shop_id') is-invalid @enderror" required>
+=======
+<div class="branch-form-shell">
+    <div class="mb-4">
+        <span class="branch-form-kicker"><i class="bi bi-plus-circle"></i>{{ __('branch::branch.create_title') }}</span>
+        <h1 class="branch-form-title fw-bold">{{ __('branch::branch.create_title') }}</h1>
+        <p class="branch-form-subtitle">{{ __('branch::branch.subtitle') }}</p>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="content-card">
+                <div class="content-card-header">
+                    <h5 class="content-card-title">
+                        <i class="bi bi-diagram-3"></i>
+                        {{ __('branch::branch.create_title') }}
+                    </h5>
+                </div>
+                <div class="p-4">
+                    <form action="{{ route('branch.store') }}" method="POST">
+                        @csrf
+
+                        <div class="mb-4">
+                            <label for="shop_id" class="form-label">
+                                {{ __('branch::branch.shop') }} <span class="text-danger">*</span>
+                            </label>
+                            <select name="shop_id" id="shop_id" class="form-select @error('shop_id') is-invalid @enderror" required>
+>>>>>>> d42f583 (initial commit)
                                 <option value="">{{ __('branch::branch.shop_placeholder') }}</option>
                                 @foreach($shops as $shop)
                                     <option value="{{ $shop->id }}" {{ old('shop_id', $selectedShopId) == $shop->id ? 'selected' : '' }}>
@@ -126,6 +286,7 @@
                                     </option>
                                 @endforeach
                             </select>
+<<<<<<< HEAD
                             @error('shop_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
@@ -217,6 +378,55 @@
                 <div class="tip-item">
                     <i class="bi bi-toggle-on"></i>
                     <span>Inactive branches are hidden from sales while preserving historical data.</span>
+=======
+                            @error('shop_id')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="name" class="form-label">
+                                {{ __('branch::branch.name') }} <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" id="name" name="name" value="{{ old('name') }}" class="form-control @error('name') is-invalid @enderror" placeholder="{{ __('branch::branch.name_placeholder') }}" required>
+                            @error('name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="location" class="form-label">{{ __('branch::branch.location') }}</label>
+                                <input type="text" id="location" name="location" value="{{ old('location') }}" class="form-control" placeholder="{{ __('branch::branch.location_placeholder') }}">
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label for="phone" class="form-label">{{ __('branch::branch.phone') }}</label>
+                                <input type="text" id="phone" name="phone" value="{{ old('phone') }}" class="form-control" placeholder="{{ __('branch::branch.phone_placeholder') }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="email" class="form-label">{{ __('branch::branch.email') }}</label>
+                            <input type="email" id="email" name="email" value="{{ old('email') }}" class="form-control" placeholder="{{ __('branch::branch.email_placeholder') }}">
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="address" class="form-label">{{ __('branch::branch.address') }}</label>
+                            <textarea id="address" name="address" rows="4" class="form-control" placeholder="{{ __('branch::branch.address_placeholder') }}">{{ old('address') }}</textarea>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input type="hidden" name="is_active" value="0">
+                            <input class="form-check-input" type="checkbox" name="is_active" value="1" id="is_active" {{ old('is_active', true) ? 'checked' : '' }}>
+                            <label class="form-check-label fw-semibold" for="is_active">{{ __('branch::branch.active') }}</label>
+                        </div>
+
+                        <div class="d-flex justify-content-between flex-wrap gap-2 pt-3 border-top">
+                            <a href="{{ route('branch.index') }}" class="btn btn-back">
+                                <i class="bi bi-arrow-left"></i> {{ __('branch::branch.back') }}
+                            </a>
+                            <button type="submit" class="btn btn-submit">
+                                <i class="bi bi-check-circle"></i> {{ __('branch::branch.save_btn') }}
+                            </button>
+                        </div>
+                    </form>
+>>>>>>> d42f583 (initial commit)
                 </div>
             </div>
         </div>

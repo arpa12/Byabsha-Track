@@ -3,6 +3,8 @@
 namespace Modules\Report\Services;
 
 use Modules\Sale\Models\Sale;
+use Modules\Sale\Models\SaleExchange;
+use Modules\Sale\Models\SaleWarranty;
 use Modules\Product\Models\Product;
 use Modules\Shop\Models\Shop;
 use Illuminate\Support\Facades\DB;
@@ -70,6 +72,54 @@ class ReportService
         ')->first();
 
         return $summary;
+    }
+
+    public function getWarrantyExchangeSummary($filters = []): array
+    {
+        $warrantyQuery = SaleWarranty::query();
+        $exchangeQuery = SaleExchange::query();
+
+        if (!empty($filters['shop_ids'])) {
+            $warrantyQuery->whereIn('shop_id', $filters['shop_ids']);
+            $exchangeQuery->whereIn('shop_id', $filters['shop_ids']);
+        }
+
+        if (!empty($filters['shop_id'])) {
+            $warrantyQuery->where('shop_id', $filters['shop_id']);
+            $exchangeQuery->where('shop_id', $filters['shop_id']);
+        }
+
+        if (!empty($filters['start_date'])) {
+            $warrantyQuery->whereDate('start_date', '>=', $filters['start_date']);
+            $exchangeQuery->whereDate('exchange_date', '>=', $filters['start_date']);
+        }
+
+        if (!empty($filters['end_date'])) {
+            $warrantyQuery->whereDate('start_date', '<=', $filters['end_date']);
+            $exchangeQuery->whereDate('exchange_date', '<=', $filters['end_date']);
+        }
+
+        $activeWarranties = (clone $warrantyQuery)
+            ->where('status', 'active')
+            ->whereDate('end_date', '>=', now()->toDateString())
+            ->count();
+
+        $expiredWarranties = (clone $warrantyQuery)
+            ->where(function ($query) {
+                $query->where('status', 'expired')
+                    ->orWhere(function ($subQuery) {
+                        $subQuery->where('status', 'active')
+                            ->whereDate('end_date', '<', now()->toDateString());
+                    });
+            })
+            ->count();
+
+        return [
+            'active_warranties' => $activeWarranties,
+            'expired_warranties' => $expiredWarranties,
+            'total_exchanges' => (clone $exchangeQuery)->count(),
+            'exchange_quantity' => (int) ((clone $exchangeQuery)->sum('quantity') ?? 0),
+        ];
     }
 
     public function getSalesByShop($filters = [])

@@ -371,6 +371,8 @@
                         <th>{{ __('restock.col_date') }}</th>
                         <th>{{ __('restock.col_shop') }}</th>
                         <th>{{ __('restock.col_product') }}</th>
+                        <th>{{ __('restock.batch_code') }}</th>
+                        <th>{{ __('restock.table_attributes') }}</th>
                         <th class="text-center">{{ __('restock.col_quantity') }}</th>
                         <th class="text-end">{{ __('restock.col_price_per_unit') }}</th>
                         <th class="text-end">{{ __('restock.col_total_cost') }}</th>
@@ -387,6 +389,8 @@
                             <span class="shop-pill">{{ $restock->shop?->name ?? 'Deleted shop' }}</span>
                         </td>
                         <td>{{ $restock->product?->name ?? 'Deleted product' }}</td>
+                        <td>{{ $restock->productBatch?->batch_code ?? '-' }}</td>
+                        <td>{{ $restock->productBatch?->attribute_summary ?? '-' }}</td>
                         <td class="text-center">
                             <span class="qty-pill">+{{ number_format($restock->quantity) }}</span>
                         </td>
@@ -433,7 +437,7 @@
                         $pageTotalCost = $restocks->sum('total_cost');
                     @endphp
                     <tr>
-                        <td colspan="3" class="text-muted small">
+                        <td colspan="5" class="text-muted small">
                             {{ __('restock.page_totals') }} ({{ $restocks->count() }} {{ __('restock.records') }})
                         </td>
                         <td class="text-center">
@@ -441,6 +445,7 @@
                         </td>
                         <td></td>
                         <td class="text-end">{{ number_format($pageTotalCost, 2) }}</td>
+                        <td></td>
                         <td></td>
                         <td></td>
                     </tr>

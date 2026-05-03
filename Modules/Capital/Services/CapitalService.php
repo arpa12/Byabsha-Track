@@ -4,7 +4,11 @@ namespace Modules\Capital\Services;
 use Modules\Capital\Models\Capital;
 use Modules\Shop\Models\Shop;
 use Modules\Product\Models\Product;
+<<<<<<< HEAD
 use Modules\Restock\Models\Restock;
+=======
+use Modules\Product\Models\ProductBatch;
+>>>>>>> d42f583 (initial commit)
 
 class CapitalService
 {
@@ -17,6 +21,7 @@ class CapitalService
      */
     public function calculateShopCapital($shopId)
     {
+<<<<<<< HEAD
         // Sum of remaining batch value
         $batchValue = Restock::where('shop_id', $shopId)
             ->whereNull('deleted_at')
@@ -38,6 +43,12 @@ class CapitalService
         });
 
         return round((float) $batchValue + $fallbackValue, 2);
+=======
+        return (float) ProductBatch::query()
+            ->where('shop_id', $shopId)
+            ->selectRaw('COALESCE(SUM(remaining_quantity * purchase_price), 0) as total')
+            ->value('total');
+>>>>>>> d42f583 (initial commit)
     }
 
     public function updateShopCapital($shopId)

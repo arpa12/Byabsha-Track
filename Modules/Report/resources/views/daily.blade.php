@@ -163,6 +163,20 @@
         font-size: 0.85rem;
     }
 
+    .btn-report-brand {
+        background: linear-gradient(135deg, #0f766e 0%, #0d5969 100%);
+        border-color: #0f766e;
+        color: #fff;
+        box-shadow: 0 8px 18px rgba(15, 118, 110, 0.18);
+    }
+
+    .btn-report-brand:hover,
+    .btn-report-brand:focus {
+        background: linear-gradient(135deg, #0d5969 0%, #0f766e 100%);
+        border-color: #0d5969;
+        color: #fff;
+    }
+
     @media print {
         .top-header,
         .sidebar,
@@ -232,7 +246,7 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-semibold">&nbsp;</label>
-                        <button type="submit" class="btn btn-primary w-100">
+                        <button type="submit" class="btn btn-report-brand w-100">
                             <i class="bi bi-search"></i> {{ __('report.apply_filters') }}
                         </button>
                     </div>

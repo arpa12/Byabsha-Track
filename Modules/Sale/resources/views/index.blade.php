@@ -61,9 +61,17 @@
             <h1 class="page-title display-font">{{ __('sale.shop_products_title') }}</h1>
             <p class="page-subtitle mb-0">{{ __('sale.shop_products_subtitle') }}</p>
         </div>
-        <a href="{{ route('sale.create') }}" class="btn-new-sale">
-            <i class="bi bi-plus-circle"></i> {{ __('sale.new_sale') }}
-        </a>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ route('sale.warranties.index') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-shield-check"></i> {{ __('sale.warranty_title') }}
+            </a>
+            <a href="{{ route('sale.exchanges.index') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left-right"></i> {{ __('sale.exchange_title') }}
+            </a>
+            <a href="{{ route('sale.create') }}" class="btn-new-sale">
+                <i class="bi bi-plus-circle"></i> {{ __('sale.new_sale') }}
+            </a>
+        </div>
     </div>
 
     <div class="content-card mb-3 p-3">
@@ -89,6 +97,8 @@
             <thead>
                 <tr>
                     <th>{{ __('sale.table_product_name') }}</th>
+                    <th>{{ __('sale.table_batch') }}</th>
+                    <th>{{ __('sale.table_attributes') }}</th>
                     <th>{{ __('sale.table_buying_price') }}</th>
                     <th>{{ __('sale.table_category') }}</th>
                     <th>{{ __('sale.table_stock') }}</th>
@@ -114,10 +124,13 @@
                 <div class="modal-body">
                     <input type="hidden" id="qsShopId" name="shop_id">
                     <input type="hidden" id="qsProductId" name="product_id">
+                    <input type="hidden" id="qsProductBatchId" name="product_batch_id">
 
                     <div class="mb-2">
                         <strong id="qsProductName"></strong>
                     </div>
+                    <div class="mb-2 stock-hint" id="qsBatchHint"></div>
+                    <div class="mb-2 stock-hint" id="qsAttributeHint"></div>
                     <div class="mb-3 stock-hint" id="qsStockHint"></div>
 
                     <div class="mb-3">
@@ -175,6 +188,16 @@
                         <input type="date" class="form-control" id="qsSaleDate" name="sale_date" value="{{ now()->toDateString() }}">
                     </div>
 
+                    <div class="alert alert-info d-none" id="qsServicePreview">
+                        <div class="small text-uppercase fw-bold mb-1">{{ __('sale.quick_sale_free_service_preview') }}</div>
+                        <div><strong>{{ __('sale.free_service_start') }}:</strong> <span id="qsServiceStart">-</span></div>
+                        <div><strong>{{ __('sale.free_service_expiry') }}:</strong> <span id="qsServiceExpiry">-</span></div>
+                        <div><strong>{{ __('sale.warranty_period') }}:</strong> <span id="qsServiceDuration">-</span></div>
+                        <div class="mt-1" id="qsServiceTermsWrap">
+                            <strong>{{ __('sale.warranty_terms') }}:</strong> <span id="qsServiceTerms">-</span>
+                        </div>
+                    </div>
+
                     <div class="alert alert-danger d-none" id="quickSaleError"></div>
                 </div>
                 <div class="modal-footer">
@@ -206,7 +229,28 @@
     const qsTotalAmountEl = document.getElementById('qsTotalAmount');
     const qsTotalCostEl = document.getElementById('qsTotalCost');
     const qsProfitLossEl = document.getElementById('qsProfitLoss');
+    const qsBatchHintEl = document.getElementById('qsBatchHint');
+    const qsAttributeHintEl = document.getElementById('qsAttributeHint');
+    const qsSaleDateEl = document.getElementById('qsSaleDate');
+    const qsServicePreviewEl = document.getElementById('qsServicePreview');
+    const qsServiceStartEl = document.getElementById('qsServiceStart');
+    const qsServiceExpiryEl = document.getElementById('qsServiceExpiry');
+    const qsServiceDurationEl = document.getElementById('qsServiceDuration');
+    const qsServiceTermsWrapEl = document.getElementById('qsServiceTermsWrap');
+    const qsServiceTermsEl = document.getElementById('qsServiceTerms');
     let currentPurchasePrice = 0;
+    let currentFreeService = {
+        enabled: false,
+        durationValue: null,
+        durationUnit: null,
+        terms: '',
+    };
+
+    const durationUnitLabels = {
+        day: @json(__('sale.duration_unit_day')),
+        month: @json(__('sale.duration_unit_month')),
+        year: @json(__('sale.duration_unit_year')),
+    };
 
     const numberFormatter = new Intl.NumberFormat(undefined, {
         minimumFractionDigits: 2,
@@ -224,10 +268,12 @@
             }
         },
         columns: [
-            { data: 'name', name: 'name' },
-            { data: 'purchase_price', name: 'purchase_price', className: 'text-end' },
-            { data: 'category_name', name: 'category_name' },
-            { data: 'stock_quantity', name: 'stock_quantity', className: 'text-end' },
+            { data: 'name', name: 'products.name' },
+            { data: 'batch_label', name: 'product_batches.batch_code' },
+            { data: 'attribute_summary', name: 'attribute_summary', orderable: false },
+            { data: 'purchase_price', name: 'product_batches.purchase_price', className: 'text-end' },
+            { data: 'category_name', name: 'products.category' },
+            { data: 'stock_quantity', name: 'product_batches.remaining_quantity', className: 'text-end' },
             {
                 data: 'latest_profit',
                 name: 'latest_profit',
@@ -282,6 +328,59 @@
         } else {
             qsProfitLossEl.classList.add('profit-neutral');
         }
+
+        recalculateServicePreview();
+    }
+
+    function formatDateISO(dateObj) {
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
+    }
+
+    function recalculateServicePreview() {
+        if (!currentFreeService.enabled || !currentFreeService.durationValue || !currentFreeService.durationUnit) {
+            qsServicePreviewEl.classList.add('d-none');
+            return;
+        }
+
+        const rawSaleDate = qsSaleDateEl.value;
+        const baseDate = rawSaleDate ? new Date(rawSaleDate + 'T00:00:00') : new Date();
+        if (Number.isNaN(baseDate.getTime())) {
+            qsServicePreviewEl.classList.add('d-none');
+            return;
+        }
+
+        const expiryDate = new Date(baseDate.getTime());
+        const durationValue = parseInt(currentFreeService.durationValue, 10);
+        if (!Number.isFinite(durationValue) || durationValue <= 0) {
+            qsServicePreviewEl.classList.add('d-none');
+            return;
+        }
+
+        if (currentFreeService.durationUnit === 'day') {
+            expiryDate.setDate(expiryDate.getDate() + durationValue);
+        } else if (currentFreeService.durationUnit === 'month') {
+            expiryDate.setMonth(expiryDate.getMonth() + durationValue);
+        } else if (currentFreeService.durationUnit === 'year') {
+            expiryDate.setFullYear(expiryDate.getFullYear() + durationValue);
+        }
+
+        const unitLabel = durationUnitLabels[currentFreeService.durationUnit] || currentFreeService.durationUnit;
+        qsServiceStartEl.textContent = formatDateISO(baseDate);
+        qsServiceExpiryEl.textContent = formatDateISO(expiryDate);
+        qsServiceDurationEl.textContent = String(durationValue) + ' ' + unitLabel;
+
+        if (currentFreeService.terms) {
+            qsServiceTermsEl.textContent = currentFreeService.terms;
+            qsServiceTermsWrapEl.classList.remove('d-none');
+        } else {
+            qsServiceTermsEl.textContent = '-';
+            qsServiceTermsWrapEl.classList.add('d-none');
+        }
+
+        qsServicePreviewEl.classList.remove('d-none');
     }
 
     document.getElementById('shopSwitcher').addEventListener('click', function (event) {
@@ -312,17 +411,28 @@
 
         document.getElementById('qsShopId').value = saleBtn.dataset.shopId;
         document.getElementById('qsProductId').value = saleBtn.dataset.productId;
+        document.getElementById('qsProductBatchId').value = saleBtn.dataset.batchId;
         document.getElementById('qsProductName').textContent = saleBtn.dataset.productName;
+        qsBatchHintEl.textContent = 'Batch: ' + (saleBtn.dataset.batchCode || '-');
+        qsAttributeHintEl.textContent = '{{ __('sale.table_attributes') }}: ' + (saleBtn.dataset.attributeSummary || '-');
         document.getElementById('qsStockHint').textContent = '{{ __('sale.available_stock') }}: ' + stock;
         document.getElementById('qsQuantity').max = stock;
         document.getElementById('qsQuantity').value = 1;
         document.getElementById('qsSalePrice').value = Number.isFinite(defaultSalePrice) ? defaultSalePrice : 0;
         document.getElementById('qsDiscount').value = 0;
+        document.getElementById('qsSaleDate').value = '{{ now()->toDateString() }}';
         document.getElementById('qsCustomerName').value = '';
         document.getElementById('qsCustomerPhone').value = '';
         document.getElementById('qsCustomerAddress').value = '';
         document.getElementById('quickSaleError').classList.add('d-none');
         document.getElementById('quickSaleError').textContent = '';
+
+        currentFreeService = {
+            enabled: parseInt(saleBtn.dataset.hasFreeService || '0', 10) === 1,
+            durationValue: saleBtn.dataset.freeServiceDurationValue || null,
+            durationUnit: saleBtn.dataset.freeServiceDurationUnit || null,
+            terms: saleBtn.dataset.freeServiceTerms || '',
+        };
 
         recalculateQuickSalePreview();
 
@@ -332,6 +442,7 @@
     qsSalePriceEl.addEventListener('input', recalculateQuickSalePreview);
     qsDiscountEl.addEventListener('input', recalculateQuickSalePreview);
     qsQuantityEl.addEventListener('input', recalculateQuickSalePreview);
+    qsSaleDateEl.addEventListener('input', recalculateServicePreview);
 
     document.getElementById('quickSaleForm').addEventListener('submit', async function (event) {
         event.preventDefault();

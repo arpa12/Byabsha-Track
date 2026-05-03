@@ -3,15 +3,15 @@
 namespace Modules\Shop\Models;
 
 use App\Models\User;
+use App\Models\TenantModel;
 use Modules\Branch\Models\Branch;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Product\Models\Product;
 use Modules\Sale\Models\Sale;
 
-class Shop extends Model
+class Shop extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

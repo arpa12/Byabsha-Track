@@ -2,11 +2,11 @@
 
 namespace Modules\Product\Models;
 
+use App\Models\TenantModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ProductDynamicValue extends Model
+class ProductDynamicValue extends TenantModel
 {
     use HasFactory;
 

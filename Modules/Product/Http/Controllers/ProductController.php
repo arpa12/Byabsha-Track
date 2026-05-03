@@ -10,18 +10,21 @@ use Modules\Shop\Models\Shop;
 use Modules\Capital\Services\CapitalService;
 use Modules\Product\Models\ProductDynamicField;
 use Modules\Product\Models\ProductDynamicValue;
+use Modules\Product\Services\ProductBatchService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
     protected $capitalService;
+    protected ProductBatchService $productBatchService;
 
-    public function __construct(CapitalService $capitalService)
+    public function __construct(CapitalService $capitalService, ProductBatchService $productBatchService)
     {
         $this->capitalService = $capitalService;
+        $this->productBatchService = $productBatchService;
     }
     public function index(Request $request)
     {
@@ -200,17 +203,24 @@ class ProductController extends Controller
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('products', 'name')->where(function ($query) use ($request) {
-                    return $query->where('shop_id', $request->input('shop_id'))
-                        ->whereNull('deleted_at');
-                }),
             ],
             'category_id' => 'nullable|exists:categories,id',
             'brand' => 'nullable|string|max:255',
             'purchase_price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
             'stock_quantity' => 'required|integer|min:0',
+            'has_free_service' => 'nullable|boolean',
+            'free_service_duration_value' => 'nullable|integer|min:1|required_if:has_free_service,1',
+            'free_service_duration_unit' => 'nullable|in:day,month,year|required_if:has_free_service,1',
+            'free_service_terms' => 'nullable|string|max:2000',
         ]);
+
+        $validated['has_free_service'] = $request->boolean('has_free_service');
+        if (!$validated['has_free_service']) {
+            $validated['free_service_duration_value'] = null;
+            $validated['free_service_duration_unit'] = null;
+            $validated['free_service_terms'] = null;
+        }
 
         if ($supportsModelName) {
             $validated['model_name'] = trim((string) $request->input('model_name', '')) ?: null;
@@ -225,11 +235,22 @@ class ProductController extends Controller
 
         $validatedDynamicValues = $this->validateDynamicFieldValues($request, $validated['category_id'] ?? null);
 
-        $product = Product::create($validated);
-        $this->syncDynamicFieldValues($product, $validatedDynamicValues);
+        DB::transaction(function () use ($validated, $validatedDynamicValues): void {
+            $product = Product::create($validated);
+            $this->syncDynamicFieldValues($product, $validatedDynamicValues);
 
-        // Recalculate shop capital
-        $this->capitalService->updateShopCapital($product->shop_id);
+            if ((int) $validated['stock_quantity'] > 0) {
+                $this->productBatchService->createBatch($product, [
+                    'source_type' => 'initial',
+                    'purchase_price' => (float) $validated['purchase_price'],
+                    'initial_quantity' => (int) $validated['stock_quantity'],
+                    'batch_date' => now()->toDateString(),
+                    'note' => 'Initial stock batch created during product creation.',
+                ]);
+            }
+
+            $this->capitalService->updateShopCapital($product->shop_id);
+        });
 
         return redirect()->route('product.index')
             ->with('success', 'Product created successfully!');
@@ -237,7 +258,14 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::with(['shop', 'productCategory', 'dynamicValues.dynamicField'])->findOrFail($id);
+        $product = Product::with([
+            'shop',
+            'productCategory',
+            'dynamicValues.dynamicField',
+            'batches' => function ($query) {
+                $query->orderByDesc('batch_date')->orderByDesc('id');
+            },
+        ])->findOrFail($id);
         abort_unless(auth()->user()->ownsShop((int) $product->shop_id), 403, 'You do not have access to this shop.');
         return view('product::show', compact('product'));
     }
@@ -315,19 +343,24 @@ class ProductController extends Controller
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('products', 'name')
-                    ->ignore($product->id)
-                    ->where(function ($query) use ($request) {
-                        return $query->where('shop_id', $request->input('shop_id'))
-                            ->whereNull('deleted_at');
-                    }),
             ],
             'category_id' => 'nullable|exists:categories,id',
             'brand' => 'nullable|string|max:255',
             'purchase_price' => 'required|numeric|min:0',
             'sale_price' => 'required|numeric|min:0',
             'stock_quantity' => 'required|integer|min:0',
+            'has_free_service' => 'nullable|boolean',
+            'free_service_duration_value' => 'nullable|integer|min:1|required_if:has_free_service,1',
+            'free_service_duration_unit' => 'nullable|in:day,month,year|required_if:has_free_service,1',
+            'free_service_terms' => 'nullable|string|max:2000',
         ]);
+
+        $validated['has_free_service'] = $request->boolean('has_free_service');
+        if (!$validated['has_free_service']) {
+            $validated['free_service_duration_value'] = null;
+            $validated['free_service_duration_unit'] = null;
+            $validated['free_service_terms'] = null;
+        }
 
         if ($supportsModelName) {
             $validated['model_name'] = trim((string) $request->input('model_name', '')) ?: null;
@@ -345,14 +378,26 @@ class ProductController extends Controller
         }
 
         $oldShopId = $product->shop_id;
-        $product->update($validated);
-        $this->syncDynamicFieldValues($product, $validatedDynamicValues);
 
-        // Recalculate capital for affected shop(s)
-        $this->capitalService->updateShopCapital($product->shop_id);
-        if ($oldShopId != $product->shop_id) {
-            $this->capitalService->updateShopCapital($oldShopId);
-        }
+        DB::transaction(function () use ($product, $validated, $validatedDynamicValues, $oldShopId): void {
+            $product->update($validated);
+            $this->syncDynamicFieldValues($product, $validatedDynamicValues);
+
+            if ((int) $oldShopId !== (int) $product->shop_id) {
+                $product->batches()->update(['shop_id' => $product->shop_id]);
+            }
+
+            $this->productBatchService->syncManualStockQuantity(
+                $product,
+                (int) $validated['stock_quantity'],
+                (float) $validated['purchase_price']
+            );
+
+            $this->capitalService->updateShopCapital($product->shop_id);
+            if ($oldShopId != $product->shop_id) {
+                $this->capitalService->updateShopCapital($oldShopId);
+            }
+        });
 
         return redirect()->route('product.index')
             ->with('success', 'Product updated successfully!');
@@ -363,10 +408,12 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
         abort_unless(auth()->user()->ownsShop((int) $product->shop_id), 403, 'You do not have access to this shop.');
         $shopId = $product->shop_id;
-        $product->delete();
 
-        // Recalculate shop capital
-        $this->capitalService->updateShopCapital($shopId);
+        DB::transaction(function () use ($product, $shopId): void {
+            $product->batches()->delete();
+            $product->delete();
+            $this->capitalService->updateShopCapital($shopId);
+        });
 
         return redirect()->route('product.index')
             ->with('success', 'Product deleted successfully!');

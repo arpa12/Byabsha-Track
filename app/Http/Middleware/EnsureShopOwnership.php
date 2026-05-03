@@ -3,7 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Http\Request;
+Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureShopOwnership
@@ -52,3 +52,4 @@ class EnsureShopOwnership
 
 
 }    }        return $next($request);        }            abort(403, 'You do not have access to this shop.');        if ($shopId && !$user->ownsShop($shopId)) {        $shopId = (int) ($request->route('id') ?? $request->input('shop_id'));        }            return $next($request);        if ($user->isSuperAdmin()) {        }            return redirect()->route('login');
+

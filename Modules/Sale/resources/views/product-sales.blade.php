@@ -60,23 +60,36 @@
                 <thead>
                     <tr>
                         <th>{{ __('sale.col_date') }}</th>
+                        <th>{{ __('sale.table_batch') }}</th>
                         <th>{{ __('sale.col_quantity') }}</th>
                         <th>{{ __('sale.col_sale_price') }}</th>
+                        <th>{{ __('sale.table_buying_price') }}</th>
                         <th>{{ __('sale.quick_sale_discount') }}</th>
                         <th>{{ __('sale.col_total') }}</th>
                         <th>{{ __('sale.col_profit') }}</th>
                         <th>{{ __('sale.col_customer_name') }}</th>
                         <th>{{ __('sale.col_customer_phone') }}</th>
                         <th>{{ __('sale.col_customer_address') }}</th>
+                        <th>{{ __('sale.free_service_start') }}</th>
+                        <th>{{ __('sale.free_service_expiry') }}</th>
+                        <th>{{ __('sale.free_service_status') }}</th>
                         <th>{{ __('sale.col_actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($sales as $sale)
+                        @php
+                            $serviceRecord = $sale->warranties->first();
+                            $serviceStatus = $serviceRecord
+                                ? (($serviceRecord->status === 'active' && $serviceRecord->end_date->isPast()) ? 'expired' : $serviceRecord->status)
+                                : null;
+                        @endphp
                         <tr>
                             <td>{{ optional($sale->sale_date)->format('d M Y') ?? '-' }}</td>
+                            <td>{{ $sale->productBatch?->batch_code ?? '-' }}</td>
                             <td>{{ (int) $sale->quantity }}</td>
                             <td>{{ number_format((float) $sale->sale_price, 2) }}</td>
+                            <td>{{ number_format((float) ($sale->purchase_price_per_unit ?? $sale->productBatch?->purchase_price ?? 0), 2) }}</td>
                             <td>{{ number_format((float) ($sale->discount ?? 0), 2) }}</td>
                             <td>{{ number_format((float) $sale->total_amount, 2) }}</td>
                             <td class="{{ (float) $sale->profit < 0 ? 'text-danger' : 'text-success' }}">
@@ -85,6 +98,17 @@
                             <td>{{ $sale->customer_name ?: '-' }}</td>
                             <td>{{ $sale->customer_phone ?: '-' }}</td>
                             <td>{{ $sale->customer_address ?: '-' }}</td>
+                            <td>{{ $serviceRecord?->start_date?->format('d M Y') ?? '-' }}</td>
+                            <td>{{ $serviceRecord?->end_date?->format('d M Y') ?? '-' }}</td>
+                            <td>
+                                @if($serviceStatus)
+                                    <span class="badge bg-{{ $serviceStatus === 'active' ? 'success' : ($serviceStatus === 'claimed' ? 'info' : ($serviceStatus === 'expired' ? 'warning text-dark' : 'secondary')) }}">
+                                        {{ __('sale.status_' . $serviceStatus) }}
+                                    </span>
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td>
                                 <button
                                     type="button"
@@ -92,14 +116,19 @@
                                     title="{{ __('sale.show_title') }}"
                                     data-sale-id="{{ $sale->id }}"
                                     data-sale-date="{{ optional($sale->sale_date)->format('d M Y') ?? '-' }}"
+                                    data-batch-code="{{ $sale->productBatch?->batch_code ?? '-' }}"
                                     data-quantity="{{ (int) $sale->quantity }}"
                                     data-sale-price="{{ number_format((float) $sale->sale_price, 2, '.', '') }}"
+                                    data-purchase-price="{{ number_format((float) ($sale->purchase_price_per_unit ?? 0), 2, '.', '') }}"
                                     data-discount="{{ number_format((float) ($sale->discount ?? 0), 2, '.', '') }}"
                                     data-total-amount="{{ number_format((float) $sale->total_amount, 2, '.', '') }}"
                                     data-profit="{{ number_format((float) $sale->profit, 2, '.', '') }}"
                                     data-customer-name="{{ $sale->customer_name ?: '-' }}"
                                     data-customer-phone="{{ $sale->customer_phone ?: '-' }}"
                                     data-customer-address="{{ $sale->customer_address ?: '-' }}"
+                                    data-service-start="{{ $serviceRecord?->start_date?->format('d M Y') ?? '-' }}"
+                                    data-service-expiry="{{ $serviceRecord?->end_date?->format('d M Y') ?? '-' }}"
+                                    data-service-status="{{ $serviceStatus ? __('sale.status_' . $serviceStatus) : '-' }}"
                                 >
                                     <i class="bi bi-eye"></i>
                                 </button>
@@ -107,7 +136,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="text-center py-4 text-muted">{{ __('sale.no_product_sales') }}</td>
+                            <td colspan="15" class="text-center py-4 text-muted">{{ __('sale.no_product_sales') }}</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -140,8 +169,16 @@
                         <div class="fw-semibold" id="modalQuantity">-</div>
                     </div>
                     <div class="col-md-6">
+                        <div class="text-muted small">{{ __('sale.table_batch') }}</div>
+                        <div class="fw-semibold" id="modalBatchCode">-</div>
+                    </div>
+                    <div class="col-md-6">
                         <div class="text-muted small">{{ __('sale.sale_price_unit') }}</div>
                         <div class="fw-semibold" id="modalSalePrice">-</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">{{ __('sale.table_buying_price') }}</div>
+                        <div class="fw-semibold" id="modalPurchasePrice">-</div>
                     </div>
                     <div class="col-md-6">
                         <div class="text-muted small">{{ __('sale.quick_sale_discount') }}</div>
@@ -166,6 +203,18 @@
                     <div class="col-md-4">
                         <div class="text-muted small">{{ __('sale.customer_address') }}</div>
                         <div class="fw-semibold" id="modalCustomerAddress">-</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small">{{ __('sale.free_service_start') }}</div>
+                        <div class="fw-semibold" id="modalServiceStart">-</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small">{{ __('sale.free_service_expiry') }}</div>
+                        <div class="fw-semibold" id="modalServiceExpiry">-</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small">{{ __('sale.free_service_status') }}</div>
+                        <div class="fw-semibold" id="modalServiceStatus">-</div>
                     </div>
                 </div>
             </div>
@@ -199,7 +248,9 @@
 
             document.getElementById('modalSaleDate').textContent = button.dataset.saleDate || '-';
             document.getElementById('modalQuantity').textContent = button.dataset.quantity || '-';
+            document.getElementById('modalBatchCode').textContent = button.dataset.batchCode || '-';
             document.getElementById('modalSalePrice').textContent = formatNumber(button.dataset.salePrice);
+            document.getElementById('modalPurchasePrice').textContent = formatNumber(button.dataset.purchasePrice);
             document.getElementById('modalDiscount').textContent = formatNumber(button.dataset.discount);
             document.getElementById('modalTotalAmount').textContent = formatNumber(button.dataset.totalAmount);
 
@@ -216,6 +267,9 @@
             document.getElementById('modalCustomerName').textContent = button.dataset.customerName || '-';
             document.getElementById('modalCustomerPhone').textContent = button.dataset.customerPhone || '-';
             document.getElementById('modalCustomerAddress').textContent = button.dataset.customerAddress || '-';
+            document.getElementById('modalServiceStart').textContent = button.dataset.serviceStart || '-';
+            document.getElementById('modalServiceExpiry').textContent = button.dataset.serviceExpiry || '-';
+            document.getElementById('modalServiceStatus').textContent = button.dataset.serviceStatus || '-';
 
             detailsModal.show();
         });

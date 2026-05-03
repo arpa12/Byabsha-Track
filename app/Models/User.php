@@ -25,6 +25,7 @@ class User extends Authenticatable
         'sale',
         'capital',
         'restock',
+        'damage',
         'report',
     ];
 
@@ -39,9 +40,13 @@ class User extends Authenticatable
         'password',
         'role',
         'module_access',
+<<<<<<< HEAD
         'is_approved',
         'shop_id',
         'branch_id',
+=======
+        'tenant_id',
+>>>>>>> d42f583 (initial commit)
     ];
 
     /**
@@ -146,6 +151,7 @@ class User extends Authenticatable
             'sale' => 'sale.index',
             'capital' => 'capital.index',
             'restock' => 'restock.index',
+            'damage' => 'damage.index',
             'report' => 'report.index',
         ];
 
@@ -166,6 +172,14 @@ class User extends Authenticatable
     public function notifications()
     {
         return $this->hasMany(Notification::class);
+    }
+
+    /**
+     * Get the tenant this user belongs to
+     */
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
     }
 
     /**

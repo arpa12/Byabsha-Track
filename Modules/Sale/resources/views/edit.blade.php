@@ -206,17 +206,17 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="product_id" class="form-label fw-semibold">
-                            {{ __('sale.product') }} <span class="text-danger">*</span>
+                        <label for="product_batch_id" class="form-label fw-semibold">
+                            {{ __('sale.batch') }} <span class="text-danger">*</span>
                         </label>
-                        <select class="form-select @error('product_id') is-invalid @enderror"
-                                id="product_id"
-                                name="product_id"
-                                data-selected-product-id="{{ old('product_id', $sale->product_id) }}"
+                        <select class="form-select @error('product_batch_id') is-invalid @enderror"
+                                id="product_batch_id"
+                                name="product_batch_id"
+                                data-selected-product-id="{{ old('product_batch_id', $sale->product_batch_id) }}"
                                 required>
-                            <option value="">{{ __('sale.select_product') }}</option>
+                            <option value="">{{ __('sale.select_batch') }}</option>
                         </select>
-                        @error('product_id')
+                        @error('product_batch_id')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                         <div class="form-text" id="stock-info"></div>
@@ -321,10 +321,10 @@
 const productsByShopEndpoint = "{{ route('sale.products-by-shop') }}";
 
 async function loadProductsByShop(selectedShopId) {
-    const productSelect = document.getElementById('product_id');
+    const productSelect = document.getElementById('product_batch_id');
     const selectedProductId = productSelect.dataset.selectedProductId || '';
 
-    productSelect.innerHTML = `<option value="">{{ __('sale.select_product') }}</option>`;
+    productSelect.innerHTML = `<option value="">{{ __('sale.select_batch') }}</option>`;
 
     if (!selectedShopId) {
         updateCalcPreview();
@@ -338,10 +338,14 @@ async function loadProductsByShop(selectedShopId) {
         products.forEach((product) => {
             const option = document.createElement('option');
             option.value = product.id;
+            option.setAttribute('data-product-id', product.product_id);
+            option.setAttribute('data-product-name', product.product_name);
+            option.setAttribute('data-batch-code', product.batch_code);
             option.setAttribute('data-stock', product.stock_quantity);
             option.setAttribute('data-price', product.sale_price);
             option.setAttribute('data-purchase-price', product.purchase_price);
-            option.textContent = `${product.name} - Stock: ${product.stock_quantity} - Price: ${Number(product.sale_price).toFixed(2)}`;
+            option.setAttribute('data-attribute-summary', product.attribute_summary || '-');
+            option.textContent = `${product.product_name} | Batch: ${product.batch_code} | Attr: ${product.attribute_summary || '-'} | Stock: ${product.stock_quantity} | Price: ${Number(product.sale_price).toFixed(2)}`;
 
             if (String(selectedProductId) === String(product.id)) {
                 option.selected = true;
@@ -364,7 +368,7 @@ function filterProductsByShop() {
 }
 
 function updateCalcPreview() {
-    const productSelect = document.getElementById('product_id');
+    const productSelect = document.getElementById('product_batch_id');
     const quantityInput = document.getElementById('quantity');
     const selectedOption = productSelect.options[productSelect.selectedIndex];
     const stockInfo = document.getElementById('stock-info');
@@ -373,9 +377,11 @@ function updateCalcPreview() {
     const purchasePrice = parseFloat(selectedOption.getAttribute('data-purchase-price')) || 0;
     const stock         = selectedOption.getAttribute('data-stock');
     const qty           = parseInt(quantityInput.value) || 0;
+    const batchCode     = selectedOption.getAttribute('data-batch-code') || '-';
+    const attributeSummary = selectedOption.getAttribute('data-attribute-summary') || '-';
 
     if (stock) {
-        stockInfo.innerHTML = `Available Stock: <strong>${stock}</strong> units | Sale Price: <strong>${salePrice.toFixed(2)}</strong>`;
+        stockInfo.innerHTML = `Batch <strong>${batchCode}</strong> | Attr: <strong>${attributeSummary}</strong> | Available Stock: <strong>${stock}</strong> units | Sale Price: <strong>${salePrice.toFixed(2)}</strong>`;
         quantityInput.max = stock;
     } else {
         stockInfo.innerHTML = '';
@@ -406,7 +412,7 @@ function updateCalcPreview() {
 }
 
 document.getElementById('shop_id').addEventListener('change', filterProductsByShop);
-document.getElementById('product_id').addEventListener('change', updateCalcPreview);
+document.getElementById('product_batch_id').addEventListener('change', updateCalcPreview);
 document.getElementById('quantity').addEventListener('input', updateCalcPreview);
 
 // Auto-populate on page load using existing values

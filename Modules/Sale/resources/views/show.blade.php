@@ -202,6 +202,12 @@
             <div class="p-4">
                 <table class="table table-borderless sale-info-table">
                     <tbody>
+                        @php
+                            $serviceRecord = $sale->warranties->first();
+                            $serviceStatus = $serviceRecord
+                                ? (($serviceRecord->status === 'active' && $serviceRecord->end_date->isPast()) ? 'expired' : $serviceRecord->status)
+                                : null;
+                        @endphp
                         <tr>
                             <td class="fw-semibold" style="width: 200px;">{{ __('sale.sale_date') }}:</td>
                             <td>{{ $sale->sale_date->format('d M Y') }}</td>
@@ -233,6 +239,24 @@
                         <tr>
                             <td class="fw-semibold">{{ __('sale.customer_address') }}:</td>
                             <td>{{ $sale->customer_address ?: '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">{{ __('sale.free_service_start') }}:</td>
+                            <td>{{ $serviceRecord?->start_date?->format('d M Y') ?? '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">{{ __('sale.free_service_expiry') }}:</td>
+                            <td>{{ $serviceRecord?->end_date?->format('d M Y') ?? '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">{{ __('sale.free_service_status') }}:</td>
+                            <td>
+                                @if($serviceStatus)
+                                    <span class="shop-pill">{{ __('sale.status_' . $serviceStatus) }}</span>
+                                @else
+                                    -
+                                @endif
+                            </td>
                         </tr>
                         <tr>
                             <td class="fw-semibold">{{ __('sale.quantity_sold') }}:</td>

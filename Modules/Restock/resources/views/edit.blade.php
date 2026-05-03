@@ -225,6 +225,14 @@
                             <div class="form-text" id="product-info"></div>
                         </div>
 
+                        <div class="mb-3" id="attributeFieldsWrapper" style="display:none;">
+                            <label class="form-label fw-semibold">
+                                {{ __('restock.attribute_combination') }} <span class="text-danger">*</span>
+                            </label>
+                            <div class="row g-2" id="attributeFieldsContainer"></div>
+                            <div class="form-text">{{ __('restock.attribute_help') }}</div>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="quantity" class="form-label fw-semibold">
@@ -314,7 +322,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const shopSelect = document.getElementById('shop_id');
     const productSelect = document.getElementById('product_id');
     const productInfo = document.getElementById('product-info');
+    const attributeFieldsWrapper = document.getElementById('attributeFieldsWrapper');
+    const attributeFieldsContainer = document.getElementById('attributeFieldsContainer');
     const productsUrl = "{{ route('restock.products-by-shop') }}";
+    const existingBatchAttributes = @json(
+        collect(old('attribute_values', []))->isNotEmpty()
+            ? old('attribute_values', [])
+            : collect($restock->productBatch?->attribute_values ?? [])->mapWithKeys(function ($item) {
+                return [
+                    (string) ($item['field_id'] ?? '') => (string) ($item['value'] ?? ''),
+                ];
+            })->all()
+    );
 
     function loadProductsByShop(shopId) {
         const selectedProductId = productSelect.dataset.selectedProductId || '';
@@ -336,6 +355,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     option.textContent = product.name + ' (Stock: ' + product.stock_quantity + ')';
                     option.dataset.stock = product.stock_quantity;
                     option.dataset.purchasePrice = product.purchase_price;
+                    option.dataset.attributes = JSON.stringify(product.attributes || []);
 
                     if (String(product.id) === String(selectedProductId)) {
                         option.selected = true;
@@ -363,10 +383,73 @@ document.addEventListener('DOMContentLoaded', function () {
             const stock = selected.dataset.stock;
             const purchasePrice = parseFloat(selected.dataset.purchasePrice) || 0;
             productInfo.innerHTML = '{{ __('restock.current_stock_label') }}: <strong>' + stock + '</strong> | {{ __('restock.product_purchase_price') }}: <strong>৳' + purchasePrice.toFixed(2) + '</strong>';
+
+            const attributes = JSON.parse(selected.dataset.attributes || '[]');
+            renderAttributeFields(attributes);
         } else {
             productInfo.innerHTML = '';
+            renderAttributeFields([]);
         }
     });
+
+    function renderAttributeFields(attributes) {
+        attributeFieldsContainer.innerHTML = '';
+
+        if (!Array.isArray(attributes) || attributes.length === 0) {
+            attributeFieldsWrapper.style.display = 'none';
+            return;
+        }
+
+        attributes.forEach(function(attribute) {
+            const col = document.createElement('div');
+            col.className = 'col-md-6';
+
+            const label = document.createElement('label');
+            label.className = 'form-label fw-semibold';
+            label.setAttribute('for', `attribute_${attribute.field_id}`);
+            label.textContent = attribute.label + (attribute.is_required ? ' *' : '');
+
+            let input;
+            const fieldName = `attribute_values[${attribute.field_id}]`;
+            const oldValue = existingBatchAttributes[String(attribute.field_id)] ?? attribute.value ?? '';
+
+            if (attribute.input_type === 'select' && Array.isArray(attribute.options) && attribute.options.length > 0) {
+                input = document.createElement('select');
+                input.className = 'form-select';
+                input.name = fieldName;
+                input.id = `attribute_${attribute.field_id}`;
+                if (attribute.is_required) {
+                    input.required = true;
+                }
+
+                attribute.options.forEach(function(optionValue) {
+                    const option = document.createElement('option');
+                    option.value = optionValue;
+                    option.textContent = optionValue;
+                    if (String(optionValue) === String(oldValue)) {
+                        option.selected = true;
+                    }
+                    input.appendChild(option);
+                });
+            } else {
+                input = document.createElement('input');
+                input.type = attribute.input_type === 'number' ? 'number' : (attribute.input_type === 'date' ? 'date' : 'text');
+                input.className = 'form-control';
+                input.name = fieldName;
+                input.id = `attribute_${attribute.field_id}`;
+                input.value = oldValue;
+                if (attribute.is_required) {
+                    input.required = true;
+                }
+            }
+
+            col.appendChild(label);
+            col.appendChild(input);
+            attributeFieldsContainer.appendChild(col);
+        });
+
+        attributeFieldsWrapper.style.display = 'block';
+    }
 
     if (shopSelect.value) {
         loadProductsByShop(shopSelect.value);

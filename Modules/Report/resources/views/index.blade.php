@@ -195,6 +195,20 @@
         font-size: 0.85rem;
     }
 
+    .btn-report-brand {
+        background: linear-gradient(135deg, #0f766e 0%, #0d5969 100%);
+        border-color: #0f766e;
+        color: #fff;
+        box-shadow: 0 8px 18px rgba(15, 118, 110, 0.18);
+    }
+
+    .btn-report-brand:hover,
+    .btn-report-brand:focus {
+        background: linear-gradient(135deg, #0d5969 0%, #0f766e 100%);
+        border-color: #0d5969;
+        color: #fff;
+    }
+
     @media print {
         .top-header,
         .sidebar,
@@ -272,7 +286,7 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small fw-semibold">&nbsp;</label>
-                        <button type="submit" class="btn btn-primary w-100">
+                        <button type="submit" class="btn btn-report-brand w-100">
                             <i class="bi bi-search"></i> {{ __('report.apply_filters') }}
                         </button>
                     </div>
@@ -282,19 +296,31 @@
     </div>
 
     <div class="row g-3 mb-3">
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-2">
             <div class="kpi">
                 <p class="kpi-label">{{ __('report.total_sales') }}</p>
                 <p class="kpi-value">{{ $salesSummary->total_transactions ?? 0 }}</p>
             </div>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-2">
             <div class="kpi">
                 <p class="kpi-label">{{ __('report.total_revenue') }}</p>
                 <p class="kpi-value">{{ number_format($salesSummary->total_revenue ?? 0, 2) }}</p>
             </div>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-2">
+            <div class="kpi">
+                <p class="kpi-label">{{ __('report.active_warranties') }}</p>
+                <p class="kpi-value">{{ number_format($warrantyExchangeSummary['active_warranties'] ?? 0) }}</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-2">
+            <div class="kpi">
+                <p class="kpi-label">{{ __('report.total_exchanges') }}</p>
+                <p class="kpi-value">{{ number_format($warrantyExchangeSummary['total_exchanges'] ?? 0) }}</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-2">
             <div class="kpi">
                 <p class="kpi-label">{{ __('report.this_month_profit') }}</p>
                 <p class="kpi-value {{ ($monthlyOverview['totals']->total_profit ?? 0) >= 0 ? 'text-success' : 'text-danger' }}">
@@ -302,7 +328,7 @@
                 </p>
             </div>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-2">
             <div class="kpi">
                 <p class="kpi-label">{{ __('report.this_year_profit') }}</p>
                 <p class="kpi-value {{ ($yearlyOverview['totals']->total_profit ?? 0) >= 0 ? 'text-success' : 'text-danger' }}">

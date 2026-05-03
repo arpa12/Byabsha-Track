@@ -5,6 +5,7 @@ namespace Modules\Report\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Modules\Report\Services\ReportService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReportController extends Controller
@@ -18,7 +19,9 @@ class ReportController extends Controller
 
     private function authorizedFilters(Request $request, array $extra = []): array
     {
-        $user = auth()->user();
+        $user = Auth::user();
+        abort_unless($user, 401);
+        /** @var \App\Models\User $user */
         $shopIds = $user->accessibleShopIds();
 
         $shopId = $request->input('shop_id');
@@ -34,14 +37,14 @@ class ReportController extends Controller
 
     public function index(Request $request)
     {
-
-        $filters = [
-            'shop_id' => $request->input('shop_id'),
+        // Ensure user is authorized for requested shop and populate shop_ids
+        $filters = $this->authorizedFilters($request, [
             'start_date' => $request->input('start_date', now()->subDays(6)->format('Y-m-d')),
             'end_date' => $request->input('end_date', now()->format('Y-m-d')),
-        ];
+        ]);
 
         $salesSummary = $this->reportService->getSalesSummary($filters);
+        $warrantyExchangeSummary = $this->reportService->getWarrantyExchangeSummary($filters);
         $dailySales = $this->reportService->getDailySales($filters);
         $dailyDates = collect($dailySales)
             ->pluck('date')
@@ -60,6 +63,7 @@ class ReportController extends Controller
 
         return view('report::index', compact(
             'salesSummary',
+            'warrantyExchangeSummary',
             'dailySales',
             'dailySalesDetails',
             'monthlyOverview',
@@ -77,6 +81,7 @@ class ReportController extends Controller
         ]);
 
         $salesSummary = $this->reportService->getSalesSummary($filters);
+        $warrantyExchangeSummary = $this->reportService->getWarrantyExchangeSummary($filters);
         $dailySales = $this->reportService->getDailySales($filters);
         $dailyDates = collect($dailySales)
             ->pluck('date')
@@ -100,6 +105,7 @@ class ReportController extends Controller
 
         return view('report::print-index', compact(
             'salesSummary',
+            'warrantyExchangeSummary',
             'dailySales',
             'dailySalesDetails',
             'monthlyOverview',

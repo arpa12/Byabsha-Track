@@ -3,13 +3,13 @@
 namespace Modules\Branch\Models;
 
 use App\Models\User;
+use App\Models\TenantModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Shop\Models\Shop;
 
-class Branch extends Model
+class Branch extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

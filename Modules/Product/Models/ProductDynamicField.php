@@ -2,14 +2,14 @@
 
 namespace Modules\Product\Models;
 
+use App\Models\TenantModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Category\Models\Category;
 
-class ProductDynamicField extends Model
+class ProductDynamicField extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

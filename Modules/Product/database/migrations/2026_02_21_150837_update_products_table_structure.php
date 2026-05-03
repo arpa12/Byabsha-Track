@@ -12,17 +12,41 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            // Add new columns
-            $table->string('category')->nullable()->after('name');
-            $table->string('brand')->nullable()->after('category');
+            // Add new columns only if they don't exist
+            if (!Schema::hasColumn('products', 'category')) {
+                $table->string('category')->nullable()->after('name');
+            }
+            if (!Schema::hasColumn('products', 'brand')) {
+                $table->string('brand')->nullable()->after('category');
+            }
 
-            // Rename columns
-            $table->renameColumn('cost', 'purchase_price');
-            $table->renameColumn('price', 'sale_price');
+            // Drop columns only if they exist (to handle SQLite constraints)
+            $columnsToCheck = ['sku', 'description', 'unit', 'is_active'];
+            $existingColumns = [];
 
-            // Drop columns we don't need
-            $table->dropColumn(['sku', 'description', 'unit', 'is_active']);
+            foreach ($columnsToCheck as $col) {
+                if (Schema::hasColumn('products', $col)) {
+                    $existingColumns[] = $col;
+                }
+            }
+
+            if (!empty($existingColumns)) {
+                $table->dropColumn($existingColumns);
+            }
         });
+
+        // Rename columns separately to avoid issues
+        if (Schema::hasColumn('products', 'cost')) {
+            Schema::table('products', function (Blueprint $table) {
+                $table->renameColumn('cost', 'purchase_price');
+            });
+        }
+
+        if (Schema::hasColumn('products', 'price')) {
+            Schema::table('products', function (Blueprint $table) {
+                $table->renameColumn('price', 'sale_price');
+            });
+        }
     }
 
     /**

@@ -2,12 +2,12 @@
 
 namespace Modules\Capital\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\TenantModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Shop\Models\Shop;
 
-class Capital extends Model
+class Capital extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

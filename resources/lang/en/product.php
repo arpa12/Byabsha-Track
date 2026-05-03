@@ -75,6 +75,18 @@ return [
     'stock_update_hint'   => 'Update the current stock quantity for this product',
     'description'         => 'Description',
     'desc_placeholder'    => 'Optional product description',
+    'free_service'        => 'Free Service',
+    'free_service_available' => 'This product includes free service',
+    'free_service_enabled' => 'Enabled',
+    'free_service_disabled' => 'Disabled',
+    'free_service_duration_value' => 'Service Duration Value',
+    'free_service_duration_unit' => 'Service Duration Unit',
+    'select_duration_unit' => 'Select duration unit',
+    'duration_day'        => 'Day(s)',
+    'duration_month'      => 'Month(s)',
+    'duration_year'       => 'Year(s)',
+    'free_service_terms'  => 'Service Terms',
+    'free_service_terms_placeholder' => 'Optional conditions for free service coverage',
 
     // Show details
     'profit_per_unit'     => 'Profit Per Unit',

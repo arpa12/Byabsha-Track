@@ -26,6 +26,7 @@ class UserController extends Controller
             'sale' => __('app.sales'),
             'capital' => __('app.capitals'),
             'restock' => __('app.restocks'),
+            'damage' => __('app.damages'),
             'report' => __('app.reports'),
         ];
     }

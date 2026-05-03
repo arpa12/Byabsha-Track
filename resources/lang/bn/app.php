@@ -11,6 +11,9 @@ return [
     // Layout - Sidebar sections
     'main_menu'       => 'প্রধান মেনু',
     'management'      => 'ব্যবস্থাপনা',
+    'setup'           => 'সেটআপ',
+    'inventory'       => 'ইনভেন্টরি',
+    'operations'      => 'অপারেশনস',
     'analytics'       => 'বিশ্লেষণ',
     'system'          => 'সিস্টেম',
 
@@ -26,6 +29,7 @@ return [
     'sales'           => 'বিক্রয়',
     'capitals'        => 'মূলধন',
     'restocks'        => 'পুনঃমজুদ',
+    'damages'         => 'ক্ষতিগ্রস্ত পণ্য',
     'reports'         => 'প্রতিবেদন',
     'daily_pnl'       => 'দৈনিক লাভ/ক্ষতি',
     'monthly_pnl'     => 'মাসিক লাভ/ক্ষতি',

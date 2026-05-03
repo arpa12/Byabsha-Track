@@ -11,6 +11,9 @@ return [
     // Layout - Sidebar sections
     'main_menu'       => 'Main Menu',
     'management'      => 'Management',
+    'setup'           => 'Setup',
+    'inventory'       => 'Inventory',
+    'operations'      => 'Operations',
     'analytics'       => 'Analytics',
     'system'          => 'System',
 
@@ -26,6 +29,7 @@ return [
     'sales'           => 'Sales',
     'capitals'        => 'Capitals',
     'restocks'        => 'Restock',
+    'damages'         => 'Damages',
     'reports'         => 'Reports',
     'daily_pnl'       => 'Daily P&L',
     'monthly_pnl'     => 'Monthly P&L',

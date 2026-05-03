@@ -347,6 +347,18 @@
     </a>
 </div>
 
+<<<<<<< HEAD
+=======
+@if($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @foreach($errors->all() as $error)
+            {{ $error }}<br>
+        @endforeach
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+>>>>>>> d42f583 (initial commit)
 <div class="content-card">
     <div class="table-responsive">
         <table class="table table-custom">

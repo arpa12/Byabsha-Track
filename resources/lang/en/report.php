@@ -38,6 +38,8 @@ return [
     'items_sold'          => 'Items Sold',
     'avg_sale'            => 'Average Sale',
     'avg_profit'          => 'Average Profit',
+    'active_warranties'   => 'Active Warranties',
+    'total_exchanges'     => 'Total Exchanges',
     'revenue_formula'     => 'Σ(Qty × Sale Price)',
     'profit_formula'      => 'Σ (Sale − Purchase) × Qty',
     'formulas'            => 'Formulas:',

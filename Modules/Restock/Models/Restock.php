@@ -2,18 +2,20 @@
 
 namespace Modules\Restock\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\TenantModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Product\Models\Product;
+use Modules\Product\Models\ProductBatch;
 use Modules\Shop\Models\Shop;
 
-class Restock extends Model
+class Restock extends TenantModel
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'product_id',
+        'product_batch_id',
         'shop_id',
         'quantity',
         'remaining_quantity',
@@ -26,7 +28,11 @@ class Restock extends Model
     protected $casts = [
         'restock_date' => 'date',
         'quantity' => 'integer',
+<<<<<<< HEAD
         'remaining_quantity' => 'integer',
+=======
+        'product_batch_id' => 'integer',
+>>>>>>> d42f583 (initial commit)
         'purchase_price_per_unit' => 'decimal:2',
         'total_cost' => 'decimal:2',
     ];
@@ -41,6 +47,7 @@ class Restock extends Model
         return $this->belongsTo(Shop::class);
     }
 
+<<<<<<< HEAD
     public function saleBatchItems()
     {
         return $this->hasMany(\Modules\Sale\Models\SaleBatchItem::class);
@@ -52,5 +59,10 @@ class Restock extends Model
     public function getConsumedQuantityAttribute(): int
     {
         return $this->quantity - $this->remaining_quantity;
+=======
+    public function productBatch()
+    {
+        return $this->belongsTo(ProductBatch::class, 'product_batch_id')->withTrashed();
+>>>>>>> d42f583 (initial commit)
     }
 }

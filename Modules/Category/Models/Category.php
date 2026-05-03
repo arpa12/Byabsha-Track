@@ -3,13 +3,13 @@
 namespace Modules\Category\Models;
 
 use App\Models\User;
+use App\Models\TenantModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Product\Models\Product;
 
-class Category extends Model
+class Category extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

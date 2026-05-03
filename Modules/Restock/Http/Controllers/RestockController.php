@@ -8,6 +8,9 @@ use Modules\Restock\Services\RestockService;
 use Modules\Shop\Models\Shop;
 use Modules\Product\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
+use Modules\Product\Models\ProductDynamicValue;
 
 class RestockController extends Controller
 {
@@ -77,6 +80,11 @@ class RestockController extends Controller
                 ->withErrors(['product_id' => __('restock.product_shop_mismatch')]);
         }
 
+        $validated['attribute_values'] = $this->validateAndNormalizeAttributeValues(
+            $product,
+            (array) $request->input('attribute_values', [])
+        );
+
         $this->restockService->storeRestock($validated);
 
         return redirect()->route('restock.index')
@@ -125,6 +133,11 @@ class RestockController extends Controller
                 ->withErrors(['product_id' => __('restock.product_shop_mismatch')]);
         }
 
+        $validated['attribute_values'] = $this->validateAndNormalizeAttributeValues(
+            $product,
+            (array) $request->input('attribute_values', [])
+        );
+
         $this->restockService->updateRestock($id, $validated);
 
         return redirect()->route('restock.index')
@@ -161,11 +174,89 @@ class RestockController extends Controller
         $shopId = (int) $request->shop_id;
         abort_unless($user->ownsShop($shopId), 403, 'You do not have access to this shop.');
 
-        $products = Product::where('shop_id', $shopId)
+        $products = Product::query()
+            ->where('shop_id', $shopId)
+            ->with([
+                'dynamicValues' => function ($query) {
+                    $query->with('dynamicField:id,field_key,label,input_type,is_required,options');
+                },
+            ])
             ->select('id', 'name', 'purchase_price', 'stock_quantity')
             ->orderBy('name')
             ->get();
 
-        return response()->json($products);
+        return response()->json(
+            $products->map(function (Product $product) {
+                $attributes = $product->dynamicValues
+                    ->filter(fn ($value) => $value->dynamicField && filled($value->value))
+                    ->map(function (ProductDynamicValue $value) {
+                        return [
+                            'field_id' => (int) $value->product_dynamic_field_id,
+                            'field_key' => (string) ($value->dynamicField->field_key ?? ''),
+                            'label' => (string) ($value->dynamicField->label ?? 'Attribute'),
+                            'input_type' => (string) ($value->dynamicField->input_type ?? 'text'),
+                            'is_required' => (bool) ($value->dynamicField->is_required ?? false),
+                            'options' => (array) ($value->dynamicField->options ?? []),
+                            'value' => (string) ($value->value ?? ''),
+                        ];
+                    })
+                    ->values();
+
+                return [
+                    'id' => (int) $product->id,
+                    'name' => (string) $product->name,
+                    'purchase_price' => (float) $product->purchase_price,
+                    'stock_quantity' => (int) $product->stock_quantity,
+                    'attributes' => $attributes,
+                ];
+            })->values()
+        );
+    }
+
+    private function validateAndNormalizeAttributeValues(Product $product, array $submittedAttributes): array
+    {
+        $assignedAttributes = $product->dynamicValues()
+            ->with('dynamicField:id,field_key,label,input_type,is_required,options')
+            ->get()
+            ->filter(fn ($value) => $value->dynamicField && filled($value->value));
+
+        if ($assignedAttributes->isEmpty()) {
+            return [];
+        }
+
+        $rules = [];
+        foreach ($assignedAttributes as $assignedAttribute) {
+            $field = $assignedAttribute->dynamicField;
+            $key = 'attribute_values.' . $assignedAttribute->product_dynamic_field_id;
+            $rules[$key] = ($field->is_required ? 'required' : 'nullable') . '|string|max:255';
+        }
+
+        Validator::make(['attribute_values' => $submittedAttributes], $rules)->validate();
+
+        return $assignedAttributes
+            ->map(function (ProductDynamicValue $assignedAttribute) use ($submittedAttributes) {
+                $field = $assignedAttribute->dynamicField;
+                $fieldId = (int) $assignedAttribute->product_dynamic_field_id;
+                $submitted = trim((string) ($submittedAttributes[$fieldId] ?? ''));
+
+                if ($submitted !== '' && $field->input_type === 'select') {
+                    $options = collect($field->options ?? [])->map(fn ($item) => (string) $item);
+                    if ($options->isNotEmpty() && !$options->contains($submitted)) {
+                        throw ValidationException::withMessages([
+                            'attribute_values.' . $fieldId => __('validation.in', ['attribute' => $field->label]),
+                        ]);
+                    }
+                }
+
+                return [
+                    'field_id' => $fieldId,
+                    'field_key' => (string) ($field->field_key ?? ''),
+                    'label' => (string) ($field->label ?? 'Attribute'),
+                    'value' => $submitted,
+                ];
+            })
+            ->filter(fn (array $item) => $item['value'] !== '')
+            ->values()
+            ->all();
     }
 }

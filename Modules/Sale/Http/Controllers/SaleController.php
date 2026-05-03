@@ -7,19 +7,34 @@ use Modules\Sale\Models\Sale;
 use Modules\Sale\Models\SaleBatchItem;
 use Modules\Shop\Models\Shop;
 use Modules\Product\Models\Product;
+<<<<<<< HEAD
 use Modules\Restock\Models\Restock;
+=======
+use Modules\Product\Models\ProductBatch;
+>>>>>>> d42f583 (initial commit)
 use Modules\Capital\Services\CapitalService;
+use Modules\Product\Services\ProductBatchService;
+use Modules\Sale\Services\WarrantyExchangeService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 
 class SaleController extends Controller
 {
     protected $capitalService;
+    protected ProductBatchService $productBatchService;
+    protected WarrantyExchangeService $warrantyExchangeService;
 
-    public function __construct(CapitalService $capitalService)
+    public function __construct(
+        CapitalService $capitalService,
+        ProductBatchService $productBatchService,
+        WarrantyExchangeService $warrantyExchangeService
+    )
     {
         $this->capitalService = $capitalService;
+        $this->productBatchService = $productBatchService;
+        $this->warrantyExchangeService = $warrantyExchangeService;
     }
 
     /**
@@ -119,69 +134,97 @@ class SaleController extends Controller
         $shopId = (int) $validated['shop_id'];
         abort_unless(auth()->user()->ownsShop($shopId), 403, 'You do not have access to this shop.');
 
-        $products = Product::query()
-            ->where('shop_id', $shopId)
-            ->with('productCategory:id,name')
+        $batches = ProductBatch::query()
+            ->join('products', 'products.id', '=', 'product_batches.product_id')
+            ->where('product_batches.shop_id', $shopId)
+            ->where('remaining_quantity', '>', 0)
             ->select([
-                'products.id',
-                'products.shop_id',
-                'products.name',
-                'products.category',
-                'products.category_id',
-                'products.purchase_price',
-                'products.stock_quantity',
+                'product_batches.id',
+                'product_batches.product_id',
+                'product_batches.shop_id',
+                'product_batches.batch_code',
+                'product_batches.attribute_values',
+                'product_batches.purchase_price',
+                'product_batches.remaining_quantity',
+                'product_batches.batch_date',
+                'products.name as product_name',
+                'products.category as product_category',
+                'products.has_free_service',
+                'products.free_service_duration_value',
+                'products.free_service_duration_unit',
+                'products.free_service_terms',
             ])
             ->addSelect([
-                'latest_sale_id' => Sale::query()
-                    ->select('id')
-                    ->whereColumn('sales.product_id', 'products.id')
-                    ->where('sales.shop_id', $shopId)
-                    ->latest('sales.id')
-                    ->limit(1),
                 'latest_profit' => Sale::query()
                     ->selectRaw('COALESCE(SUM(CASE WHEN profit > 0 THEN profit ELSE 0 END), 0)')
-                    ->whereColumn('sales.product_id', 'products.id')
+                    ->whereColumn('sales.product_batch_id', 'product_batches.id')
                     ->where('sales.shop_id', $shopId)
                     ->limit(1),
                 'latest_loss' => Sale::query()
                     ->selectRaw('COALESCE(SUM(CASE WHEN profit < 0 THEN ABS(profit) ELSE 0 END), 0)')
-                    ->whereColumn('sales.product_id', 'products.id')
+                    ->whereColumn('sales.product_batch_id', 'product_batches.id')
                     ->where('sales.shop_id', $shopId)
                     ->limit(1),
             ]);
 
-        return DataTables::eloquent($products)
-            ->addColumn('category_name', function (Product $product) {
-                return $product->productCategory?->name ?? $product->category ?? '-';
+        return DataTables::eloquent($batches)
+            ->filter(function ($query) {
+                $search = request('search')['value'] ?? null;
+                if ($search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('products.name', 'like', '%' . $search . '%')
+                            ->orWhere('product_batches.batch_code', 'like', '%' . $search . '%')
+                            ->orWhereRaw("JSON_SEARCH(product_batches.attribute_values, 'one', CONCAT('%', ?, '%')) IS NOT NULL", [$search]);
+                    });
+                }
+            }, false)
+            ->addColumn('name', function (ProductBatch $batch) {
+                return $batch->product_name ?? '-';
             })
-            ->editColumn('purchase_price', function (Product $product) {
-                return number_format((float) $product->purchase_price, 2);
+            ->addColumn('category_name', function (ProductBatch $batch) {
+                return $batch->product_category ?? '-';
             })
-            ->editColumn('stock_quantity', function (Product $product) {
-                return (int) $product->stock_quantity;
+            ->addColumn('batch_label', function (ProductBatch $batch) {
+                return $batch->batch_code . ' (' . optional($batch->batch_date)->format('d M Y') . ')';
             })
-            ->editColumn('latest_profit', function (Product $product) {
-                return number_format((float) ($product->latest_profit ?? 0), 2);
+            ->addColumn('attribute_summary', function (ProductBatch $batch) {
+                return $batch->attribute_summary;
             })
-            ->editColumn('latest_loss', function (Product $product) {
-                return number_format((float) ($product->latest_loss ?? 0), 2);
+            ->editColumn('purchase_price', function (ProductBatch $batch) {
+                return number_format((float) $batch->purchase_price, 2);
             })
-            ->addColumn('actions', function (Product $product) {
-                $createUrl = route('product.create', ['shop_id' => $product->shop_id]);
-                $editUrl = route('product.edit', $product->id);
-                $deleteUrl = route('product.destroy', $product->id);
+            ->addColumn('stock_quantity', function (ProductBatch $batch) {
+                return (int) $batch->remaining_quantity;
+            })
+            ->editColumn('latest_profit', function (ProductBatch $batch) {
+                return number_format((float) ($batch->latest_profit ?? 0), 2);
+            })
+            ->editColumn('latest_loss', function (ProductBatch $batch) {
+                return number_format((float) ($batch->latest_loss ?? 0), 2);
+            })
+            ->addColumn('actions', function (ProductBatch $batch) {
+                $createUrl = route('product.create', ['shop_id' => $batch->shop_id]);
+                $editUrl = route('product.edit', $batch->product_id);
+                $deleteUrl = route('product.destroy', $batch->product_id);
                 $viewSalesUrl = route('sale.product-sales', [
-                    'product' => (int) $product->id,
-                    'shop_id' => (int) $product->shop_id,
+                    'product' => (int) $batch->product_id,
+                    'shop_id' => (int) $batch->shop_id,
                 ]);
-                $canSell = $product->stock_quantity > 0;
+                $canSell = $batch->remaining_quantity > 0;
 
                 $saleButton = '<button type="button" class="btn btn-sm btn-outline-success js-sale-btn" '
-                    . 'data-product-id="' . e((string) $product->id) . '" '
-                    . 'data-shop-id="' . e((string) $product->shop_id) . '" '
-                    . 'data-product-name="' . e($product->name) . '" '
-                    . 'data-stock="' . e((string) $product->stock_quantity) . '" '
-                    . 'data-purchase-price="' . e((string) $product->purchase_price) . '" '
+                    . 'data-product-id="' . e((string) $batch->product_id) . '" '
+                    . 'data-batch-id="' . e((string) $batch->id) . '" '
+                    . 'data-batch-code="' . e((string) $batch->batch_code) . '" '
+                    . 'data-attribute-summary="' . e((string) $batch->attribute_summary) . '" '
+                    . 'data-shop-id="' . e((string) $batch->shop_id) . '" '
+                    . 'data-product-name="' . e((string) $batch->product_name) . '" '
+                    . 'data-stock="' . e((string) $batch->remaining_quantity) . '" '
+                    . 'data-purchase-price="' . e((string) $batch->purchase_price) . '" '
+                    . 'data-has-free-service="' . e((string) ((int) ($batch->has_free_service ?? 0))) . '" '
+                    . 'data-free-service-duration-value="' . e((string) ($batch->free_service_duration_value ?? '')) . '" '
+                    . 'data-free-service-duration-unit="' . e((string) ($batch->free_service_duration_unit ?? '')) . '" '
+                    . 'data-free-service-terms="' . e((string) ($batch->free_service_terms ?? '')) . '" '
                     . ($canSell ? '' : 'disabled ')
                     . 'title="Sale">'
                     . '<i class="bi bi-cart-plus"></i> ' . e(__('sale.sale_button'))
@@ -219,6 +262,7 @@ class SaleController extends Controller
         $validated = $request->validate([
             'shop_id' => 'required|exists:shops,id',
             'product_id' => 'required|exists:products,id',
+            'product_batch_id' => 'required|exists:product_batches,id',
             'sale_price' => 'required|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
             'quantity' => 'required|integer|min:1',
@@ -235,18 +279,25 @@ class SaleController extends Controller
             ->where('shop_id', $validated['shop_id'])
             ->first();
 
-        if (!$product) {
+        $batch = ProductBatch::query()
+            ->where('id', $validated['product_batch_id'])
+            ->where('product_id', $validated['product_id'])
+            ->where('shop_id', $validated['shop_id'])
+            ->first();
+
+        if (!$product || !$batch) {
             return response()->json([
-                'message' => 'Selected product does not belong to the selected shop.',
+                'message' => 'Selected product batch does not belong to the selected shop.',
             ], 422);
         }
 
-        if ($product->stock_quantity < $validated['quantity']) {
+        if ($batch->remaining_quantity < $validated['quantity']) {
             return response()->json([
-                'message' => 'Insufficient stock. Available: ' . $product->stock_quantity,
+                'message' => 'Insufficient batch stock. Available: ' . $batch->remaining_quantity,
             ], 422);
         }
 
+<<<<<<< HEAD
         DB::transaction(function () use ($validated, $product): void {
             $quantity = (int) $validated['quantity'];
             $salePrice = (float) $validated['sale_price'];
@@ -290,13 +341,53 @@ class SaleController extends Controller
 
             $product->decrement('stock_quantity', $quantity);
         });
+=======
+        try {
+            $creatorId = (int) Auth::id();
+
+            DB::transaction(function () use ($validated, $batch, $creatorId): void {
+                $quantity = (int) $validated['quantity'];
+                $salePrice = (float) $validated['sale_price'];
+                $discount = (float) ($validated['discount'] ?? 0);
+                $discountedSalePrice = max($salePrice - $discount, 0);
+                $totalAmount = $quantity * $discountedSalePrice;
+                $purchasePrice = (float) $batch->purchase_price;
+                $profit = ($discountedSalePrice - $purchasePrice) * $quantity;
+
+                $sale = Sale::create([
+                    'shop_id' => $validated['shop_id'],
+                    'product_id' => $validated['product_id'],
+                    'product_batch_id' => $validated['product_batch_id'],
+                    'quantity' => $quantity,
+                    'sale_price' => $salePrice,
+                    'purchase_price_per_unit' => $purchasePrice,
+                    'discount' => $discount,
+                    'total_amount' => $totalAmount,
+                    'profit' => $profit,
+                    'sale_date' => $validated['sale_date'] ?? now()->toDateString(),
+                    'customer_name' => $validated['customer_name'],
+                    'customer_phone' => $validated['customer_phone'] ?? null,
+                    'customer_address' => $validated['customer_address'] ?? null,
+                ]);
+
+                $this->productBatchService->consumeBatch($batch, $quantity);
+                $this->warrantyExchangeService->syncAutoWarrantyForSale($sale, $creatorId);
+            });
+        } catch (\RuntimeException $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 422);
+        }
+>>>>>>> d42f583 (initial commit)
 
         $product->refresh();
+        $batch->refresh();
         $this->capitalService->updateShopCapital((int) $validated['shop_id']);
 
         return response()->json([
             'message' => 'Sale recorded successfully.',
             'stock_quantity' => $product->stock_quantity,
+            'batch_stock_quantity' => $batch->remaining_quantity,
         ]);
     }
 
@@ -312,30 +403,29 @@ class SaleController extends Controller
     {
         $validated = $request->validate([
             'shop_id' => 'required|exists:shops,id',
-            'product_id' => 'required|exists:products,id',
+            'product_batch_id' => 'required|exists:product_batches,id',
             'quantity' => 'required|integer|min:1',
             'sale_date' => 'required|date',
         ]);
 
         abort_unless(auth()->user()->ownsShop((int) $validated['shop_id']), 403, 'You do not have access to this shop.');
 
-        // Get the product
-        $product = Product::findOrFail($validated['product_id']);
+        $batch = ProductBatch::with('product')->findOrFail($validated['product_batch_id']);
+        $product = $batch->product;
 
-        // Ensure selected product belongs to selected shop
-        if ((int) $product->shop_id !== (int) $validated['shop_id']) {
+        if (!$product || (int) $batch->shop_id !== (int) $validated['shop_id']) {
             return back()
                 ->withInput()
-                ->withErrors(['product_id' => 'Selected product does not belong to the selected shop.']);
+                ->withErrors(['product_batch_id' => 'Selected product batch does not belong to the selected shop.']);
         }
 
-        // Check if stock is sufficient
-        if ($product->stock_quantity < $validated['quantity']) {
+        if ((int) $batch->remaining_quantity < (int) $validated['quantity']) {
             return back()
                 ->withInput()
-                ->withErrors(['quantity' => 'Insufficient stock. Available: ' . $product->stock_quantity]);
+                ->withErrors(['quantity' => 'Insufficient batch stock. Available: ' . $batch->remaining_quantity]);
         }
 
+<<<<<<< HEAD
         DB::transaction(function () use ($validated, $product) {
             // Calculate amounts
             $salePrice = $product->sale_price;
@@ -375,6 +465,38 @@ class SaleController extends Controller
             // Deduct stock
             $product->decrement('stock_quantity', $validated['quantity']);
         });
+=======
+        try {
+            $creatorId = (int) Auth::id();
+
+            DB::transaction(function () use ($validated, $product, $batch, $creatorId): void {
+                $salePrice = (float) $product->sale_price;
+                $purchasePrice = (float) $batch->purchase_price;
+                $quantity = (int) $validated['quantity'];
+                $totalAmount = $quantity * $salePrice;
+                $profit = ($salePrice - $purchasePrice) * $quantity;
+
+                $sale = Sale::create([
+                    'shop_id' => $validated['shop_id'],
+                    'product_id' => $product->id,
+                    'product_batch_id' => $batch->id,
+                    'quantity' => $quantity,
+                    'sale_price' => $salePrice,
+                    'purchase_price_per_unit' => $purchasePrice,
+                    'total_amount' => $totalAmount,
+                    'profit' => $profit,
+                    'sale_date' => $validated['sale_date'],
+                ]);
+
+                $this->productBatchService->consumeBatch($batch, $quantity);
+                $this->warrantyExchangeService->syncAutoWarrantyForSale($sale, $creatorId);
+            });
+        } catch (\RuntimeException $exception) {
+            return back()
+                ->withInput()
+                ->withErrors(['quantity' => $exception->getMessage()]);
+        }
+>>>>>>> d42f583 (initial commit)
 
         // Recalculate shop capital after stock deduction
         $this->capitalService->updateShopCapital($validated['shop_id']);
@@ -385,7 +507,12 @@ class SaleController extends Controller
 
     public function show($id)
     {
-        $sale = Sale::with(['shop', 'product'])->findOrFail($id);
+        $sale = Sale::with([
+            'shop',
+            'product',
+            'productBatch',
+            'warranties' => fn ($query) => $query->latest('id'),
+        ])->findOrFail($id);
         abort_unless(auth()->user()->ownsShop((int) $sale->shop_id), 403, 'You do not have access to this shop.');
         return view('sale::show', compact('sale'));
     }
@@ -399,7 +526,12 @@ class SaleController extends Controller
         $shopId = $request->integer('shop_id');
 
         $salesQuery = Sale::query()
-            ->with(['shop', 'product'])
+            ->with([
+                'shop',
+                'product',
+                'productBatch',
+                'warranties' => fn ($query) => $query->latest('id'),
+            ])
             ->where('product_id', $product->id)
             ->when($shopId, function ($query) use ($shopId) {
                 $query->where('shop_id', $shopId);
@@ -434,7 +566,7 @@ class SaleController extends Controller
     {
         $validated = $request->validate([
             'shop_id' => 'required|exists:shops,id',
-            'product_id' => 'required|exists:products,id',
+            'product_batch_id' => 'required|exists:product_batches,id',
             'quantity' => 'required|integer|min:1',
             'sale_date' => 'required|date',
         ]);
@@ -444,29 +576,59 @@ class SaleController extends Controller
 
         $sale = Sale::findOrFail($id);
         abort_unless($user->ownsShop((int) $sale->shop_id), 403, 'You do not have access to this shop.');
+        $oldShopId = (int) $sale->shop_id;
 
-        $product = Product::findOrFail($validated['product_id']);
+        $batch = ProductBatch::with('product')->findOrFail($validated['product_batch_id']);
+        $product = $batch->product;
 
-        // Ensure selected product belongs to selected shop
-        if ((int) $product->shop_id !== (int) $validated['shop_id']) {
+        if (!$product || (int) $batch->shop_id !== (int) $validated['shop_id']) {
             return back()
                 ->withInput()
-                ->withErrors(['product_id' => 'Selected product does not belong to the selected shop.']);
+                ->withErrors(['product_batch_id' => 'Selected product batch does not belong to the selected shop.']);
         }
 
-        // Calculate available stock (add back the old quantity if same product)
-        $availableStock = $product->stock_quantity;
-        if ($sale->product_id == $validated['product_id']) {
-            $availableStock += $sale->quantity;
-        }
+        try {
+            $creatorId = (int) Auth::id();
 
-        // Check if stock is sufficient
-        if ($availableStock < $validated['quantity']) {
+            DB::transaction(function () use ($validated, $sale, $product, $batch, $creatorId): void {
+                $oldBatch = ProductBatch::withTrashed()->find($sale->product_batch_id);
+                if ($oldBatch) {
+                    $this->productBatchService->restoreBatch($oldBatch, (int) $sale->quantity);
+                }
+
+                $requestedQty = (int) $validated['quantity'];
+                $batch->refresh();
+                if ((int) $batch->remaining_quantity < $requestedQty) {
+                    throw new \RuntimeException('Insufficient batch stock.');
+                }
+
+                $salePrice = (float) $product->sale_price;
+                $purchasePrice = (float) $batch->purchase_price;
+                $totalAmount = $requestedQty * $salePrice;
+                $profit = ($salePrice - $purchasePrice) * $requestedQty;
+
+                $sale->update([
+                    'shop_id' => $validated['shop_id'],
+                    'product_id' => $product->id,
+                    'product_batch_id' => $batch->id,
+                    'quantity' => $requestedQty,
+                    'sale_price' => $salePrice,
+                    'purchase_price_per_unit' => $purchasePrice,
+                    'total_amount' => $totalAmount,
+                    'profit' => $profit,
+                    'sale_date' => $validated['sale_date'],
+                ]);
+
+                $this->productBatchService->consumeBatch($batch, $requestedQty);
+                $this->warrantyExchangeService->syncAutoWarrantyForSale($sale->fresh('product'), $creatorId);
+            });
+        } catch (\RuntimeException $exception) {
             return back()
                 ->withInput()
-                ->withErrors(['quantity' => 'Insufficient stock. Available: ' . $availableStock]);
+                ->withErrors(['quantity' => $exception->getMessage()]);
         }
 
+<<<<<<< HEAD
         DB::transaction(function () use ($validated, $sale, $product) {
             // Restore old batch quantities and product stock
             $this->restoreBatchItems($sale);
@@ -513,6 +675,12 @@ class SaleController extends Controller
 
         // Recalculate capital for affected shop(s)
         $this->capitalService->updateShopCapital($validated['shop_id']);
+=======
+        $this->capitalService->updateShopCapital((int) $validated['shop_id']);
+        if ($oldShopId !== (int) $validated['shop_id']) {
+            $this->capitalService->updateShopCapital($oldShopId);
+        }
+>>>>>>> d42f583 (initial commit)
 
         return redirect()->route('sale.index')
             ->with('success', 'Sale updated successfully!');
@@ -526,6 +694,7 @@ class SaleController extends Controller
         $shopId = $sale->shop_id;
 
         DB::transaction(function () use ($sale) {
+<<<<<<< HEAD
             // Restore batch quantities
             $this->restoreBatchItems($sale);
 
@@ -533,9 +702,13 @@ class SaleController extends Controller
             $product = Product::withTrashed()->find($sale->product_id);
             if ($product) {
                 $product->increment('stock_quantity', $sale->quantity);
+=======
+            $batch = ProductBatch::withTrashed()->find($sale->product_batch_id);
+            if ($batch) {
+                $this->productBatchService->restoreBatch($batch, (int) $sale->quantity);
+>>>>>>> d42f583 (initial commit)
             }
 
-            // Delete sale
             $sale->delete();
         });
 
@@ -554,11 +727,29 @@ class SaleController extends Controller
         $shopId = (int) $request->shop_id;
         abort_unless(auth()->user()->ownsShop($shopId), 403, 'You do not have access to this shop.');
 
-        $products = Product::where('shop_id', $shopId)
-            ->select('id', 'shop_id', 'name', 'purchase_price', 'sale_price', 'stock_quantity')
-            ->orderBy('name')
+        $products = ProductBatch::query()
+            ->with('product:id,name,sale_price')
+            ->where('shop_id', $shopId)
+            ->where('remaining_quantity', '>', 0)
+            ->orderBy('batch_date')
+            ->orderBy('id')
             ->get();
 
-        return response()->json($products);
+        return response()->json(
+            $products->map(function (ProductBatch $batch) {
+                return [
+                    'id' => (int) $batch->id,
+                    'product_id' => (int) $batch->product_id,
+                    'product_name' => $batch->product?->name ?? '-',
+                    'batch_code' => (string) $batch->batch_code,
+                    'batch_date' => optional($batch->batch_date)->toDateString(),
+                    'attribute_summary' => $batch->attribute_summary,
+                    'attribute_values' => $batch->attribute_values ?? [],
+                    'purchase_price' => (float) $batch->purchase_price,
+                    'sale_price' => (float) ($batch->product?->sale_price ?? 0),
+                    'stock_quantity' => (int) $batch->remaining_quantity,
+                ];
+            })->values()
+        );
     }
 }

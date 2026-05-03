@@ -70,6 +70,18 @@ return [
     'initial_stock'       => 'প্রাথমিক স্টক পরিমাণ',
     'stock_hint'          => 'এই পণ্যের বর্তমান স্টক পরিমাণ লিখুন',
     'stock_update_hint'   => 'এই পণ্যের বর্তমান স্টক পরিমাণ আপডেট করুন',
+    'free_service'        => 'ফ্রি সার্ভিস',
+    'free_service_available' => 'এই পণ্যের সাথে ফ্রি সার্ভিস প্রযোজ্য',
+    'free_service_enabled' => 'সক্রিয়',
+    'free_service_disabled' => 'নিষ্ক্রিয়',
+    'free_service_duration_value' => 'সার্ভিস সময়ের মান',
+    'free_service_duration_unit' => 'সার্ভিস সময়ের একক',
+    'select_duration_unit' => 'সময়ের একক নির্বাচন করুন',
+    'duration_day'        => 'দিন',
+    'duration_month'      => 'মাস',
+    'duration_year'       => 'বছর',
+    'free_service_terms'  => 'সার্ভিসের শর্ত',
+    'free_service_terms_placeholder' => 'ফ্রি সার্ভিস কভারেজের শর্ত (ঐচ্ছিক)',
 
     // Show details
     'profit_per_unit'     => 'প্রতি ইউনিট লাভ',

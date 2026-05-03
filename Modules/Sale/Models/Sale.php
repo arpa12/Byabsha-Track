@@ -2,19 +2,21 @@
 
 namespace Modules\Sale\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\TenantModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Shop\Models\Shop;
 use Modules\Product\Models\Product;
+use Modules\Product\Models\ProductBatch;
 
-class Sale extends Model
+class Sale extends TenantModel
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'shop_id',
         'product_id',
+        'product_batch_id',
         'quantity',
         'sale_price',
         'purchase_price_per_unit',
@@ -47,8 +49,24 @@ class Sale extends Model
         return $this->belongsTo(Product::class)->withTrashed();
     }
 
+<<<<<<< HEAD
     public function batchItems()
     {
         return $this->hasMany(SaleBatchItem::class);
+=======
+    public function productBatch()
+    {
+        return $this->belongsTo(ProductBatch::class, 'product_batch_id')->withTrashed();
+    }
+
+    public function warranties()
+    {
+        return $this->hasMany(SaleWarranty::class);
+    }
+
+    public function exchanges()
+    {
+        return $this->hasMany(SaleExchange::class);
+>>>>>>> d42f583 (initial commit)
     }
 }

@@ -2,10 +2,10 @@
 
 namespace Modules\Settings\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\TenantModel;
 use Illuminate\Support\Facades\Cache;
 
-class Setting extends Model
+class Setting extends TenantModel
 {
     protected $fillable = ['key', 'value', 'type', 'group'];
 

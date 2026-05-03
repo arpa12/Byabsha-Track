@@ -259,6 +259,23 @@
                             <td>{{ $product->brand ?? '-' }}</td>
                         </tr>
                         <tr>
+                            <td class="fw-semibold">{{ __('product.free_service') }}:</td>
+                            <td>
+                                @if($product->has_free_service)
+                                    <span class="stock-pill stock-high">{{ __('product.free_service_enabled') }}</span>
+                                    <small class="d-block text-muted mt-1">
+                                        {{ (int) $product->free_service_duration_value }} {{ __('product.duration_' . ($product->free_service_duration_unit ?? 'month')) }}
+                                    </small>
+                                @else
+                                    <span class="stock-pill stock-mid">{{ __('product.free_service_disabled') }}</span>
+                                @endif
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">{{ __('product.free_service_terms') }}:</td>
+                            <td>{{ $product->free_service_terms ?: '-' }}</td>
+                        </tr>
+                        <tr>
                             <td class="fw-semibold">{{ __('product.purchase_price') }}:</td>
                             <td>{{ number_format($product->purchase_price, 2) }}</td>
                         </tr>
@@ -308,6 +325,38 @@
                         </tbody>
                     </table>
                 @endif
+
+                @if($product->batches->isNotEmpty())
+                    <hr>
+                    <h6 class="content-card-title mb-3">
+                        <i class="bi bi-layers"></i>
+                        Batch Price History
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                            <tr>
+                                <th>Batch</th>
+                                <th>Date</th>
+                                <th class="text-end">Purchase Price</th>
+                                <th class="text-end">Initial Qty</th>
+                                <th class="text-end">Remaining Qty</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach($product->batches as $batch)
+                                <tr>
+                                    <td>{{ $batch->batch_code }}</td>
+                                    <td>{{ optional($batch->batch_date)->format('d M Y') ?? '-' }}</td>
+                                    <td class="text-end">{{ number_format((float) $batch->purchase_price, 2) }}</td>
+                                    <td class="text-end">{{ number_format((int) $batch->initial_quantity) }}</td>
+                                    <td class="text-end">{{ number_format((int) $batch->remaining_quantity) }}</td>
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -322,13 +371,15 @@
             </div>
             <div class="p-4">
                 @php
-                    $inventoryValue = $product->stock_quantity * $product->purchase_price;
+                    $inventoryValue = $product->batches->sum(function ($batch) {
+                        return (int) $batch->remaining_quantity * (float) $batch->purchase_price;
+                    });
                 @endphp
 
                 <div class="mb-3">
                     <label class="quick-stat-label">{{ __('product.inventory_value') }}</label>
                     <h4 class="quick-stat-value">{{ number_format($inventoryValue, 2) }}</h4>
-                    <small class="text-muted">{{ $product->stock_quantity }} units  {{ number_format($product->purchase_price, 2) }}</small>
+                    <small class="text-muted">Based on remaining quantities across all active batches</small>
                 </div>
 
                 <div>

@@ -2,7 +2,7 @@
 
 namespace Modules\Product\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\TenantModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Category\Models\Category;
@@ -10,7 +10,7 @@ use Modules\Shop\Models\Shop;
 use Modules\Sale\Models\Sale;
 use Modules\Restock\Models\Restock;
 
-class Product extends Model
+class Product extends TenantModel
 {
     use HasFactory, SoftDeletes;
 
@@ -24,6 +24,10 @@ class Product extends Model
         'purchase_price',
         'sale_price',
         'stock_quantity',
+        'has_free_service',
+        'free_service_duration_value',
+        'free_service_duration_unit',
+        'free_service_terms',
     ];
 
     protected $casts = [
@@ -31,6 +35,8 @@ class Product extends Model
         'purchase_price' => 'decimal:2',
         'sale_price' => 'decimal:2',
         'stock_quantity' => 'integer',
+        'has_free_service' => 'boolean',
+        'free_service_duration_value' => 'integer',
     ];
 
     public function shop()
@@ -51,6 +57,11 @@ class Product extends Model
     public function restocks()
     {
         return $this->hasMany(Restock::class);
+    }
+
+    public function batches()
+    {
+        return $this->hasMany(ProductBatch::class);
     }
 
     public function dynamicValues()

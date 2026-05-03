@@ -5,16 +5,20 @@ namespace Modules\Restock\Services;
 use Modules\Restock\Models\Restock;
 use Modules\Product\Models\Product;
 use Modules\Capital\Services\CapitalService;
+use Modules\Product\Services\ProductBatchService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class RestockService
 {
     protected CapitalService $capitalService;
+    protected ProductBatchService $productBatchService;
 
-    public function __construct(CapitalService $capitalService)
+    public function __construct(CapitalService $capitalService, ProductBatchService $productBatchService)
     {
         $this->capitalService = $capitalService;
+        $this->productBatchService = $productBatchService;
     }
 
     public function getRestocks(array $filters = [], int $perPage = 15)
@@ -22,6 +26,7 @@ class RestockService
         $query = Restock::with([
             'product' => fn ($query) => $query->withTrashed(),
             'shop' => fn ($query) => $query->withTrashed(),
+            'productBatch' => fn ($query) => $query->withTrashed(),
         ])->latest('restock_date');
 
         // Always scope to allowed shop IDs when provided
@@ -62,7 +67,19 @@ class RestockService
                 'note' => $data['note'] ?? null,
             ]);
 
-            $product->increment('stock_quantity', $data['quantity']);
+            $batch = $this->productBatchService->createBatch($product, [
+                'source_type' => 'restock',
+                'source_id' => (int) $restock->id,
+                'attribute_values' => $data['attribute_values'] ?? [],
+                'purchase_price' => (float) $data['purchase_price_per_unit'],
+                'initial_quantity' => (int) $data['quantity'],
+                'batch_date' => $data['restock_date'],
+                'note' => $data['note'] ?? 'Batch created from restock.',
+            ]);
+
+            $restock->update([
+                'product_batch_id' => $batch->id,
+            ]);
 
             $this->capitalService->updateShopCapital($data['shop_id']);
 
@@ -75,6 +92,7 @@ class RestockService
         return Restock::with([
             'product' => fn ($query) => $query->withTrashed(),
             'shop' => fn ($query) => $query->withTrashed(),
+            'productBatch' => fn ($query) => $query->withTrashed(),
         ])->findOrFail($id);
     }
 
@@ -83,6 +101,7 @@ class RestockService
         return DB::transaction(function () use ($id, $data) {
             $restock = Restock::findOrFail($id);
             $product = Product::withTrashed()->findOrFail($data['product_id']);
+<<<<<<< HEAD
 
             // Units already consumed (sold) from this batch must remain consumed.
             $consumed = $restock->quantity - $restock->remaining_quantity;
@@ -100,8 +119,23 @@ class RestockService
 
             // Calculate new total cost
             $totalCost = $newQuantity * $data['purchase_price_per_unit'];
+=======
+            $oldProduct = Product::withTrashed()->findOrFail($restock->product_id);
+            $oldShopId = (int) $restock->shop_id;
+            $batch = $restock->productBatch;
 
-            // Update restock
+            if ($batch) {
+                $soldFromBatch = (int) $batch->initial_quantity - (int) $batch->remaining_quantity;
+                if ($soldFromBatch > 0) {
+                    throw ValidationException::withMessages([
+                        'product_id' => __('restock.batch_already_sold') ?: 'This restock batch already has sales and cannot be edited.',
+                    ]);
+                }
+            }
+
+            $totalCost = $data['quantity'] * $data['purchase_price_per_unit'];
+>>>>>>> d42f583 (initial commit)
+
             $restock->update([
                 'product_id' => $data['product_id'],
                 'shop_id' => $data['shop_id'],
@@ -113,13 +147,46 @@ class RestockService
                 'note' => $data['note'] ?? null,
             ]);
 
+<<<<<<< HEAD
             // Apply new stock increment (only remaining units affect live stock)
             $product->increment('stock_quantity', $newQuantity - $consumed);
+=======
+            if ($batch) {
+                $batch->update([
+                    'product_id' => $data['product_id'],
+                    'shop_id' => $data['shop_id'],
+                    'source_type' => 'restock',
+                    'source_id' => (int) $restock->id,
+                    'attribute_values' => $data['attribute_values'] ?? [],
+                    'purchase_price' => (float) $data['purchase_price_per_unit'],
+                    'initial_quantity' => (int) $data['quantity'],
+                    'remaining_quantity' => (int) $data['quantity'],
+                    'batch_date' => $data['restock_date'],
+                    'note' => $data['note'] ?? null,
+                ]);
+            } else {
+                $batch = $this->productBatchService->createBatch($product, [
+                    'source_type' => 'restock',
+                    'source_id' => (int) $restock->id,
+                    'attribute_values' => $data['attribute_values'] ?? [],
+                    'purchase_price' => (float) $data['purchase_price_per_unit'],
+                    'initial_quantity' => (int) $data['quantity'],
+                    'batch_date' => $data['restock_date'],
+                    'note' => $data['note'] ?? null,
+                ]);
+>>>>>>> d42f583 (initial commit)
 
-            // Recalculate capital for both shops (if different)
-            $this->capitalService->updateShopCapital($restock->shop_id);
-            if ($restock->shop_id !== $data['shop_id']) {
-                $this->capitalService->updateShopCapital($data['shop_id']);
+                $restock->update(['product_batch_id' => $batch->id]);
+            }
+
+            $this->productBatchService->recalculateProductStock($oldProduct);
+            if ((int) $oldProduct->id !== (int) $product->id) {
+                $this->productBatchService->recalculateProductStock($product);
+            }
+
+            $this->capitalService->updateShopCapital($oldShopId);
+            if ($oldShopId !== (int) $data['shop_id']) {
+                $this->capitalService->updateShopCapital((int) $data['shop_id']);
             }
 
             return $restock;
@@ -130,9 +197,10 @@ class RestockService
     {
         DB::transaction(function () use ($id) {
             Log::debug('Finding restock with ID: ' . $id);
-            $restock = Restock::findOrFail($id);
+            $restock = Restock::with('productBatch')->findOrFail($id);
             Log::debug('Found restock, deleting...');
 
+<<<<<<< HEAD
             // Block deletion if units from this batch have already been sold
             $consumed = $restock->quantity - $restock->remaining_quantity;
             if ($consumed > 0) {
@@ -144,11 +212,24 @@ class RestockService
             // Reverse stock increment for unsold units only (use withTrashed for soft-deleted products)
             $product = Product::withTrashed()->findOrFail($restock->product_id);
             $product->decrement('stock_quantity', $restock->remaining_quantity);
+=======
+            $product = Product::withTrashed()->findOrFail($restock->product_id);
+>>>>>>> d42f583 (initial commit)
 
-            // Delete restock (soft delete)
+            if ($restock->productBatch) {
+                $soldFromBatch = (int) $restock->productBatch->initial_quantity - (int) $restock->productBatch->remaining_quantity;
+                if ($soldFromBatch > 0) {
+                    throw ValidationException::withMessages([
+                        'restock' => __('restock.batch_already_sold') ?: 'This restock batch already has sales and cannot be deleted.',
+                    ]);
+                }
+
+                $restock->productBatch->delete();
+            }
+
             $restock->delete();
+            $this->productBatchService->recalculateProductStock($product);
 
-            // Recalculate capital
             $this->capitalService->updateShopCapital($restock->shop_id);
             Log::debug('Restock deletion transaction completed');
         });
