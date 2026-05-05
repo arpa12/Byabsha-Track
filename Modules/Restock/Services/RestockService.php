@@ -101,7 +101,9 @@ class RestockService
         return DB::transaction(function () use ($id, $data) {
             $restock = Restock::findOrFail($id);
             $product = Product::withTrashed()->findOrFail($data['product_id']);
-<<<<<<< HEAD
+            $oldProduct = Product::withTrashed()->findOrFail($restock->product_id);
+            $oldShopId = (int) $restock->shop_id;
+            $batch = $restock->productBatch;
 
             // Units already consumed (sold) from this batch must remain consumed.
             $consumed = $restock->quantity - $restock->remaining_quantity;
@@ -113,17 +115,6 @@ class RestockService
                 );
             }
 
-            // Reverse the old stock increment (use withTrashed for soft-deleted products)
-            $oldProduct = Product::withTrashed()->findOrFail($restock->product_id);
-            $oldProduct->decrement('stock_quantity', $restock->remaining_quantity);
-
-            // Calculate new total cost
-            $totalCost = $newQuantity * $data['purchase_price_per_unit'];
-=======
-            $oldProduct = Product::withTrashed()->findOrFail($restock->product_id);
-            $oldShopId = (int) $restock->shop_id;
-            $batch = $restock->productBatch;
-
             if ($batch) {
                 $soldFromBatch = (int) $batch->initial_quantity - (int) $batch->remaining_quantity;
                 if ($soldFromBatch > 0) {
@@ -133,8 +124,7 @@ class RestockService
                 }
             }
 
-            $totalCost = $data['quantity'] * $data['purchase_price_per_unit'];
->>>>>>> d42f583 (initial commit)
+            $totalCost = $newQuantity * $data['purchase_price_per_unit'];
 
             $restock->update([
                 'product_id' => $data['product_id'],
@@ -147,10 +137,6 @@ class RestockService
                 'note' => $data['note'] ?? null,
             ]);
 
-<<<<<<< HEAD
-            // Apply new stock increment (only remaining units affect live stock)
-            $product->increment('stock_quantity', $newQuantity - $consumed);
-=======
             if ($batch) {
                 $batch->update([
                     'product_id' => $data['product_id'],
@@ -174,7 +160,6 @@ class RestockService
                     'batch_date' => $data['restock_date'],
                     'note' => $data['note'] ?? null,
                 ]);
->>>>>>> d42f583 (initial commit)
 
                 $restock->update(['product_batch_id' => $batch->id]);
             }
@@ -200,21 +185,7 @@ class RestockService
             $restock = Restock::with('productBatch')->findOrFail($id);
             Log::debug('Found restock, deleting...');
 
-<<<<<<< HEAD
-            // Block deletion if units from this batch have already been sold
-            $consumed = $restock->quantity - $restock->remaining_quantity;
-            if ($consumed > 0) {
-                throw new \RuntimeException(
-                    "Cannot delete a restock batch that has already been partially sold ({$consumed} units sold)."
-                );
-            }
-
-            // Reverse stock increment for unsold units only (use withTrashed for soft-deleted products)
             $product = Product::withTrashed()->findOrFail($restock->product_id);
-            $product->decrement('stock_quantity', $restock->remaining_quantity);
-=======
-            $product = Product::withTrashed()->findOrFail($restock->product_id);
->>>>>>> d42f583 (initial commit)
 
             if ($restock->productBatch) {
                 $soldFromBatch = (int) $restock->productBatch->initial_quantity - (int) $restock->productBatch->remaining_quantity;

@@ -40,13 +40,9 @@ class User extends Authenticatable
         'password',
         'role',
         'module_access',
-<<<<<<< HEAD
         'is_approved',
         'shop_id',
         'branch_id',
-=======
-        'tenant_id',
->>>>>>> d42f583 (initial commit)
     ];
 
     /**
@@ -177,10 +173,7 @@ class User extends Authenticatable
     /**
      * Get the tenant this user belongs to
      */
-    public function tenant()
-    {
-        return $this->belongsTo(Tenant::class);
-    }
+
 
     /**
      * Get unread notifications count

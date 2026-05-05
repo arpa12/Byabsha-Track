@@ -7,11 +7,8 @@ use Modules\Sale\Models\Sale;
 use Modules\Sale\Models\SaleBatchItem;
 use Modules\Shop\Models\Shop;
 use Modules\Product\Models\Product;
-<<<<<<< HEAD
 use Modules\Restock\Models\Restock;
-=======
 use Modules\Product\Models\ProductBatch;
->>>>>>> d42f583 (initial commit)
 use Modules\Capital\Services\CapitalService;
 use Modules\Product\Services\ProductBatchService;
 use Modules\Sale\Services\WarrantyExchangeService;
@@ -297,51 +294,6 @@ class SaleController extends Controller
             ], 422);
         }
 
-<<<<<<< HEAD
-        DB::transaction(function () use ($validated, $product): void {
-            $quantity = (int) $validated['quantity'];
-            $salePrice = (float) $validated['sale_price'];
-            $discount = (float) ($validated['discount'] ?? 0);
-            $discountedSalePrice = max($salePrice - $discount, 0);
-            $totalAmount = $quantity * $discountedSalePrice;
-
-            // FIFO cost deduction
-            $fifo = $this->deductFIFO(
-                (int) $product->id,
-                (int) $validated['shop_id'],
-                $quantity
-            );
-            $purchasePricePerUnit = $fifo['weighted_avg_cost'];
-            $profit = ($discountedSalePrice - $purchasePricePerUnit) * $quantity;
-
-            $sale = Sale::create([
-                'shop_id'                  => $validated['shop_id'],
-                'product_id'               => $validated['product_id'],
-                'quantity'                 => $quantity,
-                'sale_price'               => $salePrice,
-                'purchase_price_per_unit'  => $purchasePricePerUnit,
-                'discount'                 => $discount,
-                'total_amount'             => $totalAmount,
-                'profit'                   => $profit,
-                'sale_date'                => $validated['sale_date'] ?? now()->toDateString(),
-                'customer_name'            => $validated['customer_name'],
-                'customer_phone'           => $validated['customer_phone'] ?? null,
-                'customer_address'         => $validated['customer_address'] ?? null,
-            ]);
-
-            // Persist batch-level breakdown
-            foreach ($fifo['items'] as $item) {
-                SaleBatchItem::create([
-                    'sale_id'                  => $sale->id,
-                    'restock_id'               => $item['restock_id'],
-                    'quantity'                 => $item['quantity'],
-                    'purchase_price_per_unit'  => $item['purchase_price_per_unit'],
-                ]);
-            }
-
-            $product->decrement('stock_quantity', $quantity);
-        });
-=======
         try {
             $creatorId = (int) Auth::id();
 
@@ -378,7 +330,6 @@ class SaleController extends Controller
                 'message' => $exception->getMessage(),
             ], 422);
         }
->>>>>>> d42f583 (initial commit)
 
         $product->refresh();
         $batch->refresh();
@@ -425,47 +376,6 @@ class SaleController extends Controller
                 ->withErrors(['quantity' => 'Insufficient batch stock. Available: ' . $batch->remaining_quantity]);
         }
 
-<<<<<<< HEAD
-        DB::transaction(function () use ($validated, $product) {
-            // Calculate amounts
-            $salePrice = $product->sale_price;
-            $totalAmount = $validated['quantity'] * $salePrice;
-
-            // FIFO cost deduction
-            $fifo = $this->deductFIFO(
-                (int) $product->id,
-                (int) $validated['shop_id'],
-                (int) $validated['quantity']
-            );
-            $purchasePricePerUnit = $fifo['weighted_avg_cost'];
-            $profit = ($salePrice - $purchasePricePerUnit) * $validated['quantity'];
-
-            // Create sale
-            $sale = Sale::create([
-                'shop_id'                 => $validated['shop_id'],
-                'product_id'              => $validated['product_id'],
-                'quantity'                => $validated['quantity'],
-                'sale_price'              => $salePrice,
-                'purchase_price_per_unit' => $purchasePricePerUnit,
-                'total_amount'            => $totalAmount,
-                'profit'                  => $profit,
-                'sale_date'               => $validated['sale_date'],
-            ]);
-
-            // Persist batch-level breakdown
-            foreach ($fifo['items'] as $item) {
-                SaleBatchItem::create([
-                    'sale_id'                  => $sale->id,
-                    'restock_id'               => $item['restock_id'],
-                    'quantity'                 => $item['quantity'],
-                    'purchase_price_per_unit'  => $item['purchase_price_per_unit'],
-                ]);
-            }
-
-            // Deduct stock
-            $product->decrement('stock_quantity', $validated['quantity']);
-        });
-=======
         try {
             $creatorId = (int) Auth::id();
 
@@ -496,7 +406,6 @@ class SaleController extends Controller
                 ->withInput()
                 ->withErrors(['quantity' => $exception->getMessage()]);
         }
->>>>>>> d42f583 (initial commit)
 
         // Recalculate shop capital after stock deduction
         $this->capitalService->updateShopCapital($validated['shop_id']);
@@ -628,59 +537,10 @@ class SaleController extends Controller
                 ->withErrors(['quantity' => $exception->getMessage()]);
         }
 
-<<<<<<< HEAD
-        DB::transaction(function () use ($validated, $sale, $product) {
-            // Restore old batch quantities and product stock
-            $this->restoreBatchItems($sale);
-            $oldProduct = Product::withTrashed()->findOrFail($sale->product_id);
-            $oldProduct->increment('stock_quantity', $sale->quantity);
-
-            // Re-deduct using FIFO
-            $salePrice = $product->sale_price;
-            $totalAmount = $validated['quantity'] * $salePrice;
-
-            $fifo = $this->deductFIFO(
-                (int) $product->id,
-                (int) $validated['shop_id'],
-                (int) $validated['quantity']
-            );
-            $purchasePricePerUnit = $fifo['weighted_avg_cost'];
-            $profit = ($salePrice - $purchasePricePerUnit) * $validated['quantity'];
-
-            // Update sale
-            $sale->update([
-                'shop_id'                 => $validated['shop_id'],
-                'product_id'              => $validated['product_id'],
-                'quantity'                => $validated['quantity'],
-                'sale_price'              => $salePrice,
-                'purchase_price_per_unit' => $purchasePricePerUnit,
-                'total_amount'            => $totalAmount,
-                'profit'                  => $profit,
-                'sale_date'               => $validated['sale_date'],
-            ]);
-
-            // Persist new batch items
-            foreach ($fifo['items'] as $item) {
-                SaleBatchItem::create([
-                    'sale_id'                  => $sale->id,
-                    'restock_id'               => $item['restock_id'],
-                    'quantity'                 => $item['quantity'],
-                    'purchase_price_per_unit'  => $item['purchase_price_per_unit'],
-                ]);
-            }
-
-            // Deduct new stock
-            $product->decrement('stock_quantity', $validated['quantity']);
-        });
-
-        // Recalculate capital for affected shop(s)
-        $this->capitalService->updateShopCapital($validated['shop_id']);
-=======
         $this->capitalService->updateShopCapital((int) $validated['shop_id']);
         if ($oldShopId !== (int) $validated['shop_id']) {
             $this->capitalService->updateShopCapital($oldShopId);
         }
->>>>>>> d42f583 (initial commit)
 
         return redirect()->route('sale.index')
             ->with('success', 'Sale updated successfully!');
@@ -694,19 +554,9 @@ class SaleController extends Controller
         $shopId = $sale->shop_id;
 
         DB::transaction(function () use ($sale) {
-<<<<<<< HEAD
-            // Restore batch quantities
-            $this->restoreBatchItems($sale);
-
-            // Restore product stock
-            $product = Product::withTrashed()->find($sale->product_id);
-            if ($product) {
-                $product->increment('stock_quantity', $sale->quantity);
-=======
             $batch = ProductBatch::withTrashed()->find($sale->product_batch_id);
             if ($batch) {
                 $this->productBatchService->restoreBatch($batch, (int) $sale->quantity);
->>>>>>> d42f583 (initial commit)
             }
 
             $sale->delete();

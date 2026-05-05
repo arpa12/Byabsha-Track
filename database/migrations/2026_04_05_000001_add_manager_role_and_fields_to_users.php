@@ -9,8 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Expand role ENUM to include 'manager'
-        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('superadmin', 'owner', 'manager') NOT NULL DEFAULT 'owner'");
+        if (DB::getDriverName() !== 'sqlite') {
+            // Expand role ENUM to include 'manager'
+            DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('superadmin', 'owner', 'manager') NOT NULL DEFAULT 'owner'");
+        }
 
         Schema::table('users', function (Blueprint $table) {
             // NULL = not a manager (n/a); false = pending approval; true = approved
@@ -33,6 +35,8 @@ return new class extends Migration
             $table->dropColumn(['is_approved', 'shop_id', 'branch_id']);
         });
 
-        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('superadmin', 'owner') NOT NULL DEFAULT 'owner'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('superadmin', 'owner') NOT NULL DEFAULT 'owner'");
+        }
     }
 };

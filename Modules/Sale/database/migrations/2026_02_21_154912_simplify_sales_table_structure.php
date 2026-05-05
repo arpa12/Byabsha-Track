@@ -12,6 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('sales', function (Blueprint $table) {
+            $table->dropUnique('sales_invoice_number_unique');
+
             // Drop old columns
             $table->dropColumn([
                 'invoice_number',

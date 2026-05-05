@@ -10,6 +10,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // Ensure current values are allowed, then normalize and shrink enum.
         DB::statement("ALTER TABLE users MODIFY role ENUM('superadmin','owner','user') NOT NULL DEFAULT 'owner'");
         DB::statement("UPDATE users SET role = 'owner' WHERE role = 'user'");
@@ -21,6 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::statement("ALTER TABLE users MODIFY role ENUM('superadmin','owner','user') NOT NULL DEFAULT 'owner'");
     }
 };

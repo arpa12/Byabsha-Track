@@ -14,10 +14,6 @@
     "User": true,
     "Settings": true,
     "Stock": true,
-<<<<<<< HEAD
     "Branch": true,
     "Subscription": true
-=======
-    "Branch": true
->>>>>>> d42f583 (initial commit)
 }

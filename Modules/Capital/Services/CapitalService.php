@@ -1,54 +1,22 @@
 <?php
+
 namespace Modules\Capital\Services;
 
 use Modules\Capital\Models\Capital;
-use Modules\Shop\Models\Shop;
-use Modules\Product\Models\Product;
-<<<<<<< HEAD
-use Modules\Restock\Models\Restock;
-=======
 use Modules\Product\Models\ProductBatch;
->>>>>>> d42f583 (initial commit)
+use Modules\Shop\Models\Shop;
 
 class CapitalService
 {
     /**
      * Calculate total inventory value for a shop using batch-level pricing (FIFO model).
-     *
-     * For each product we sum (remaining_quantity * purchase_price_per_unit) across all
-     * active restock batches. Products that have no restock records fall back to the
-     * static product.purchase_price so legacy data remains consistent.
      */
     public function calculateShopCapital($shopId)
     {
-<<<<<<< HEAD
-        // Sum of remaining batch value
-        $batchValue = Restock::where('shop_id', $shopId)
-            ->whereNull('deleted_at')
-            ->where('remaining_quantity', '>', 0)
-            ->selectRaw('SUM(remaining_quantity * purchase_price_per_unit) as total')
-            ->value('total') ?? 0;
-
-        // Products that have zero total remaining_quantity in batches but still show
-        // stock (e.g. stock added before batch tracking existed) — use purchase_price fallback.
-        $productsWithoutBatchStock = Product::where('shop_id', $shopId)
-            ->whereDoesntHave('restocks', function ($q) {
-                $q->whereNull('deleted_at')->where('remaining_quantity', '>', 0);
-            })
-            ->where('stock_quantity', '>', 0)
-            ->get();
-
-        $fallbackValue = $productsWithoutBatchStock->sum(function ($product) {
-            return $product->stock_quantity * (float) $product->purchase_price;
-        });
-
-        return round((float) $batchValue + $fallbackValue, 2);
-=======
         return (float) ProductBatch::query()
             ->where('shop_id', $shopId)
             ->selectRaw('COALESCE(SUM(remaining_quantity * purchase_price), 0) as total')
             ->value('total');
->>>>>>> d42f583 (initial commit)
     }
 
     public function updateShopCapital($shopId)

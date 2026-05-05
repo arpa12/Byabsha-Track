@@ -30,6 +30,10 @@ return new class extends Migration
                 }
             }
 
+            if (in_array('sku', $existingColumns, true)) {
+                $table->dropUnique('products_sku_unique');
+            }
+
             if (!empty($existingColumns)) {
                 $table->dropColumn($existingColumns);
             }

@@ -12,7 +12,6 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
-            \App\Http\Middleware\SetTenantMiddleware::class,
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\RestrictDuringMaintenanceMode::class,
             \App\Http\Middleware\EnsureSubscriptionActive::class,

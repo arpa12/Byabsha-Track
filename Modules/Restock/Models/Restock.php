@@ -28,11 +28,8 @@ class Restock extends TenantModel
     protected $casts = [
         'restock_date' => 'date',
         'quantity' => 'integer',
-<<<<<<< HEAD
         'remaining_quantity' => 'integer',
-=======
         'product_batch_id' => 'integer',
->>>>>>> d42f583 (initial commit)
         'purchase_price_per_unit' => 'decimal:2',
         'total_cost' => 'decimal:2',
     ];
@@ -47,7 +44,11 @@ class Restock extends TenantModel
         return $this->belongsTo(Shop::class);
     }
 
-<<<<<<< HEAD
+    public function productBatch()
+    {
+        return $this->belongsTo(ProductBatch::class, 'product_batch_id')->withTrashed();
+    }
+
     public function saleBatchItems()
     {
         return $this->hasMany(\Modules\Sale\Models\SaleBatchItem::class);
@@ -59,10 +60,5 @@ class Restock extends TenantModel
     public function getConsumedQuantityAttribute(): int
     {
         return $this->quantity - $this->remaining_quantity;
-=======
-    public function productBatch()
-    {
-        return $this->belongsTo(ProductBatch::class, 'product_batch_id')->withTrashed();
->>>>>>> d42f583 (initial commit)
     }
 }

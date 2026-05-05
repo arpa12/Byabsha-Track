@@ -49,11 +49,11 @@ class Sale extends TenantModel
         return $this->belongsTo(Product::class)->withTrashed();
     }
 
-<<<<<<< HEAD
     public function batchItems()
     {
         return $this->hasMany(SaleBatchItem::class);
-=======
+    }
+
     public function productBatch()
     {
         return $this->belongsTo(ProductBatch::class, 'product_batch_id')->withTrashed();
@@ -67,6 +67,5 @@ class Sale extends TenantModel
     public function exchanges()
     {
         return $this->hasMany(SaleExchange::class);
->>>>>>> d42f583 (initial commit)
     }
 }

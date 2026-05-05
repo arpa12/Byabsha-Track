@@ -406,7 +406,7 @@ class ReportService
     /**
      * Detailed sales rows for a date range (used by daily/monthly modals).
      */
-    public function getSalesDetailsByDateRange($filters = [], $startDate, $endDate)
+    public function getSalesDetailsByDateRange($filters = [], $startDate = null, $endDate = null)
     {
         $query = Sale::with(['shop:id,name', 'product:id,name'])
             ->whereDate('sale_date', '>=', $startDate)
@@ -509,7 +509,20 @@ class ReportService
         $startDate = $year . '-01-01';
         $endDate = $year . '-12-31';
 
-        $buildQuery = function ($shopFilter = null) use ($startDate, $endDate) {
+        $driver = DB::getDriverName();
+
+        // Use driver-appropriate SQL to extract month number from sale_date
+        if ($driver === 'sqlite') {
+            // SQLite: strftime('%m') returns zero-padded month; cast to integer
+            $monthSelect = DB::raw("CAST(strftime('%m', sales.sale_date) AS integer) as month_number");
+            $monthGroup = DB::raw("CAST(strftime('%m', sales.sale_date) AS integer)");
+        } else {
+            // MySQL/Postgres: use MONTH()
+            $monthSelect = DB::raw('MONTH(sales.sale_date) as month_number');
+            $monthGroup = DB::raw('MONTH(sales.sale_date)');
+        }
+
+        $buildQuery = function ($shopFilter = null) use ($startDate, $endDate, $monthSelect, $monthGroup) {
             $query = DB::table('sales')
                 ->join('products', 'sales.product_id', '=', 'products.id')
                 ->whereDate('sales.sale_date', '>=', $startDate)
@@ -520,13 +533,13 @@ class ReportService
             }
 
             return $query->select(
-                DB::raw('MONTH(sales.sale_date) as month_number'),
+                $monthSelect,
                 DB::raw('COUNT(sales.id) as total_sales_count'),
                 DB::raw('SUM(sales.total_amount) as total_revenue'),
                 DB::raw('SUM(sales.quantity * products.purchase_price) as total_cost'),
                 DB::raw('SUM(sales.profit) as total_profit')
             )
-            ->groupBy(DB::raw('MONTH(sales.sale_date)'))
+            ->groupBy($monthGroup)
             ->orderBy('month_number', 'asc')
             ->get();
         };
