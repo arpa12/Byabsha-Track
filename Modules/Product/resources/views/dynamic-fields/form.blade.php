@@ -90,6 +90,22 @@
         </div>
 
         <div class="col-md-6">
+            <label for="category_id" class="form-label">{{ __('product.category') }}</label>
+            <select class="form-select @error('category_id') is-invalid @enderror" id="category_id" name="category_id">
+                <option value="">{{ __('product.dynamic_all_categories') }}</option>
+                @foreach($categories as $category)
+                    <option value="{{ $category->id }}" {{ (string) old('category_id', $field->category_id ?? '') === (string) $category->id ? 'selected' : '' }}>
+                        {{ $category->name }}
+                    </option>
+                @endforeach
+            </select>
+            @error('category_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        @if(($showAdvancedFields ?? true))
+        <div class="col-md-6">
             <label for="field_key" class="form-label">{{ __('product.dynamic_key') }} <span class="text-danger">*</span></label>
             <input
                 type="text"
@@ -104,21 +120,7 @@
             @enderror
             <small class="text-muted">{{ __('product.dynamic_key_help') }}</small>
         </div>
-
-        <div class="col-md-6">
-            <label for="category_id" class="form-label">{{ __('product.category') }}</label>
-            <select class="form-select @error('category_id') is-invalid @enderror" id="category_id" name="category_id">
-                <option value="">{{ __('product.dynamic_all_categories') }}</option>
-                @foreach($categories as $category)
-                    <option value="{{ $category->id }}" {{ (string) old('category_id', $field->category_id ?? '') === (string) $category->id ? 'selected' : '' }}>
-                        {{ $category->name }}
-                    </option>
-                @endforeach
-            </select>
-            @error('category_id')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
+        @endif
 
         <div class="col-md-6">
             <label for="input_type" class="form-label">{{ __('product.dynamic_input_type') }} <span class="text-danger">*</span></label>
@@ -134,6 +136,7 @@
             @enderror
         </div>
 
+        @if(($showAdvancedFields ?? true))
         <div class="col-md-6">
             <label for="placeholder" class="form-label">{{ __('product.dynamic_placeholder') }}</label>
             <input
@@ -159,7 +162,37 @@
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
+        @else
+        <div class="col-md-6">
+            <label for="placeholder" class="form-label">{{ __('product.dynamic_placeholder') }}</label>
+            <input
+                type="text"
+                class="form-control @error('placeholder') is-invalid @enderror"
+                id="placeholder"
+                name="placeholder"
+                value="{{ old('placeholder', $field->placeholder ?? '') }}">
+            @error('placeholder')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        @endif
 
+        <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check mb-2">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    value="1"
+                    id="is_required"
+                    name="is_required"
+                    {{ old('is_required', $field->is_required ?? false) ? 'checked' : '' }}>
+                <label class="form-check-label" for="is_required">
+                    {{ __('product.dynamic_required') }}
+                </label>
+            </div>
+        </div>
+
+        @if(($showAdvancedFields ?? true))
         <div class="col-md-4">
             <label for="sort_order" class="form-label">{{ __('product.dynamic_sort_order') }}</label>
             <input
@@ -180,21 +213,6 @@
                     class="form-check-input"
                     type="checkbox"
                     value="1"
-                    id="is_required"
-                    name="is_required"
-                    {{ old('is_required', $field->is_required ?? false) ? 'checked' : '' }}>
-                <label class="form-check-label" for="is_required">
-                    {{ __('product.dynamic_required') }}
-                </label>
-            </div>
-        </div>
-
-        <div class="col-md-4 d-flex align-items-end">
-            <div class="form-check mb-2">
-                <input
-                    class="form-check-input"
-                    type="checkbox"
-                    value="1"
                     id="is_active"
                     name="is_active"
                     {{ old('is_active', $field->is_active ?? true) ? 'checked' : '' }}>
@@ -203,7 +221,6 @@
                 </label>
             </div>
         </div>
-
         <div class="col-12" id="optionsBlock" style="display:none;">
             <label for="options_text" class="form-label">{{ __('product.dynamic_options') }}</label>
             <textarea
@@ -217,6 +234,7 @@
             @enderror
             <small class="text-muted">{{ __('product.dynamic_options_help') }}</small>
         </div>
+        @endif
     </div>
 
     <div class="mt-4 d-flex gap-2 flex-wrap">
@@ -233,6 +251,11 @@
 @push('scripts')
 <script>
     (function () {
+        const advancedFieldsEnabled = @json(($showAdvancedFields ?? true));
+        if (!advancedFieldsEnabled) {
+            return;
+        }
+
         const inputTypeEl = document.getElementById('input_type');
         const optionsBlockEl = document.getElementById('optionsBlock');
 

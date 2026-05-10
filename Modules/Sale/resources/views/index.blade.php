@@ -49,6 +49,22 @@
         font-size: 0.86rem;
         color: #64748b;
     }
+
+    .attribute-list {
+        display: grid;
+        gap: 0.2rem;
+        line-height: 1.35;
+        word-break: break-word;
+    }
+
+    .attribute-item-label {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .attribute-item-value {
+        color: #334155;
+    }
 </style>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 @endpush
@@ -132,6 +148,11 @@
                     <div class="mb-2 stock-hint" id="qsBatchHint"></div>
                     <div class="mb-2 stock-hint" id="qsAttributeHint"></div>
                     <div class="mb-3 stock-hint" id="qsStockHint"></div>
+
+                    <div class="mb-3 border rounded p-3 bg-white">
+                        <div class="small text-uppercase fw-bold text-muted mb-2">{{ __('sale.table_attributes') }}</div>
+                        <div id="qsAttributeDetails" class="small"></div>
+                    </div>
 
                     <div class="mb-3">
                         <label for="qsSalePrice" class="form-label">{{ __('sale.quick_sale_price') }}</label>
@@ -231,6 +252,7 @@
     const qsProfitLossEl = document.getElementById('qsProfitLoss');
     const qsBatchHintEl = document.getElementById('qsBatchHint');
     const qsAttributeHintEl = document.getElementById('qsAttributeHint');
+    const qsAttributeDetailsEl = document.getElementById('qsAttributeDetails');
     const qsSaleDateEl = document.getElementById('qsSaleDate');
     const qsServicePreviewEl = document.getElementById('qsServicePreview');
     const qsServiceStartEl = document.getElementById('qsServiceStart');
@@ -257,6 +279,30 @@
         maximumFractionDigits: 2,
     });
 
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function renderAttributeList(attributes) {
+        const items = Array.isArray(attributes) ? attributes : [];
+        const visibleItems = items.filter((item) => item && typeof item === 'object' && String(item.value ?? '').trim() !== '');
+
+        if (!visibleItems.length) {
+            return '<span class="text-muted">-</span>';
+        }
+
+        return '<div class="attribute-list">' + visibleItems.map((item) => {
+            const label = escapeHtml(item.label || item.field_key || 'Attribute');
+            const value = escapeHtml(item.value || '');
+            return '<div><span class="attribute-item-label">' + label + ':</span> <span class="attribute-item-value">' + value + '</span></div>';
+        }).join('') + '</div>';
+    }
+
     const table = $('#shopProductsTable').DataTable({
         processing: true,
         serverSide: true,
@@ -270,7 +316,18 @@
         columns: [
             { data: 'name', name: 'products.name' },
             { data: 'batch_label', name: 'product_batches.batch_code' },
-            { data: 'attribute_summary', name: 'attribute_summary', orderable: false },
+            {
+                data: 'attribute_values',
+                name: 'attribute_summary',
+                orderable: false,
+                render: function (data, type, row) {
+                    if (type !== 'display') {
+                        return row.attribute_summary || '-';
+                    }
+
+                    return renderAttributeList(data);
+                }
+            },
             { data: 'purchase_price', name: 'product_batches.purchase_price', className: 'text-end' },
             { data: 'category_name', name: 'products.category' },
             { data: 'stock_quantity', name: 'product_batches.remaining_quantity', className: 'text-end' },
@@ -408,6 +465,13 @@
         const stock = parseInt(saleBtn.dataset.stock || '0', 10);
         currentPurchasePrice = parseFloat(saleBtn.dataset.purchasePrice || '0');
         const defaultSalePrice = currentPurchasePrice;
+        let attributeValues = [];
+
+        try {
+            attributeValues = saleBtn.dataset.attributeValues ? JSON.parse(saleBtn.dataset.attributeValues) : [];
+        } catch (error) {
+            attributeValues = [];
+        }
 
         document.getElementById('qsShopId').value = saleBtn.dataset.shopId;
         document.getElementById('qsProductId').value = saleBtn.dataset.productId;
@@ -426,6 +490,10 @@
         document.getElementById('qsCustomerAddress').value = '';
         document.getElementById('quickSaleError').classList.add('d-none');
         document.getElementById('quickSaleError').textContent = '';
+
+        if (qsAttributeDetailsEl) {
+            qsAttributeDetailsEl.innerHTML = renderAttributeList(attributeValues);
+        }
 
         currentFreeService = {
             enabled: parseInt(saleBtn.dataset.hasFreeService || '0', 10) === 1,

@@ -100,6 +100,7 @@
             'action' => route('product.dynamic-fields.store'),
             'method' => 'POST',
             'field' => null,
+            'showAdvancedFields' => false,
         ])
 </div>
 </div>

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 return [
     'title'                => 'Dashboard',
     'subtitle'             => 'Welcome back! Here\'s an overview of your business performance.',

@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 use Modules\Category\Models\Category;
 use Modules\Product\Models\ProductDynamicField;
 
@@ -26,13 +27,23 @@ class ProductDynamicFieldController extends Controller
     public function create()
     {
         $categories = Category::query()->orderBy('name')->get(['id', 'name']);
-        $inputTypes = ProductDynamicField::INPUT_TYPES;
+        $inputTypes = array_values(array_filter(
+            ProductDynamicField::INPUT_TYPES,
+            static fn (string $type) => $type !== 'select'
+        ));
 
         return view('product::dynamic-fields.create', compact('categories', 'inputTypes'));
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $request->merge([
+            'field_key' => $this->generateFieldKey(
+                (string) $request->input('label', ''),
+                $request->input('category_id')
+            ),
+        ]);
+
         $validated = $this->validateRequest($request);
 
         ProductDynamicField::create($validated);
@@ -128,5 +139,25 @@ class ProductDynamicFieldController extends Controller
             ->filter(static fn ($item) => $item !== '')
             ->values()
             ->all();
+    }
+
+    private function generateFieldKey(string $label, mixed $categoryId = null): string
+    {
+        $baseKey = Str::slug($label, '_');
+        $baseKey = $baseKey !== '' ? $baseKey : 'field';
+
+        $fieldKey = $baseKey;
+        $suffix = 2;
+
+        while (ProductDynamicField::query()
+            ->whereNull('deleted_at')
+            ->where('category_id', $categoryId)
+            ->where('field_key', $fieldKey)
+            ->exists()) {
+            $fieldKey = $baseKey . '_' . $suffix;
+            $suffix++;
+        }
+
+        return $fieldKey;
     }
 }

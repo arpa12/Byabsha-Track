@@ -133,6 +133,7 @@ class SaleController extends Controller
 
         $batches = ProductBatch::query()
             ->join('products', 'products.id', '=', 'product_batches.product_id')
+            ->with(['product.dynamicValues.dynamicField'])
             ->where('product_batches.shop_id', $shopId)
             ->where('remaining_quantity', '>', 0)
             ->select([
@@ -185,7 +186,10 @@ class SaleController extends Controller
                 return $batch->batch_code . ' (' . optional($batch->batch_date)->format('d M Y') . ')';
             })
             ->addColumn('attribute_summary', function (ProductBatch $batch) {
-                return $batch->attribute_summary;
+                return $this->buildSaleAttributeSummary($batch);
+            })
+            ->addColumn('attribute_values', function (ProductBatch $batch) {
+                return $this->buildSaleAttributeValues($batch);
             })
             ->editColumn('purchase_price', function (ProductBatch $batch) {
                 return number_format((float) $batch->purchase_price, 2);
@@ -213,7 +217,8 @@ class SaleController extends Controller
                     . 'data-product-id="' . e((string) $batch->product_id) . '" '
                     . 'data-batch-id="' . e((string) $batch->id) . '" '
                     . 'data-batch-code="' . e((string) $batch->batch_code) . '" '
-                    . 'data-attribute-summary="' . e((string) $batch->attribute_summary) . '" '
+                    . 'data-attribute-summary="' . e($this->buildSaleAttributeSummary($batch)) . '" '
+                    . 'data-attribute-values="' . e(json_encode($this->buildSaleAttributeValues($batch), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) . '" '
                     . 'data-shop-id="' . e((string) $batch->shop_id) . '" '
                     . 'data-product-name="' . e((string) $batch->product_name) . '" '
                     . 'data-stock="' . e((string) $batch->remaining_quantity) . '" '
@@ -578,7 +583,7 @@ class SaleController extends Controller
         abort_unless(auth()->user()->ownsShop($shopId), 403, 'You do not have access to this shop.');
 
         $products = ProductBatch::query()
-            ->with('product:id,name,sale_price')
+            ->with(['product.dynamicValues.dynamicField'])
             ->where('shop_id', $shopId)
             ->where('remaining_quantity', '>', 0)
             ->orderBy('batch_date')
@@ -593,13 +598,61 @@ class SaleController extends Controller
                     'product_name' => $batch->product?->name ?? '-',
                     'batch_code' => (string) $batch->batch_code,
                     'batch_date' => optional($batch->batch_date)->toDateString(),
-                    'attribute_summary' => $batch->attribute_summary,
-                    'attribute_values' => $batch->attribute_values ?? [],
+                    'attribute_summary' => $this->buildSaleAttributeSummary($batch),
+                    'attribute_values' => $this->buildSaleAttributeValues($batch),
                     'purchase_price' => (float) $batch->purchase_price,
                     'sale_price' => (float) ($batch->product?->sale_price ?? 0),
                     'stock_quantity' => (int) $batch->remaining_quantity,
                 ];
             })->values()
         );
+    }
+
+    private function buildSaleAttributeValues(ProductBatch $batch): array
+    {
+        $productValues = collect($batch->product?->dynamicValues ?? [])
+            ->filter(fn ($item) => $item->dynamicField && filled($item->value))
+            ->map(function ($item) {
+                return [
+                    'field_id' => (int) $item->product_dynamic_field_id,
+                    'field_key' => (string) ($item->dynamicField->field_key ?? ''),
+                    'label' => (string) ($item->dynamicField->label ?? 'Attribute'),
+                    'value' => (string) $item->value,
+                ];
+            })
+            ->values()
+            ->all();
+
+        if (!empty($productValues)) {
+            return $productValues;
+        }
+
+        return collect($batch->attribute_values ?? [])
+            ->filter(fn ($item) => is_array($item) && filled($item['value'] ?? null))
+            ->map(function (array $item) {
+                return [
+                    'field_id' => isset($item['field_id']) ? (int) $item['field_id'] : null,
+                    'field_key' => (string) ($item['field_key'] ?? ''),
+                    'label' => (string) ($item['label'] ?? 'Attribute'),
+                    'value' => (string) ($item['value'] ?? ''),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    private function buildSaleAttributeSummary(ProductBatch $batch): string
+    {
+        $attributes = collect($this->buildSaleAttributeValues($batch))
+            ->filter(fn ($item) => is_array($item) && filled($item['value'] ?? null))
+            ->map(function (array $item) {
+                $label = (string) ($item['label'] ?? $item['field_key'] ?? 'Attribute');
+                $value = (string) ($item['value'] ?? '');
+
+                return trim($label) . ': ' . trim($value);
+            })
+            ->values();
+
+        return $attributes->isNotEmpty() ? $attributes->implode(' | ') : '-';
     }
 }

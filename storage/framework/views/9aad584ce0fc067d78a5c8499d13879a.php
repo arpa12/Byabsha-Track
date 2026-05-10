@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Byabsha Track') - Business Tracking System</title>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-    <link rel="alternate icon" href="{{ asset('favicon.ico') }}">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <title><?php echo $__env->yieldContent('title', 'Byabsha Track'); ?> - Business Tracking System</title>
+    <link rel="icon" type="image/svg+xml" href="<?php echo e(asset('favicon.svg')); ?>">
+    <link rel="alternate icon" href="<?php echo e(asset('favicon.ico')); ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -568,7 +568,7 @@
             --bs-btn-hover-border-color: #b91c1c;
         }
     </style>
-    @stack('styles')
+    <?php echo $__env->yieldPushContent('styles'); ?>
 </head>
 <body>
     <!-- Top Header -->
@@ -576,7 +576,7 @@
         <button class="sidebar-toggle" id="sidebarToggle">
             <i class="bi bi-list"></i>
         </button>
-        <a href="{{ url('/') }}" class="header-brand">
+        <a href="<?php echo e(url('/')); ?>" class="header-brand">
             <span class="brand-chip">
                 <i class="bi bi-graph-up-arrow"></i>
             </span>
@@ -592,68 +592,71 @@
             <div class="notification-bell">
                 <button class="btn" id="notificationBell" type="button">
                     <i class="bi bi-bell-fill"></i>
-                    @if(auth()->user()->unreadNotificationsCount() > 0)
-                        <span class="notification-badge">{{ auth()->user()->unreadNotificationsCount() }}</span>
-                    @endif
+                    <?php if(auth()->user()->unreadNotificationsCount() > 0): ?>
+                        <span class="notification-badge"><?php echo e(auth()->user()->unreadNotificationsCount()); ?></span>
+                    <?php endif; ?>
                 </button>
 
                 <div class="notification-dropdown" id="notificationDropdown">
                     <div class="notification-dropdown-header">
-                        <h6>{{ __('notifications.title') }}</h6>
-                        <form action="{{ route('notifications.mark-all-read') }}" method="POST" class="d-inline">
-                            @csrf
+                        <h6><?php echo e(__('notifications.title')); ?></h6>
+                        <form action="<?php echo e(route('notifications.mark-all-read')); ?>" method="POST" class="d-inline">
+                            <?php echo csrf_field(); ?>
                             <button type="submit" class="btn btn-sm btn-link text-primary p-0" style="font-size: 0.8rem;">
-                                {{ __('notifications.mark_all_read') }}
+                                <?php echo e(__('notifications.mark_all_read')); ?>
+
                             </button>
                         </form>
                     </div>
                     <div class="notification-dropdown-body" id="notificationList">
-                        @php
+                        <?php
                             $recentNotifications = auth()->user()->notifications()->latest()->limit(5)->get();
-                        @endphp
+                        ?>
 
-                        @forelse($recentNotifications as $notification)
-                            <a href="{{ $notification->data['url'] ?? '#' }}"
-                               class="notification-item {{ $notification->isUnread() ? 'unread' : '' }}">
-                                <i class="{{ $notification->icon }} notification-icon"></i>
+                        <?php $__empty_1 = true; $__currentLoopData = $recentNotifications; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $notification): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                            <a href="<?php echo e($notification->data['url'] ?? '#'); ?>"
+                               class="notification-item <?php echo e($notification->isUnread() ? 'unread' : ''); ?>">
+                                <i class="<?php echo e($notification->icon); ?> notification-icon"></i>
                                 <div class="notification-content">
-                                    <div class="notification-title">{{ $notification->title }}</div>
-                                    <div class="notification-message">{{ $notification->message }}</div>
-                                    <div class="notification-time">{{ $notification->created_at->diffForHumans() }}</div>
+                                    <div class="notification-title"><?php echo e($notification->title); ?></div>
+                                    <div class="notification-message"><?php echo e($notification->message); ?></div>
+                                    <div class="notification-time"><?php echo e($notification->created_at->diffForHumans()); ?></div>
                                 </div>
                             </a>
-                        @empty
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <div class="notification-empty">
                                 <i class="bi bi-bell-slash"></i>
-                                <p class="mb-0">{{ __('notifications.no_notifications') }}</p>
+                                <p class="mb-0"><?php echo e(__('notifications.no_notifications')); ?></p>
                             </div>
-                        @endforelse
+                        <?php endif; ?>
                     </div>
-                    @if($recentNotifications->count() > 0)
+                    <?php if($recentNotifications->count() > 0): ?>
                         <div class="notification-dropdown-footer">
-                            <a href="{{ route('notifications.index') }}">{{ __('notifications.view_all') }}</a>
+                            <a href="<?php echo e(route('notifications.index')); ?>"><?php echo e(__('notifications.view_all')); ?></a>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
 
             <!-- Language Switcher -->
             <div class="lang-switcher me-2">
-                <a href="{{ route('language.switch', 'en') }}"
-                   class="lang-btn {{ app()->getLocale() === 'en' ? 'active' : '' }}">EN</a>
-                <a href="{{ route('language.switch', 'bn') }}"
-                   class="lang-btn {{ app()->getLocale() === 'bn' ? 'active' : '' }}">বাংলা</a>
+                <a href="<?php echo e(route('language.switch', 'en')); ?>"
+                   class="lang-btn <?php echo e(app()->getLocale() === 'en' ? 'active' : ''); ?>">EN</a>
+                <a href="<?php echo e(route('language.switch', 'bn')); ?>"
+                   class="lang-btn <?php echo e(app()->getLocale() === 'bn' ? 'active' : ''); ?>">বাংলা</a>
             </div>
             <div class="header-user ms-1">
                 <i class="bi bi-person-circle me-1"></i>
-                <span class="me-2">{{ auth()->user()->name ?? 'User' }}</span>
-                <a href="{{ route('user.profile.edit') }}" class="btn btn-sm btn-outline-primary me-2">
-                    <i class="bi bi-person-gear"></i> {{ __('user.profile_title') }}
+                <span class="me-2"><?php echo e(auth()->user()->name ?? 'User'); ?></span>
+                <a href="<?php echo e(route('user.profile.edit')); ?>" class="btn btn-sm btn-outline-primary me-2">
+                    <i class="bi bi-person-gear"></i> <?php echo e(__('user.profile_title')); ?>
+
                 </a>
-                <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                    @csrf
+                <form action="<?php echo e(route('logout')); ?>" method="POST" class="d-inline">
+                    <?php echo csrf_field(); ?>
                     <button type="submit" class="btn btn-sm btn-outline-danger">
-                        <i class="bi bi-box-arrow-right"></i> {{ __('app.logout') }}
+                        <i class="bi bi-box-arrow-right"></i> <?php echo e(__('app.logout')); ?>
+
                     </button>
                 </form>
             </div>
@@ -663,164 +666,164 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <nav class="sidebar-nav">
-            @php $sidebarUser = auth()->user(); @endphp
-            <div class="nav-section-title">{{ __('app.main_menu') }}</div>
-            @if($sidebarUser->hasModuleAccess('dashboard'))
-                <a href="{{ route('dashboard.index') }}" class="nav-link-custom {{ request()->routeIs('dashboard.*') ? 'active' : '' }}">
+            <?php $sidebarUser = auth()->user(); ?>
+            <div class="nav-section-title"><?php echo e(__('app.main_menu')); ?></div>
+            <?php if($sidebarUser->hasModuleAccess('dashboard')): ?>
+                <a href="<?php echo e(route('dashboard.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('dashboard.*') ? 'active' : ''); ?>">
                     <i class="bi bi-speedometer2"></i>
-                    <span>{{ __('app.dashboard') }}</span>
+                    <span><?php echo e(__('app.dashboard')); ?></span>
                 </a>
-            @endif
-            <a href="{{ route('user.profile.edit') }}" class="nav-link-custom {{ request()->routeIs('user.profile.*') ? 'active' : '' }}">
+            <?php endif; ?>
+            <a href="<?php echo e(route('user.profile.edit')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('user.profile.*') ? 'active' : ''); ?>">
                 <i class="bi bi-person-gear"></i>
-                <span>{{ __('user.profile_title') }}</span>
+                <span><?php echo e(__('user.profile_title')); ?></span>
             </a>
-            @if(!$sidebarUser->isSuperAdmin())
-            <a href="{{ route('subscription.plans') }}" class="nav-link-custom {{ request()->routeIs('subscription.*') ? 'active' : '' }}">
+            <?php if(!$sidebarUser->isSuperAdmin()): ?>
+            <a href="<?php echo e(route('subscription.plans')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('subscription.*') ? 'active' : ''); ?>">
                 <i class="bi bi-stars"></i>
-                <span>{{ __('app.subscription') }}</span>
-                @php
+                <span><?php echo e(__('app.subscription')); ?></span>
+                <?php
                     $activeSub = $sidebarUser->activeSubscription();
                     $subPlan = $activeSub?->plan;
-                @endphp
-                @if($subPlan && !$subPlan->isFree())
-                    <span class="ms-auto badge" style="background: rgba(255,255,255,0.22); font-size: 0.65rem; border-radius: 999px; letter-spacing: 0.03em;">{{ $subPlan->name }}</span>
-                @endif
+                ?>
+                <?php if($subPlan && !$subPlan->isFree()): ?>
+                    <span class="ms-auto badge" style="background: rgba(255,255,255,0.22); font-size: 0.65rem; border-radius: 999px; letter-spacing: 0.03em;"><?php echo e($subPlan->name); ?></span>
+                <?php endif; ?>
             </a>
-            @endif
+            <?php endif; ?>
 
-            {{-- Setup submenu --}}
-            @php
+            
+            <?php
                 $isSetupOpen = request()->routeIs('shop.*') || request()->routeIs('branch.*') || request()->routeIs('brand.*') || request()->routeIs('category.*');
-            @endphp
+            ?>
             <div class="nav-item-submenu">
-                <a class="nav-link-parent {{ $isSetupOpen ? 'active' : '' }}"
+                <a class="nav-link-parent <?php echo e($isSetupOpen ? 'active' : ''); ?>"
                    data-bs-toggle="collapse"
                    href="#setupSubmenu"
                    role="button"
-                   aria-expanded="{{ $isSetupOpen ? 'true' : 'false' }}"
+                   aria-expanded="<?php echo e($isSetupOpen ? 'true' : 'false'); ?>"
                    aria-controls="setupSubmenu">
                     <div class="left-content">
                         <i class="bi bi-gear-wide-connected"></i>
-                        <span>{{ __('app.setup') }}</span>
+                        <span><?php echo e(__('app.setup')); ?></span>
                     </div>
                     <i class="bi bi-chevron-down"></i>
                 </a>
-                <div class="collapse submenu {{ $isSetupOpen ? 'show' : '' }}" id="setupSubmenu">
-                    @if($sidebarUser->hasModuleAccess('shop'))
-                        <a href="{{ route('shop.index') }}" class="nav-link-custom {{ request()->routeIs('shop.*') ? 'active' : '' }}">
+                <div class="collapse submenu <?php echo e($isSetupOpen ? 'show' : ''); ?>" id="setupSubmenu">
+                    <?php if($sidebarUser->hasModuleAccess('shop')): ?>
+                        <a href="<?php echo e(route('shop.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('shop.*') ? 'active' : ''); ?>">
                             <i class="bi bi-shop"></i>
-                            <span>{{ __('app.shops') }}</span>
+                            <span><?php echo e(__('app.shops')); ?></span>
                         </a>
-                    @endif
-                    @if($sidebarUser->hasModuleAccess('branch'))
-                        <a href="{{ route('branch.index') }}" class="nav-link-custom {{ request()->routeIs('branch.*') ? 'active' : '' }}">
+                    <?php endif; ?>
+                    <?php if($sidebarUser->hasModuleAccess('branch')): ?>
+                        <a href="<?php echo e(route('branch.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('branch.*') ? 'active' : ''); ?>">
                             <i class="bi bi-diagram-3"></i>
-                            <span>{{ __('app.branches') }}</span>
+                            <span><?php echo e(__('app.branches')); ?></span>
                         </a>
-                    @endif
-                    @if($sidebarUser->hasModuleAccess('brand'))
-                        <a href="{{ route('brand.index') }}" class="nav-link-custom {{ request()->routeIs('brand.*') ? 'active' : '' }}">
+                    <?php endif; ?>
+                    <?php if($sidebarUser->hasModuleAccess('brand')): ?>
+                        <a href="<?php echo e(route('brand.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('brand.*') ? 'active' : ''); ?>">
                             <i class="bi bi-bookmark-star"></i>
-                            <span>{{ __('app.brands') }}</span>
+                            <span><?php echo e(__('app.brands')); ?></span>
                         </a>
-                    @endif
-                    @if($sidebarUser->hasModuleAccess('category'))
-                        <a href="{{ route('category.index') }}" class="nav-link-custom {{ request()->routeIs('category.*') ? 'active' : '' }}">
+                    <?php endif; ?>
+                    <?php if($sidebarUser->hasModuleAccess('category')): ?>
+                        <a href="<?php echo e(route('category.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('category.*') ? 'active' : ''); ?>">
                             <i class="bi bi-tags"></i>
-                            <span>{{ __('app.categories') }}</span>
+                            <span><?php echo e(__('app.categories')); ?></span>
                         </a>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
 
-            {{-- Inventory submenu --}}
-            @php
+            
+            <?php
                 $isInventoryOpen = request()->routeIs('product.*') || request()->routeIs('product.dynamic-fields.*') || request()->routeIs('stock.*');
-            @endphp
+            ?>
             <div class="nav-item-submenu">
-                <a class="nav-link-parent {{ $isInventoryOpen ? 'active' : '' }}"
+                <a class="nav-link-parent <?php echo e($isInventoryOpen ? 'active' : ''); ?>"
                    data-bs-toggle="collapse"
                    href="#inventorySubmenu"
                    role="button"
-                   aria-expanded="{{ $isInventoryOpen ? 'true' : 'false' }}"
+                   aria-expanded="<?php echo e($isInventoryOpen ? 'true' : 'false'); ?>"
                    aria-controls="inventorySubmenu">
                     <div class="left-content">
                         <i class="bi bi-boxes"></i>
-                        <span>{{ __('app.inventory') }}</span>
+                        <span><?php echo e(__('app.inventory')); ?></span>
                     </div>
                     <i class="bi bi-chevron-down"></i>
                 </a>
-                <div class="collapse submenu {{ $isInventoryOpen ? 'show' : '' }}" id="inventorySubmenu">
-                    @if($sidebarUser->hasModuleAccess('product'))
-                        <a href="{{ route('product.index') }}" class="nav-link-custom {{ request()->routeIs('product.*') && !request()->routeIs('product.dynamic-fields.*') ? 'active' : '' }}">
+                <div class="collapse submenu <?php echo e($isInventoryOpen ? 'show' : ''); ?>" id="inventorySubmenu">
+                    <?php if($sidebarUser->hasModuleAccess('product')): ?>
+                        <a href="<?php echo e(route('product.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('product.*') && !request()->routeIs('product.dynamic-fields.*') ? 'active' : ''); ?>">
                             <i class="bi bi-box-seam"></i>
-                            <span>{{ __('app.products') }}</span>
+                            <span><?php echo e(__('app.products')); ?></span>
                         </a>
-                        @if($sidebarUser->canUseProductAttributes())
-                            <a href="{{ route('product.dynamic-fields.index') }}" class="nav-link-custom {{ request()->routeIs('product.dynamic-fields.*') ? 'active' : '' }}">
+                        <?php if($sidebarUser->canUseProductAttributes()): ?>
+                            <a href="<?php echo e(route('product.dynamic-fields.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('product.dynamic-fields.*') ? 'active' : ''); ?>">
                                 <i class="bi bi-sliders"></i>
-                                <span>{{ __('app.product_attributes') }}</span>
+                                <span><?php echo e(__('app.product_attributes')); ?></span>
                             </a>
-                        @endif
-                    @endif
-                    @if($sidebarUser->hasModuleAccess('stock'))
-                        <a href="{{ route('stock.index') }}" class="nav-link-custom {{ request()->routeIs('stock.*') ? 'active' : '' }}">
+                        <?php endif; ?>
+                    <?php endif; ?>
+                    <?php if($sidebarUser->hasModuleAccess('stock') && $sidebarUser->canUseStocks()): ?>
+                        <a href="<?php echo e(route('stock.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('stock.*') ? 'active' : ''); ?>">
                             <i class="bi bi-boxes"></i>
-                            <span>{{ __('app.stocks') }}</span>
+                            <span><?php echo e(__('app.stocks')); ?></span>
                         </a>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
 
-            {{-- Operations submenu --}}
-            @php
+            
+            <?php
                 $isOperationsOpen = request()->routeIs('sale.*') || request()->routeIs('capital.*') || request()->routeIs('restock.*') || request()->routeIs('damage.*');
-            @endphp
+            ?>
             <div class="nav-item-submenu">
-                <a class="nav-link-parent {{ $isOperationsOpen ? 'active' : '' }}"
+                <a class="nav-link-parent <?php echo e($isOperationsOpen ? 'active' : ''); ?>"
                    data-bs-toggle="collapse"
                    href="#operationsSubmenu"
                    role="button"
-                   aria-expanded="{{ $isOperationsOpen ? 'true' : 'false' }}"
+                   aria-expanded="<?php echo e($isOperationsOpen ? 'true' : 'false'); ?>"
                    aria-controls="operationsSubmenu">
                     <div class="left-content">
                         <i class="bi bi-gear-fill"></i>
-                        <span>{{ __('app.operations') }}</span>
+                        <span><?php echo e(__('app.operations')); ?></span>
                     </div>
                     <i class="bi bi-chevron-down"></i>
                 </a>
-                <div class="collapse submenu {{ $isOperationsOpen ? 'show' : '' }}" id="operationsSubmenu">
-                    @if($sidebarUser->hasModuleAccess('sale'))
-                        <a href="{{ route('sale.index') }}" class="nav-link-custom {{ request()->routeIs('sale.*') ? 'active' : '' }}">
+                <div class="collapse submenu <?php echo e($isOperationsOpen ? 'show' : ''); ?>" id="operationsSubmenu">
+                    <?php if($sidebarUser->hasModuleAccess('sale')): ?>
+                        <a href="<?php echo e(route('sale.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('sale.*') ? 'active' : ''); ?>">
                             <i class="bi bi-cart-check"></i>
-                            <span>{{ __('app.sales') }}</span>
+                            <span><?php echo e(__('app.sales')); ?></span>
                         </a>
-                    @endif
-                    @if($sidebarUser->hasModuleAccess('capital'))
-                        <a href="{{ route('capital.index') }}" class="nav-link-custom {{ request()->routeIs('capital.*') ? 'active' : '' }}">
+                    <?php endif; ?>
+                    <?php if($sidebarUser->hasModuleAccess('capital') && $sidebarUser->canUseCapital()): ?>
+                        <a href="<?php echo e(route('capital.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('capital.*') ? 'active' : ''); ?>">
                             <i class="bi bi-cash-coin"></i>
-                            <span>{{ __('app.capitals') }}</span>
+                            <span><?php echo e(__('app.capitals')); ?></span>
                         </a>
-                    @endif
-                    @if($sidebarUser->hasModuleAccess('restock'))
-                        <a href="{{ route('restock.index') }}" class="nav-link-custom {{ request()->routeIs('restock.*') ? 'active' : '' }}">
+                    <?php endif; ?>
+                    <?php if($sidebarUser->hasModuleAccess('restock') && $sidebarUser->canUseRestock()): ?>
+                        <a href="<?php echo e(route('restock.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('restock.*') ? 'active' : ''); ?>">
                             <i class="bi bi-arrow-repeat"></i>
-                            <span>{{ __('app.restocks') }}</span>
+                            <span><?php echo e(__('app.restocks')); ?></span>
                         </a>
-                    @endif
-                    @if($sidebarUser->hasModuleAccess('damage'))
-                        <a href="{{ route('damage.index') }}" class="nav-link-custom {{ request()->routeIs('damage.*') ? 'active' : '' }}">
+                    <?php endif; ?>
+                    <?php if($sidebarUser->hasModuleAccess('damage') && $sidebarUser->canUseDamages()): ?>
+                        <a href="<?php echo e(route('damage.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('damage.*') ? 'active' : ''); ?>">
                             <i class="bi bi-exclamation-triangle"></i>
-                            <span>{{ __('app.damages') }}</span>
+                            <span><?php echo e(__('app.damages')); ?></span>
                         </a>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
 
-            @if($sidebarUser->isSuperAdmin())
-            <div class="nav-section-title">{{ __('app.system') }}</div>
-            @php
+            <?php if($sidebarUser->isSuperAdmin()): ?>
+            <div class="nav-section-title"><?php echo e(__('app.system')); ?></div>
+            <?php
                 $isUserManagementRoute = request()->routeIs('user.index')
                     || request()->routeIs('user.create')
                     || request()->routeIs('user.store')
@@ -831,83 +834,85 @@
                     || request()->routeIs('user.restore')
                     || request()->routeIs('user.force-delete');
                 $isSettingsMenuOpen = request()->routeIs('settings.*') || $isUserManagementRoute || request()->routeIs('admin.subscriptions.*');
-            @endphp
+            ?>
 
             <!-- Settings Submenu -->
             <div class="nav-item-submenu">
-                <a class="nav-link-parent {{ $isSettingsMenuOpen ? 'active' : '' }}"
+                <a class="nav-link-parent <?php echo e($isSettingsMenuOpen ? 'active' : ''); ?>"
                    data-bs-toggle="collapse"
                    href="#settingsSubmenu"
                    role="button"
-                   aria-expanded="{{ $isSettingsMenuOpen ? 'true' : 'false' }}"
+                   aria-expanded="<?php echo e($isSettingsMenuOpen ? 'true' : 'false'); ?>"
                    aria-controls="settingsSubmenu">
                     <div class="left-content">
                         <i class="bi bi-gear"></i>
-                        <span>{{ __('app.settings') }}</span>
+                        <span><?php echo e(__('app.settings')); ?></span>
                     </div>
                     <i class="bi bi-chevron-down"></i>
                 </a>
-                <div class="collapse submenu {{ $isSettingsMenuOpen ? 'show' : '' }}" id="settingsSubmenu">
-                    <a href="{{ route('settings.general') }}" class="nav-link-custom {{ request()->routeIs('settings.general') || request()->routeIs('settings.index') ? 'active' : '' }}">
+                <div class="collapse submenu <?php echo e($isSettingsMenuOpen ? 'show' : ''); ?>" id="settingsSubmenu">
+                    <a href="<?php echo e(route('settings.general')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('settings.general') || request()->routeIs('settings.index') ? 'active' : ''); ?>">
                         <i class="bi bi-sliders"></i>
-                        <span>{{ __('settings.general_settings') }}</span>
+                        <span><?php echo e(__('settings.general_settings')); ?></span>
                     </a>
-                    <a href="{{ route('settings.system') }}" class="nav-link-custom {{ request()->routeIs('settings.system') ? 'active' : '' }}">
+                    <a href="<?php echo e(route('settings.system')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('settings.system') ? 'active' : ''); ?>">
                         <i class="bi bi-cpu"></i>
-                        <span>{{ __('settings.system_settings') }}</span>
+                        <span><?php echo e(__('settings.system_settings')); ?></span>
                     </a>
-                    <a href="{{ route('user.index') }}" class="nav-link-custom {{ $isUserManagementRoute ? 'active' : '' }}">
+                    <a href="<?php echo e(route('user.index')); ?>" class="nav-link-custom <?php echo e($isUserManagementRoute ? 'active' : ''); ?>">
                         <i class="bi bi-people"></i>
-                        <span>{{ __('app.users') }}</span>
+                        <span><?php echo e(__('app.users')); ?></span>
                     </a>
-                    <a href="{{ route('admin.subscriptions.index') }}" class="nav-link-custom {{ request()->routeIs('admin.subscriptions.*') ? 'active' : '' }}">
+                    <a href="<?php echo e(route('admin.subscriptions.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('admin.subscriptions.*') ? 'active' : ''); ?>">
                         <i class="bi bi-credit-card-2-front"></i>
-                        <span>{{ __('app.subscriptions') }}</span>
-                        @php $pendingSubCount = \Modules\Subscription\Models\PaymentRequest::where('status','pending')->count(); @endphp
-                        @if($pendingSubCount > 0)
-                            <span class="ms-auto badge bg-warning text-dark" style="font-size: 0.65rem; border-radius: 999px;">{{ $pendingSubCount }}</span>
-                        @endif
+                        <span><?php echo e(__('app.subscriptions')); ?></span>
+                        <?php $pendingSubCount = \Modules\Subscription\Models\PaymentRequest::where('status','pending')->count(); ?>
+                        <?php if($pendingSubCount > 0): ?>
+                            <span class="ms-auto badge bg-warning text-dark" style="font-size: 0.65rem; border-radius: 999px;"><?php echo e($pendingSubCount); ?></span>
+                        <?php endif; ?>
                     </a>
                 </div>
             </div>
-            @endif
+            <?php endif; ?>
 
-            @if($sidebarUser->hasModuleAccess('report'))
-                <div class="nav-section-title">{{ __('app.analytics') }}</div>
-                <a href="{{ route('report.index') }}" class="nav-link-custom {{ request()->routeIs('report.index') || request()->routeIs('report.sales') || request()->routeIs('report.products') || request()->routeIs('report.shops') ? 'active' : '' }}">
+            <?php if($sidebarUser->hasModuleAccess('report') && $sidebarUser->canUseReports()): ?>
+                <div class="nav-section-title"><?php echo e(__('app.analytics')); ?></div>
+                <a href="<?php echo e(route('report.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('report.index') || request()->routeIs('report.sales') || request()->routeIs('report.products') || request()->routeIs('report.shops') ? 'active' : ''); ?>">
                     <i class="bi bi-bar-chart-line"></i>
-                    <span>{{ __('app.reports') }}</span>
+                    <span><?php echo e(__('app.reports')); ?></span>
                 </a>
-                <a href="{{ route('report.daily') }}" class="nav-link-custom {{ request()->routeIs('report.daily') || request()->routeIs('report.export.daily-pdf') ? 'active' : '' }}">
+                <a href="<?php echo e(route('report.daily')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('report.daily') || request()->routeIs('report.export.daily-pdf') ? 'active' : ''); ?>">
                     <i class="bi bi-calendar-check"></i>
-                    <span>{{ __('app.daily_pnl') }}</span>
+                    <span><?php echo e(__('app.daily_pnl')); ?></span>
                 </a>
-                <a href="{{ route('report.monthly') }}" class="nav-link-custom {{ request()->routeIs('report.monthly') || request()->routeIs('report.export.monthly-pdf') ? 'active' : '' }}">
+                <a href="<?php echo e(route('report.monthly')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('report.monthly') || request()->routeIs('report.export.monthly-pdf') ? 'active' : ''); ?>">
                     <i class="bi bi-calendar-range"></i>
-                    <span>{{ __('app.monthly_pnl') }}</span>
+                    <span><?php echo e(__('app.monthly_pnl')); ?></span>
                 </a>
-            @endif
+            <?php endif; ?>
         </nav>
     </aside>
 
     <!-- Main Content -->
     <main class="main-content">
-        @if(session('success'))
+        <?php if(session('success')): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="bi bi-check-circle-fill me-2"></i>
-                {{ session('success') }}
+                <?php echo e(session('success')); ?>
+
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        @endif
-        @if(session('error'))
+        <?php endif; ?>
+        <?php if(session('error')): ?>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                {{ session('error') }}
+                <?php echo e(session('error')); ?>
+
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        @endif
+        <?php endif; ?>
 
-        @yield('content')
+        <?php echo $__env->yieldContent('content'); ?>
     </main>
 
     <!-- Bootstrap JS -->
@@ -960,6 +965,7 @@
             });
         }
     </script>
-    @stack('scripts')
+    <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
 </html>
+<?php /**PATH D:\Arpa\self_project\byabshaTrack\resources\views/layouts/app.blade.php ENDPATH**/ ?>

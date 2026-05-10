@@ -161,6 +161,22 @@
         color: #fff;
     }
 
+    .attribute-list {
+        display: grid;
+        gap: 0.2rem;
+        line-height: 1.35;
+        word-break: break-word;
+    }
+
+    .attribute-label {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .attribute-value {
+        color: #334155;
+    }
+
     .shop-stat-card {
         border: 1px solid #dbe7f2;
         border-radius: 16px;
@@ -343,7 +359,7 @@
     </div>
     <div class="p-4">
         <form action="{{ route('stock.index') }}" method="GET">
-            <div class="row align-items-end">
+            <div class="row">
                 <div class="col-md-4">
                     <label for="shop_id" class="form-label fw-semibold">{{ __('stock::stock.shop') }}</label>
                     <select id="shop_id" name="shop_id" class="form-select">
@@ -355,10 +371,25 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-6">
+                    <label for="search" class="form-label fw-semibold">{{ __('stock::stock.search') }}</label>
+                    <input
+                        type="text"
+                        id="search"
+                        name="search"
+                        class="form-control"
+                        value="{{ $searchTerm ?? '' }}"
+                        placeholder="{{ __('stock::stock.search_placeholder') }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
                     <button type="submit" class="btn btn-apply-filter w-100">
                         <i class="bi bi-search"></i> {{ __('stock::stock.apply_filter') }}
                     </button>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-6 offset-md-4">
+                    <div class="form-text">{{ __('stock::stock.search_help') }}</div>
                 </div>
             </div>
         </form>
@@ -429,6 +460,7 @@
                         <th>{{ __('stock::stock.product') }}</th>
                         <th>{{ __('stock::stock.category') }}</th>
                         <th>{{ __('stock::stock.brand') }}</th>
+                        <th>{{ __('stock::stock.custom_attributes') }}</th>
                         <th class="text-end">{{ __('stock::stock.purchase_price') }}</th>
                         <th class="text-end">{{ __('stock::stock.sale_price') }}</th>
                         <th class="text-center">{{ __('stock::stock.current_stock') }}</th>
@@ -443,6 +475,20 @@
                             <td><strong>{{ $product->name }}</strong></td>
                             <td class="text-muted">{{ $product->category ?? '-' }}</td>
                             <td class="text-muted">{{ $product->brand ?? '-' }}</td>
+                            <td>
+                                @if(!empty($attributesByProductId[$product->id]))
+                                    <div class="attribute-list">
+                                        @foreach($attributesByProductId[$product->id] as $attribute)
+                                            <div>
+                                                <span class="attribute-label">{{ $attribute['label'] }}:</span>
+                                                <span class="attribute-value">{{ $attribute['value'] }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
                             <td class="text-end">{{ number_format($product->purchase_price, 2) }}</td>
                             <td class="text-end">{{ number_format($product->sale_price, 2) }}</td>
                             <td class="text-center">
