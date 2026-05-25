@@ -33,8 +33,15 @@ return [
     'reports'         => 'Reports',
     'daily_pnl'       => 'Daily P&L',
     'monthly_pnl'     => 'Monthly P&L',
+    'subscription'    => 'Subscription',
+    'subscriptions'   => 'Subscriptions',
     'users'           => 'Users',
     'settings'        => 'Settings',
+
+    // Dashboard subscription notice
+    'free_plan_active' => 'Free Plan Active',
+    'basic_plan_message' => 'You are currently on the Basic (Free) plan. To access more features and remove limitations, upgrade to Standard or Premium.',
+    'go_to_subscription' => 'Go to Subscription',
 
     // Common actions
     'back'            => 'Back',
@@ -79,4 +86,9 @@ return [
     'maintenance_badge' => 'System Maintenance',
     'maintenance_heading' => 'Temporarily unavailable',
     'maintenance_message' => 'The super admin enabled maintenance mode. Please wait and try again later.',
+
+    // Singular labels
+    'user'            => 'User',
+    'shop'            => 'Shop',
+    'branch'          => 'Branch',
 ];

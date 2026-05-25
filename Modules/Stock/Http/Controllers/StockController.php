@@ -13,6 +13,10 @@ class StockController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->isFeatureEnabled($user, 'stocks')) {
+            return redirect()->route('dashboard')->with('error', 'Stocks are not available on your current plan. Please upgrade to access this feature.');
+        }
         $allowedShopIds = $user->accessibleShopIds();
 
         $selectedShopId = $request->filled('shop_id') ? (int) $request->input('shop_id') : null;

@@ -19,14 +19,12 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        {{-- Vite CSS --}}
-        {{-- {{ module_vite('build-settings', 'resources/assets/sass/app.scss') }} --}}
+        <!-- Vite CSS -->
     </head>
 
     <body>
         {{ $slot }}
 
-        {{-- Vite JS --}}
-        {{-- {{ module_vite('build-settings', 'resources/assets/js/app.js') }} --}}
+        <!-- Vite JS -->
     </body>
 </html>

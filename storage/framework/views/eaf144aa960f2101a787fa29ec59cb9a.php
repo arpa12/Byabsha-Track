@@ -1,6 +1,9 @@
+
+
 <?php $__env->startSection('title', __('dashboard.title')); ?>
 
 <?php $__env->startPush('styles'); ?>
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css']); ?>
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
@@ -46,7 +49,7 @@
         border: 0;
         box-shadow: none;
         position: relative;
-        overflow: hidden;
+        overflow: visible;
     }
 
     .dashboard-header::after {
@@ -330,12 +333,68 @@
 
 <?php $__env->startSection('content'); ?>
 <div class="dashboard-shell">
-<div class="dashboard-header">
-    <h1 class="dashboard-title display-font"><?php echo e(__('dashboard.title')); ?></h1>
-    <p class="dashboard-subtitle"><?php echo e(__('dashboard.subtitle')); ?></p>
+<div class="dashboard-header flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-5 mb-8">
+    <div>
+        <h1 class="dashboard-title display-font text-3xl font-black text-slate-900 leading-none"><?php echo e(__('dashboard.title')); ?></h1>
+        <p class="dashboard-subtitle text-slate-500 text-sm mt-1.5"><?php echo e(__('dashboard.subtitle')); ?></p>
+    </div>
+    
+    
+    <?php if(auth()->user()->isOwner() || auth()->user()->isSuperAdmin()): ?>
+        <?php if($userShops->count() > 0): ?>
+            <div class="dropdown">
+                <button class="btn d-flex align-items-center gap-2 px-3 py-1.5 border rounded-pill bg-white shadow-sm dropdown-toggle" 
+                        type="button" 
+                        id="shopSelectorDropdown" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false"
+                        style="border-color: rgba(15, 118, 110, 0.25) !important; color: #0f172a; font-size: 0.85rem; font-weight: 700; transition: all 0.2s;">
+                    <i class="bi bi-shop" style="font-size: 1rem; color: #0f766e;"></i>
+                    <span><?php echo e($userShops->firstWhere('id', $activeShopId)?->name ?? __('Select Shop Context')); ?></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end border-0 shadow rounded-3 py-1 mt-1" aria-labelledby="shopSelectorDropdown" style="min-width: 220px; border: 1px solid #d8e4ee !important;">
+                    <li class="dropdown-header text-uppercase tracking-wider small fw-bold text-muted px-3 py-1.5" style="font-size: 0.65rem; border-bottom: 1px solid #f1f5f9; margin-bottom: 4px;">
+                        <?php echo e(__('Select Shop')); ?>
+
+                    </li>
+                    <?php $__currentLoopData = $userShops; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $s): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php
+                            $isActive = $activeShopId == $s->id;
+                        ?>
+                        <li>
+                            <form action="<?php echo e(route('dashboard.select-shop')); ?>" method="POST" class="m-0">
+                                <?php echo csrf_field(); ?>
+                                <input type="hidden" name="shop_id" value="<?php echo e($s->id); ?>">
+                                <button type="submit" 
+                                        class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded-2" 
+                                        style="font-size: 0.85rem; font-weight: 600; text-align: left; width: calc(100% - 16px); margin: 2px 8px; border: 0; 
+                                               background: <?php echo e($isActive ? '#0f766e' : 'transparent'); ?>; 
+                                               color: <?php echo e($isActive ? '#ffffff' : '#334155'); ?>; 
+                                               transition: all 0.15s;"
+                                        onmouseover="this.style.background='<?php echo e($isActive ? '#0f766e' : '#f1f5f9'); ?>'; this.style.color='<?php echo e($isActive ? '#ffffff' : '#0f172a'); ?>'"
+                                        onmouseout="this.style.background='<?php echo e($isActive ? '#0f766e' : 'transparent'); ?>'; this.style.color='<?php echo e($isActive ? '#ffffff' : '#334155'); ?>'">
+                                    <i class="bi bi-shop <?php echo e($isActive ? 'text-white' : 'text-muted'); ?>"></i>
+                                    <span><?php echo e($s->name); ?></span>
+                                </button>
+                            </form>
+                        </li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+    <?php elseif(auth()->user()->isManager() && auth()->user()->assignedShop): ?>
+        <div class="inline-flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-600">
+            <i class="bi bi-shop text-slate-500"></i>
+            <span>Active Shop: <?php echo e(auth()->user()->assignedShop->name); ?></span>
+        </div>
+    <?php endif; ?>
 </div>
 
-<!-- Overall Statistics -->
+<?php if(false): ?>
+
+<?php endif; ?>
+
+
 <div class="overall-stats">
     <div class="row g-3">
         <div class="col-lg-2 col-md-4 col-sm-6">
@@ -432,7 +491,149 @@
     </div>
 </div>
 
-<!-- Shop-wise Metrics -->
+
+<div class="mb-12">
+    <div class="inline-flex items-center gap-2 mb-3 rounded-full px-3 py-1 bg-teal-500/10 border border-teal-500/20 text-teal-700 text-xs font-bold uppercase tracking-wider">
+        <i class="bi bi-stars"></i>
+        <span>Module Subscription Matrix</span>
+    </div>
+    <h2 class="text-2xl font-black text-slate-900 tracking-tight mb-2">Subscribed Modules & Features</h2>
+    <p class="text-slate-500 text-sm mb-6">Manage settings and launch active modules available under your active shop context subscription.</p>
+
+    <?php
+        $modulesConfig = [
+            'shop' => [
+                'name' => 'Shop Setup',
+                'desc' => 'Configure and manage retail shops and settings.',
+                'icon' => 'bi-shop',
+                'route' => 'shop.index'
+            ],
+            'branch' => [
+                'name' => 'Branches',
+                'desc' => 'Manage multiple physical locations and branches.',
+                'icon' => 'bi-diagram-3',
+                'route' => 'branch.index'
+            ],
+            'brand' => [
+                'name' => 'Brands',
+                'desc' => 'Organize inventory products by manufacturer brands.',
+                'icon' => 'bi-bookmark-star',
+                'route' => 'brand.index'
+            ],
+            'category' => [
+                'name' => 'Categories',
+                'desc' => 'Classify products into logical custom categories.',
+                'icon' => 'bi-tags',
+                'route' => 'category.index'
+            ],
+            'product' => [
+                'name' => 'Products Catalog',
+                'desc' => 'Maintain item lists, prices, and dynamic specs.',
+                'icon' => 'bi-box-seam',
+                'route' => 'product.index'
+            ],
+            'stock' => [
+                'name' => 'Stock Levels',
+                'desc' => 'Monitor real-time inventory and warehouse levels.',
+                'icon' => 'bi-boxes',
+                'route' => 'stock.index'
+            ],
+            'sale' => [
+                'name' => 'Sales & Billing',
+                'desc' => 'Check out customers, print invoices, track revenue.',
+                'icon' => 'bi-cart-check',
+                'route' => 'sale.index'
+            ],
+            'capital' => [
+                'name' => 'Capital Ledger',
+                'desc' => 'Audit business investments, logs, and net cash flow.',
+                'icon' => 'bi-cash-coin',
+                'route' => 'capital.index'
+            ],
+            'restock' => [
+                'name' => 'Restock Logs',
+                'desc' => 'Place vendor restock orders and track quantities.',
+                'icon' => 'bi-arrow-repeat',
+                'route' => 'restock.index'
+            ],
+            'damage' => [
+                'name' => 'Damaged Goods',
+                'desc' => 'Log broken or lost stock and leakage reports.',
+                'icon' => 'bi-exclamation-triangle',
+                'route' => 'damage.index'
+            ],
+            'report' => [
+                'name' => 'Analytics & PnL',
+                'desc' => 'Generate daily/monthly statements and sales charts.',
+                'icon' => 'bi-bar-chart-line',
+                'route' => 'report.index'
+            ]
+        ];
+    ?>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <?php $__currentLoopData = $modulesConfig; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $modKey => $mod): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <?php
+                $hasAccess = auth()->user()->hasModuleAccess($modKey);
+            ?>
+            <div class="bg-white border border-slate-200/80 rounded-2xl p-5 flex flex-col h-full shadow-sm hover:shadow-md transition-all duration-200 relative group <?php echo e(!$hasAccess ? 'border-dashed' : ''); ?>">
+                <?php if(!$hasAccess): ?>
+                    <div class="absolute inset-0 bg-slate-50/10 backdrop-blur-[0.5px] rounded-2xl pointer-events-none z-10"></div>
+                <?php endif; ?>
+
+                
+                <div class="flex items-start justify-between gap-4 mb-4 z-20">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center border shadow-inner <?php echo e($hasAccess ? 'bg-teal-50 border-teal-100 text-teal-600' : 'bg-slate-100 border-slate-200 text-slate-400'); ?>">
+                        <i class="bi <?php echo e($mod['icon']); ?> text-lg"></i>
+                    </div>
+                    <div>
+                        <?php if($hasAccess): ?>
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 border border-teal-100 text-teal-700">
+                                <span class="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></span>
+                                Active
+                            </span>
+                        <?php else: ?>
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 border border-amber-200 text-amber-700">
+                                <i class="bi bi-lock-fill"></i>
+                                Locked
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                
+                <div class="flex-grow z-20">
+                    <h3 class="font-bold text-slate-900 text-sm mb-1 group-hover:text-teal-600 transition-colors"><?php echo e($mod['name']); ?></h3>
+                    <p class="text-slate-500 text-xs leading-relaxed"><?php echo e($mod['desc']); ?></p>
+                </div>
+
+                
+                <div class="mt-5 border-t border-slate-100 pt-4 z-20">
+                    <?php if($hasAccess): ?>
+                        <a href="<?php echo e(route($mod['route'])); ?>" 
+                           class="w-full inline-flex justify-center items-center gap-1 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-sm transition-colors duration-150">
+                            Open Module <i class="bi bi-arrow-right"></i>
+                        </a>
+                    <?php else: ?>
+                        <?php if(auth()->user()->isOwner()): ?>
+                            <a href="<?php echo e(route('subscription.plans')); ?>" 
+                               class="w-full inline-flex justify-center items-center gap-1.5 px-4 py-2 border border-amber-200 hover:border-amber-300 hover:bg-amber-50 text-amber-800 rounded-xl text-xs font-bold transition-all duration-150">
+                                <i class="bi bi-stars"></i> Buy Subscription
+                            </a>
+                        <?php else: ?>
+                            <button disabled 
+                                    class="w-full inline-flex justify-center items-center px-4 py-2 bg-slate-100 text-slate-400 rounded-xl text-xs font-bold border border-slate-200 cursor-not-allowed">
+                                <i class="bi bi-lock-fill me-1"></i> Locked
+                            </button>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+    </div>
+</div>
+
+
 <div class="shop-metrics-section">
     <h2 class="shop-section-title">
         <i class="bi bi-shop"></i>
@@ -492,7 +693,7 @@
     <?php endif; ?>
     </div>
 
-<!-- Shop Details Modal -->
+
 <div class="modal fade" id="shopDetailsModal" tabindex="-1" aria-labelledby="shopDetailsModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -501,7 +702,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" id="shopDetailsModalBody">
-        <!-- Shop details will be loaded here -->
+        
       </div>
     </div>
   </div>

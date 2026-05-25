@@ -156,6 +156,11 @@ class ReportController extends Controller
 
     public function daily(Request $request)
     {
+        $user = Auth::user();
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->isFeatureEnabled($user, 'daily_pl')) {
+            return redirect()->route('report.index')->with('error', 'Daily P&L is not available on your current plan. Please upgrade to access this feature.');
+        }
         $filters = $this->authorizedFilters($request, [
             'month' => $request->input('month', now()->format('Y-m')),
         ]);
@@ -173,6 +178,11 @@ class ReportController extends Controller
 
     public function monthly(Request $request)
     {
+        $user = Auth::user();
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->isFeatureEnabled($user, 'monthly_pl')) {
+            return redirect()->route('report.index')->with('error', 'Monthly P&L is not available on your current plan. Please upgrade to access this feature.');
+        }
         $filters = $this->authorizedFilters($request, [
             'year' => $request->input('year', now()->format('Y')),
         ]);

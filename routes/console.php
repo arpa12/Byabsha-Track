@@ -132,3 +132,34 @@ Artisan::command('notifications:daily-summary', function () {
 
 Schedule::command('notifications:check-low-stock')->dailyAt('09:00');
 Schedule::command('notifications:daily-summary')->dailyAt('21:00');
+
+Artisan::command('subscription:check-expiry', function () {
+    $now = now();
+    $subscriptions = \Modules\Subscription\Models\Subscription::where('status', 'active')
+        ->whereNotNull('ends_at')
+        ->where('ends_at', '<=', $now)
+        ->with(['user', 'plan'])
+        ->get();
+
+    $expiredCount = 0;
+    foreach ($subscriptions as $sub) {
+        $sub->update(['status' => 'expired']);
+
+        \App\Models\Notification::create([
+            'user_id' => $sub->user_id,
+            'type'    => 'subscription_expired',
+            'title'   => 'Subscription Expired',
+            'message' => "Your subscription to the {$sub->plan->name} plan has expired. Please buy a subscription to restore access.",
+            'data'    => [
+                'plan_slug' => $sub->plan->slug,
+                'url'       => route('subscription.plans')
+            ],
+        ]);
+
+        $expiredCount++;
+    }
+
+    $this->info("Successfully expired {$expiredCount} subscription(s).");
+})->purpose('Find and expire all active subscriptions that have passed their ends_at date');
+
+Schedule::command('subscription:check-expiry')->hourly();

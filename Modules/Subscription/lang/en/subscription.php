@@ -1,7 +1,6 @@
 <?php
 
 return [
-    // General
     'plans'                     => 'Subscription Plans',
     'my_subscription'           => 'My Subscription',
     'current_plan'              => 'Current Plan',
@@ -11,6 +10,10 @@ return [
     'already_pending'           => 'You already have a pending payment request. Please wait for it to be reviewed.',
     'cannot_pay_free'           => 'You cannot make a payment for the Free plan.',
     'active_until'              => 'Active until',
+    'active_date'               => 'Active Date',
+    'expiry_date'               => 'Expiry Date',
+    'change_plan'               => 'Upgrade / Change Plan',
+    'subscribed_to'             => 'Subscribed To',
     'no_active'                 => 'You are currently on the Free plan.',
     'payment_history'           => 'Payment History',
     'pending'                   => 'Pending',
@@ -18,8 +21,6 @@ return [
     'rejected'                  => 'Rejected',
     'expired_title'             => 'Subscription Expired',
     'expired_message'           => 'Your trial or subscription has expired. Please subscribe to continue using Byabsha Track.',
-
-    // Plan list
     'view_plans'                => 'View Plans',
     'payment_under_review'      => 'Payment Under Review',
     'payment_pending_approval'  => 'Your payment for :plan (:amount) is pending approval.',
@@ -39,7 +40,6 @@ return [
     'pending_review'            => 'Pending Review',
     'submit_payment'            => 'Submit Payment',
 
-    // Payment modal
     'subscribe_via_bkash'       => 'Subscribe via bKash',
     'choose_plan_duration'      => 'Choose plan & duration',
     'selected_plan'             => 'Selected plan:',
@@ -72,7 +72,6 @@ return [
     'cancel'                    => 'Cancel',
     'submit_payment_request'    => 'Submit Payment Request',
 
-    // My Subscription
     'free_plan_no_expiry'       => 'Free plan — no expiry',
     'plan_features'             => 'Plan Features',
     'up_to'                     => 'Up to',
@@ -84,7 +83,6 @@ return [
     'date'                      => 'Date',
     'status'                    => 'Status',
 
-    // Expired page
     'access_locked'             => 'Your Access Has Been Locked',
     'trial_ended_on'            => 'Your free trial ended on :date.',
     'subscription_expired_msg'  => 'Your subscription has expired.',

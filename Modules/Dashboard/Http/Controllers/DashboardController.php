@@ -7,6 +7,8 @@ use Modules\Dashboard\Services\DashboardService;
 use Modules\Capital\Models\Capital;
 use Modules\Sale\Models\Sale;
 
+use Illuminate\Http\Request;
+
 class DashboardController extends Controller
 {
     protected $dashboardService;
@@ -24,8 +26,36 @@ class DashboardController extends Controller
         $user = auth()->user();
         $shopMetrics = $this->dashboardService->getShopMetrics($user);
         $overallMetrics = $this->dashboardService->getOverallMetrics($user);
+        $isBasicPlan = $user->isBasicPlan();
+        $currentPlan = $user->getCurrentPlanKey();
 
-        return view('dashboard::index', compact('shopMetrics', 'overallMetrics'));
+        $userShops = $user->isSuperAdmin() 
+            ? \Modules\Shop\Models\Shop::orderBy('name')->get()
+            : $user->shops()->orderBy('name')->get();
+
+        $activeShopId = app(\App\Services\ShopContext::class)->getActiveShopId();
+
+        return view('dashboard::index', compact('shopMetrics', 'overallMetrics', 'isBasicPlan', 'currentPlan', 'userShops', 'activeShopId'));
+    }
+
+    /**
+     * Switch active shop context in session.
+     */
+    public function selectShop(Request $request)
+    {
+        $request->validate([
+            'shop_id' => 'required|integer|exists:shops,id'
+        ]);
+
+        $user = auth()->user();
+        $shopId = $request->integer('shop_id');
+
+        if ($user->isSuperAdmin() || $user->ownsShop($shopId)) {
+            session(['current_shop_id' => $shopId]);
+            return back()->with('success', 'Active shop context switched.');
+        }
+
+        abort(403);
     }
 
     /**

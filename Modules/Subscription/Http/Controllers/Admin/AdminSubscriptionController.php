@@ -13,12 +13,28 @@ use Modules\Subscription\Models\Subscription;
 
 class AdminSubscriptionController extends Controller
 {
+    /**
+     * Get a sanitized scalar value from request input
+     */
+    private function getScalarInput($request, $key, $default = '')
+    {
+        $value = $request->input($key, $default);
+        if (is_array($value)) {
+            return (string)(reset($value) ?: $default);
+        }
+        return (string)$value;
+    }
+
     public function index(Request $request)
     {
-        $status   = $request->get('status', 'pending');
-        $shopId   = $request->get('shop_id');
-        $branchId = $request->get('branch_id');
-        $search   = trim($request->get('search', ''));
+        $status   = $this->getScalarInput($request, 'status', 'pending');
+        $shopId   = $this->getScalarInput($request, 'shop_id', '');
+        $branchId = $this->getScalarInput($request, 'branch_id', '');
+        $search   = trim($this->getScalarInput($request, 'search', ''));
+
+        if (!in_array($status, ['pending', 'approved', 'rejected'])) {
+            $status = 'pending';
+        }
 
         $query = PaymentRequest::with(['user', 'plan', 'shop', 'branch'])->latest();
 
@@ -51,17 +67,25 @@ class AdminSubscriptionController extends Controller
             ? Branch::where('shop_id', $shopId)->orderBy('name')->get()
             : Branch::orderBy('name')->get();
 
+        $shopsJson = $shops->map(function ($shop) {
+            return [
+                'id' => $shop->id,
+                'name' => $shop->name,
+                'branches' => $shop->branches->map(fn($b) => ['id' => $b->id, 'name' => $b->name])->toArray()
+            ];
+        })->keyBy('id')->toArray();
+
         return view('subscription::admin.index', compact(
             'requests', 'counts', 'status', 'shops', 'branches',
-            'shopId', 'branchId', 'search'
+            'shopId', 'branchId', 'search', 'shopsJson'
         ));
     }
 
     public function active(Request $request)
     {
-        $shopId   = $request->get('shop_id');
-        $branchId = $request->get('branch_id');
-        $search   = trim($request->get('search', ''));
+        $shopId   = $this->getScalarInput($request, 'shop_id', '');
+        $branchId = $this->getScalarInput($request, 'branch_id', '');
+        $search   = trim($this->getScalarInput($request, 'search', ''));
 
         $query = Subscription::with(['user', 'plan', 'shop', 'branch'])
             ->where('status', 'active')
@@ -116,7 +140,7 @@ class AdminSubscriptionController extends Controller
 
         $paymentRequest->loadMissing('plan');
 
-        Subscription::where('user_id', $paymentRequest->user_id)
+        Subscription::where('shop_id', $paymentRequest->shop_id)
             ->where('status', 'active')
             ->update(['status' => 'expired']);
 
@@ -127,7 +151,7 @@ class AdminSubscriptionController extends Controller
             'subscription_plan_id' => $paymentRequest->subscription_plan_id,
             'status'               => 'active',
             'starts_at'            => now(),
-            'ends_at'              => now()->addMonths($paymentRequest->duration_months),
+            'ends_at'              => now()->addDays(($paymentRequest->plan->duration_days ?? 30) * $paymentRequest->duration_months),
         ]);
 
         $paymentRequest->update([

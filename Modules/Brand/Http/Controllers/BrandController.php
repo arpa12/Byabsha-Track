@@ -18,6 +18,12 @@ class BrandController extends Controller
 
     public function create()
     {
+        $user = auth()->user();
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->canCreate($user, 'brands')) {
+            return redirect()->route('brand.index')->with('error', 'Your plan limit for brands has been reached. Please upgrade to add more brands.');
+        }
+
         return view('brand::create');
     }
 
@@ -35,6 +41,11 @@ class BrandController extends Controller
         ]);
 
         $validated['user_id'] = $user->id;
+
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->canCreate($user, 'brands')) {
+            return redirect()->route('brand.index')->with('error', 'Your plan limit for brands has been reached. Please upgrade to add more brands.');
+        }
 
         Brand::create($validated);
 

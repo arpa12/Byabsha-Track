@@ -16,8 +16,14 @@ class SubscriptionController extends Controller
 {
     public function plans()
     {
-        $plans        = SubscriptionPlan::where('is_active', true)->orderBy('sort_order')->get();
-        $user         = auth()->user();
+        $plans        = SubscriptionPlan::where('is_active', true)
+            ->where(function ($q) {
+                $q->whereRaw("JSON_EXTRACT(COALESCE(meta, '{}'), '$.show_in_owner_panel') = true")
+                  ->orWhere('slug', 'free');
+            })
+            ->orderBy('sort_order')
+            ->get();
+        $user         = request()->user();
         $subscription = $user->activeSubscription();
         $currentPlan  = $subscription?->plan ?? SubscriptionPlan::freePlan();
 
@@ -26,8 +32,6 @@ class SubscriptionController extends Controller
             ->latest()
             ->first();
 
-        // Load shops/branches for the modal selector.
-        // Owner → their shops with branches; Manager → their assigned shop only.
         $shops = collect();
         if ($user->isOwner()) {
             $shops = Shop::where('user_id', $user->id)
@@ -45,20 +49,25 @@ class SubscriptionController extends Controller
 
     public function mySubscription()
     {
-        $user         = auth()->user();
+        $user         = request()->user();
         $subscription = $user->activeSubscription();
         $currentPlan  = $subscription?->plan ?? SubscriptionPlan::freePlan();
-        $history      = PaymentRequest::where('user_id', $user->id)
-            ->with(['plan', 'shop', 'branch'])
-            ->latest()
-            ->paginate(10);
+        $query = PaymentRequest::query()->with(['plan', 'shop', 'branch']);
+        if ($user->isOwner()) {
+            $query->where('user_id', $user->id);
+        } elseif ($user->isManager() && $user->shop_id) {
+            $query->where('shop_id', $user->shop_id);
+        } else {
+            $query->where('user_id', $user->id);
+        }
+        $history = $query->latest()->paginate(10);
 
         return view('subscription::my-subscription', compact('subscription', 'currentPlan', 'history'));
     }
 
     public function submitPayment(Request $request)
     {
-        $user = auth()->user();
+        $user = request()->user();
 
         $rules = [
             'plan_id'             => 'required|exists:subscription_plans,id',
@@ -68,7 +77,6 @@ class SubscriptionController extends Controller
             'duration_months'     => 'required|integer|min:1|max:12',
         ];
 
-        // Owner must pick a shop; manager's shop is pre-assigned.
         if ($user->isOwner()) {
             $rules['shop_id']   = 'required|exists:shops,id';
             $rules['branch_id'] = 'nullable|exists:branches,id';
@@ -76,16 +84,13 @@ class SubscriptionController extends Controller
 
         $validated = $request->validate($rules);
 
-        // Determine shop/branch IDs.
         if ($user->isOwner()) {
             $shopId   = $validated['shop_id'];
             $branchId = $validated['branch_id'] ?? null;
-            // Ensure the owner actually owns this shop.
             abort_unless(
                 Shop::where('id', $shopId)->where('user_id', $user->id)->exists(),
                 403
             );
-            // Ensure the branch belongs to the shop if provided.
             if ($branchId) {
                 abort_unless(
                     Branch::where('id', $branchId)->where('shop_id', $shopId)->exists(),
@@ -102,12 +107,18 @@ class SubscriptionController extends Controller
             ->exists();
 
         if ($alreadyPending) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => __('subscription::subscription.already_pending')], 422);
+            }
             return back()->with('error', __('subscription::subscription.already_pending'));
         }
 
         $plan = SubscriptionPlan::findOrFail($validated['plan_id']);
 
         if ($plan->isFree()) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => __('subscription::subscription.cannot_pay_free')], 422);
+            }
             return back()->with('error', __('subscription::subscription.cannot_pay_free'));
         }
 
@@ -129,7 +140,6 @@ class SubscriptionController extends Controller
             'status'               => 'pending',
         ]);
 
-        // Notify all superadmin users about the new payment request.
         User::where('role', 'superadmin')->each(function (User $admin) use ($user, $plan, $validated): void {
             Notification::create([
                 'user_id' => $admin->id,
@@ -139,6 +149,14 @@ class SubscriptionController extends Controller
                 'data'    => ['user_id' => $user->id, 'plan_slug' => $plan->slug],
             ]);
         });
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => __('subscription::subscription.payment_submitted'),
+                'redirect' => route('subscription.my')
+            ]);
+        }
 
         return redirect()->route('subscription.my')
             ->with('success', __('subscription::subscription.payment_submitted'));

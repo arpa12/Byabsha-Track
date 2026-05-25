@@ -261,6 +261,12 @@ class SaleController extends Controller
 
     public function quickSale(Request $request)
     {
+        $user = auth()->user();
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->canCreate($user, 'sales')) {
+            return response()->json(['message' => 'Your plan limit for sales has been reached. Please upgrade.'], 403);
+        }
+
         $validated = $request->validate([
             'shop_id' => 'required|exists:shops,id',
             'product_id' => 'required|exists:products,id',
@@ -350,6 +356,10 @@ class SaleController extends Controller
     public function create()
     {
         $user = auth()->user();
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->canCreate($user, 'sales')) {
+            return redirect()->route('sale.index')->with('error', 'Your plan limit for sales has been reached. Please upgrade to add more sales.');
+        }
         $shops = Shop::forUser($user)->get();
         $products = Product::with('shop')->whereIn('shop_id', $user->accessibleShopIds())->get();
         return view('sale::create', compact('shops', 'products'));
@@ -357,6 +367,12 @@ class SaleController extends Controller
 
     public function store(Request $request)
     {
+        $user = auth()->user();
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->canCreate($user, 'sales')) {
+            return back()->withInput()->withErrors(['error' => 'Your plan limit for sales has been reached. Please upgrade.']);
+        }
+
         $validated = $request->validate([
             'shop_id' => 'required|exists:shops,id',
             'product_batch_id' => 'required|exists:product_batches,id',

@@ -14,18 +14,15 @@ return new class extends Migration
             $table->foreignId('subscription_plan_id')->constrained()->restrictOnDelete();
             $table->decimal('amount', 10, 2);
 
-            // Sender info
             $table->string('sender_bkash_number', 20);
             $table->string('transaction_id', 100);
             $table->string('receipt_image')->nullable(); // stored path
 
-            // Admin review
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->text('admin_note')->nullable();
             $table->foreignId('reviewed_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('reviewed_at')->nullable();
 
-            // Subscription duration granted on approval
             $table->unsignedSmallInteger('duration_months')->default(1);
 
             $table->timestamps();

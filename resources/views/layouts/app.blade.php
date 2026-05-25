@@ -97,6 +97,26 @@
             color: var(--ink-900);
         }
 
+        .active-shop-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            background-color: #f0fdfa;
+            border: 1px solid #ccfbf1;
+            color: #0f766e;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+            box-shadow: 0 2px 8px rgba(13, 148, 136, 0.05);
+        }
+        @media (max-width: 576px) {
+            .active-shop-badge {
+                display: none !important;
+            }
+        }
+
         .header-right {
             margin-left: auto;
             display: flex;
@@ -567,6 +587,18 @@
             --bs-btn-hover-bg: #b91c1c;
             --bs-btn-hover-border-color: #b91c1c;
         }
+
+        /* Fix style collision between Bootstrap 5 collapse/collapsing and Tailwind CSS v4 collapse utility */
+        .collapse:not(.show) {
+            display: none !important;
+        }
+        .collapse.show {
+            visibility: visible !important;
+            display: block !important;
+        }
+        .collapsing {
+            visibility: visible !important;
+        }
     </style>
     @stack('styles')
 </head>
@@ -582,6 +614,16 @@
             </span>
             <span class="display-font">Byabsha Track</span>
         </a>
+        @php
+            $activeShopIdForHeader = app(\App\Services\ShopContext::class)->getActiveShopId();
+            $activeShopForHeader = $activeShopIdForHeader ? \Modules\Shop\Models\Shop::find($activeShopIdForHeader) : null;
+        @endphp
+        @if($activeShopForHeader)
+            <div class="active-shop-badge">
+                <i class="bi bi-shop text-teal-600"></i>
+                <span>{{ $activeShopForHeader->name }}</span>
+            </div>
+        @endif
         <div class="header-right">
             <span class="header-time">
                 <i class="bi bi-calendar3"></i>
@@ -707,30 +749,34 @@
                     <i class="bi bi-chevron-down"></i>
                 </a>
                 <div class="collapse submenu {{ $isSetupOpen ? 'show' : '' }}" id="setupSubmenu">
-                    @if($sidebarUser->hasModuleAccess('shop'))
-                        <a href="{{ route('shop.index') }}" class="nav-link-custom {{ request()->routeIs('shop.*') ? 'active' : '' }}">
-                            <i class="bi bi-shop"></i>
-                            <span>{{ __('app.shops') }}</span>
-                        </a>
-                    @endif
-                    @if($sidebarUser->hasModuleAccess('branch'))
-                        <a href="{{ route('branch.index') }}" class="nav-link-custom {{ request()->routeIs('branch.*') ? 'active' : '' }}">
-                            <i class="bi bi-diagram-3"></i>
-                            <span>{{ __('app.branches') }}</span>
-                        </a>
-                    @endif
-                    @if($sidebarUser->hasModuleAccess('brand'))
-                        <a href="{{ route('brand.index') }}" class="nav-link-custom {{ request()->routeIs('brand.*') ? 'active' : '' }}">
-                            <i class="bi bi-bookmark-star"></i>
-                            <span>{{ __('app.brands') }}</span>
-                        </a>
-                    @endif
-                    @if($sidebarUser->hasModuleAccess('category'))
-                        <a href="{{ route('category.index') }}" class="nav-link-custom {{ request()->routeIs('category.*') ? 'active' : '' }}">
-                            <i class="bi bi-tags"></i>
-                            <span>{{ __('app.categories') }}</span>
-                        </a>
-                    @endif
+                    <a href="{{ $sidebarUser->hasModuleAccess('shop') ? route('shop.index') : route('subscription.plans') }}" class="nav-link-custom {{ request()->routeIs('shop.*') ? 'active' : '' }} {{ !$sidebarUser->hasModuleAccess('shop') ? 'opacity-75' : '' }}" {!! !$sidebarUser->hasModuleAccess('shop') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : '' !!}>
+                        <i class="bi bi-shop"></i>
+                        <span>{{ __('app.shops') }}</span>
+                        @if(!$sidebarUser->hasModuleAccess('shop'))
+                            <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
+                        @endif
+                    </a>
+                    <a href="{{ $sidebarUser->hasModuleAccess('branch') ? route('branch.index') : route('subscription.plans') }}" class="nav-link-custom {{ request()->routeIs('branch.*') ? 'active' : '' }} {{ !$sidebarUser->hasModuleAccess('branch') ? 'opacity-75' : '' }}" {!! !$sidebarUser->hasModuleAccess('branch') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : '' !!}>
+                        <i class="bi bi-diagram-3"></i>
+                        <span>{{ __('app.branches') }}</span>
+                        @if(!$sidebarUser->hasModuleAccess('branch'))
+                            <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
+                        @endif
+                    </a>
+                    <a href="{{ $sidebarUser->hasModuleAccess('brand') ? route('brand.index') : route('subscription.plans') }}" class="nav-link-custom {{ request()->routeIs('brand.*') ? 'active' : '' }} {{ !$sidebarUser->hasModuleAccess('brand') ? 'opacity-75' : '' }}" {!! !$sidebarUser->hasModuleAccess('brand') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : '' !!}>
+                        <i class="bi bi-bookmark-star"></i>
+                        <span>{{ __('app.brands') }}</span>
+                        @if(!$sidebarUser->hasModuleAccess('brand'))
+                            <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
+                        @endif
+                    </a>
+                    <a href="{{ $sidebarUser->hasModuleAccess('category') ? route('category.index') : route('subscription.plans') }}" class="nav-link-custom {{ request()->routeIs('category.*') ? 'active' : '' }} {{ !$sidebarUser->hasModuleAccess('category') ? 'opacity-75' : '' }}" {!! !$sidebarUser->hasModuleAccess('category') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : '' !!}>
+                        <i class="bi bi-tags"></i>
+                        <span>{{ __('app.categories') }}</span>
+                        @if(!$sidebarUser->hasModuleAccess('category'))
+                            <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
+                        @endif
+                    </a>
                 </div>
             </div>
 
@@ -752,24 +798,32 @@
                     <i class="bi bi-chevron-down"></i>
                 </a>
                 <div class="collapse submenu {{ $isInventoryOpen ? 'show' : '' }}" id="inventorySubmenu">
-                    @if($sidebarUser->hasModuleAccess('product'))
-                        <a href="{{ route('product.index') }}" class="nav-link-custom {{ request()->routeIs('product.*') && !request()->routeIs('product.dynamic-fields.*') ? 'active' : '' }}">
-                            <i class="bi bi-box-seam"></i>
-                            <span>{{ __('app.products') }}</span>
-                        </a>
-                        @if($sidebarUser->canUseProductAttributes())
-                            <a href="{{ route('product.dynamic-fields.index') }}" class="nav-link-custom {{ request()->routeIs('product.dynamic-fields.*') ? 'active' : '' }}">
-                                <i class="bi bi-sliders"></i>
-                                <span>{{ __('app.product_attributes') }}</span>
-                            </a>
+                    <a href="{{ $sidebarUser->hasModuleAccess('product') ? route('product.index') : route('subscription.plans') }}" class="nav-link-custom {{ request()->routeIs('product.*') && !request()->routeIs('product.dynamic-fields.*') ? 'active' : '' }} {{ !$sidebarUser->hasModuleAccess('product') ? 'opacity-75' : '' }}" {!! !$sidebarUser->hasModuleAccess('product') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : '' !!}>
+                        <i class="bi bi-box-seam"></i>
+                        <span>{{ __('app.products') }}</span>
+                        @if(!$sidebarUser->hasModuleAccess('product'))
+                            <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
                         @endif
-                    @endif
-                    @if($sidebarUser->hasModuleAccess('stock'))
-                        <a href="{{ route('stock.index') }}" class="nav-link-custom {{ request()->routeIs('stock.*') ? 'active' : '' }}">
-                            <i class="bi bi-boxes"></i>
-                            <span>{{ __('app.stocks') }}</span>
+                    </a>
+                    @if($sidebarUser->hasModuleAccess('product') && $sidebarUser->canUseProductAttributes())
+                        <a href="{{ route('product.dynamic-fields.index') }}" class="nav-link-custom {{ request()->routeIs('product.dynamic-fields.*') ? 'active' : '' }}">
+                            <i class="bi bi-sliders"></i>
+                            <span>{{ __('app.product_attributes') }}</span>
+                        </a>
+                    @else
+                        <a href="{{ route('subscription.plans') }}" class="nav-link-custom opacity-75" title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip">
+                            <i class="bi bi-sliders"></i>
+                            <span>{{ __('app.product_attributes') }}</span>
+                            <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
                         </a>
                     @endif
+                    <a href="{{ $sidebarUser->hasModuleAccess('stock') ? route('stock.index') : route('subscription.plans') }}" class="nav-link-custom {{ request()->routeIs('stock.*') ? 'active' : '' }} {{ !$sidebarUser->hasModuleAccess('stock') ? 'opacity-75' : '' }}" {!! !$sidebarUser->hasModuleAccess('stock') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : '' !!}>
+                        <i class="bi bi-boxes"></i>
+                        <span>{{ __('app.stocks') }}</span>
+                        @if(!$sidebarUser->hasModuleAccess('stock'))
+                            <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
+                        @endif
+                    </a>
                 </div>
             </div>
 
@@ -791,30 +845,34 @@
                     <i class="bi bi-chevron-down"></i>
                 </a>
                 <div class="collapse submenu {{ $isOperationsOpen ? 'show' : '' }}" id="operationsSubmenu">
-                    @if($sidebarUser->hasModuleAccess('sale'))
-                        <a href="{{ route('sale.index') }}" class="nav-link-custom {{ request()->routeIs('sale.*') ? 'active' : '' }}">
-                            <i class="bi bi-cart-check"></i>
-                            <span>{{ __('app.sales') }}</span>
-                        </a>
-                    @endif
-                    @if($sidebarUser->hasModuleAccess('capital'))
-                        <a href="{{ route('capital.index') }}" class="nav-link-custom {{ request()->routeIs('capital.*') ? 'active' : '' }}">
-                            <i class="bi bi-cash-coin"></i>
-                            <span>{{ __('app.capitals') }}</span>
-                        </a>
-                    @endif
-                    @if($sidebarUser->hasModuleAccess('restock'))
-                        <a href="{{ route('restock.index') }}" class="nav-link-custom {{ request()->routeIs('restock.*') ? 'active' : '' }}">
-                            <i class="bi bi-arrow-repeat"></i>
-                            <span>{{ __('app.restocks') }}</span>
-                        </a>
-                    @endif
-                    @if($sidebarUser->hasModuleAccess('damage'))
-                        <a href="{{ route('damage.index') }}" class="nav-link-custom {{ request()->routeIs('damage.*') ? 'active' : '' }}">
-                            <i class="bi bi-exclamation-triangle"></i>
-                            <span>{{ __('app.damages') }}</span>
-                        </a>
-                    @endif
+                    <a href="{{ $sidebarUser->hasModuleAccess('sale') ? route('sale.index') : route('subscription.plans') }}" class="nav-link-custom {{ request()->routeIs('sale.*') ? 'active' : '' }} {{ !$sidebarUser->hasModuleAccess('sale') ? 'opacity-75' : '' }}" {!! !$sidebarUser->hasModuleAccess('sale') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : '' !!}>
+                        <i class="bi bi-cart-check"></i>
+                        <span>{{ __('app.sales') }}</span>
+                        @if(!$sidebarUser->hasModuleAccess('sale'))
+                            <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
+                        @endif
+                    </a>
+                    <a href="{{ $sidebarUser->hasModuleAccess('capital') ? route('capital.index') : route('subscription.plans') }}" class="nav-link-custom {{ request()->routeIs('capital.*') ? 'active' : '' }} {{ !$sidebarUser->hasModuleAccess('capital') ? 'opacity-75' : '' }}" {!! !$sidebarUser->hasModuleAccess('capital') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : '' !!}>
+                        <i class="bi bi-cash-coin"></i>
+                        <span>{{ __('app.capitals') }}</span>
+                        @if(!$sidebarUser->hasModuleAccess('capital'))
+                            <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
+                        @endif
+                    </a>
+                    <a href="{{ $sidebarUser->hasModuleAccess('restock') ? route('restock.index') : route('subscription.plans') }}" class="nav-link-custom {{ request()->routeIs('restock.*') ? 'active' : '' }} {{ !$sidebarUser->hasModuleAccess('restock') ? 'opacity-75' : '' }}" {!! !$sidebarUser->hasModuleAccess('restock') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : '' !!}>
+                        <i class="bi bi-arrow-repeat"></i>
+                        <span>{{ __('app.restocks') }}</span>
+                        @if(!$sidebarUser->hasModuleAccess('restock'))
+                            <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
+                        @endif
+                    </a>
+                    <a href="{{ $sidebarUser->hasModuleAccess('damage') ? route('damage.index') : route('subscription.plans') }}" class="nav-link-custom {{ request()->routeIs('damage.*') ? 'active' : '' }} {{ !$sidebarUser->hasModuleAccess('damage') ? 'opacity-75' : '' }}" {!! !$sidebarUser->hasModuleAccess('damage') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : '' !!}>
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span>{{ __('app.damages') }}</span>
+                        @if(!$sidebarUser->hasModuleAccess('damage'))
+                            <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
+                        @endif
+                    </a>
                 </div>
             </div>
 
@@ -872,21 +930,28 @@
             </div>
             @endif
 
-            @if($sidebarUser->hasModuleAccess('report'))
-                <div class="nav-section-title">{{ __('app.analytics') }}</div>
-                <a href="{{ route('report.index') }}" class="nav-link-custom {{ request()->routeIs('report.index') || request()->routeIs('report.sales') || request()->routeIs('report.products') || request()->routeIs('report.shops') ? 'active' : '' }}">
-                    <i class="bi bi-bar-chart-line"></i>
-                    <span>{{ __('app.reports') }}</span>
-                </a>
-                <a href="{{ route('report.daily') }}" class="nav-link-custom {{ request()->routeIs('report.daily') || request()->routeIs('report.export.daily-pdf') ? 'active' : '' }}">
-                    <i class="bi bi-calendar-check"></i>
-                    <span>{{ __('app.daily_pnl') }}</span>
-                </a>
-                <a href="{{ route('report.monthly') }}" class="nav-link-custom {{ request()->routeIs('report.monthly') || request()->routeIs('report.export.monthly-pdf') ? 'active' : '' }}">
-                    <i class="bi bi-calendar-range"></i>
-                    <span>{{ __('app.monthly_pnl') }}</span>
-                </a>
-            @endif
+            <div class="nav-section-title">{{ __('app.analytics') }}</div>
+            <a href="{{ $sidebarUser->hasModuleAccess('report') ? route('report.index') : route('subscription.plans') }}" class="nav-link-custom {{ (request()->routeIs('report.index') || request()->routeIs('report.sales') || request()->routeIs('report.products') || request()->routeIs('report.shops')) ? 'active' : '' }} {{ !$sidebarUser->hasModuleAccess('report') ? 'opacity-75' : '' }}" {!! !$sidebarUser->hasModuleAccess('report') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : '' !!}>
+                <i class="bi bi-bar-chart-line"></i>
+                <span>{{ __('app.reports') }}</span>
+                @if(!$sidebarUser->hasModuleAccess('report'))
+                    <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
+                @endif
+            </a>
+            <a href="{{ $sidebarUser->hasModuleAccess('report') ? route('report.daily') : route('subscription.plans') }}" class="nav-link-custom {{ (request()->routeIs('report.daily') || request()->routeIs('report.export.daily-pdf')) ? 'active' : '' }} {{ !$sidebarUser->hasModuleAccess('report') ? 'opacity-75' : '' }}" {!! !$sidebarUser->hasModuleAccess('report') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : '' !!}>
+                <i class="bi bi-calendar-check"></i>
+                <span>{{ __('app.daily_pnl') }}</span>
+                @if(!$sidebarUser->hasModuleAccess('report'))
+                    <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
+                @endif
+            </a>
+            <a href="{{ $sidebarUser->hasModuleAccess('report') ? route('report.monthly') : route('subscription.plans') }}" class="nav-link-custom {{ (request()->routeIs('report.monthly') || request()->routeIs('report.export.monthly-pdf')) ? 'active' : '' }} {{ !$sidebarUser->hasModuleAccess('report') ? 'opacity-75' : '' }}" {!! !$sidebarUser->hasModuleAccess('report') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : '' !!}>
+                <i class="bi bi-calendar-range"></i>
+                <span>{{ __('app.monthly_pnl') }}</span>
+                @if(!$sidebarUser->hasModuleAccess('report'))
+                    <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
+                @endif
+            </a>
         </nav>
     </aside>
 
@@ -905,6 +970,32 @@
                 {{ session('error') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
+        @endif
+
+        @php
+            $activeShopId = app(\App\Services\ShopContext::class)->getActiveShopId();
+            $shopForBanner = $activeShopId ? \Modules\Shop\Models\Shop::find($activeShopId) : null;
+            $subForBanner = $shopForBanner?->activeSubscription;
+        @endphp
+
+        @if($subForBanner)
+            @if($subForBanner->inGracePeriod())
+                <div class="alert alert-warning alert-dismissible fade show rounded-3 d-flex align-items-center justify-content-between p-3 mb-4" role="alert" style="border-left: 4px solid #d97706; background-color: #fffbeb; color: #92400e;">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+                        <span>Your subscription for <strong>{{ $shopForBanner->name }}</strong> expired on {{ $subForBanner->ends_at->format('d M Y') }}. You are currently in a grace period. Please renew to avoid service lockout.</span>
+                    </div>
+                    <a href="{{ route('subscription.plans') }}" class="btn btn-warning btn-sm fw-bold rounded-pill px-3 py-1.5 ms-3 flex-shrink-0" style="background-color: #d97706; border-color: #d97706; color: #fff;">Renew Now</a>
+                </div>
+            @elseif($subForBanner->isExpiringSoon())
+                <div class="alert alert-info alert-dismissible fade show rounded-3 d-flex align-items-center justify-content-between p-3 mb-4" role="alert" style="border-left: 4px solid #0284c7; background-color: #f0f9ff; color: #0369a1;">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-info-circle-fill text-info fs-5"></i>
+                        <span>Your subscription for <strong>{{ $shopForBanner->name }}</strong> is expiring on {{ $subForBanner->ends_at->format('d M Y') }} ({{ $subForBanner->ends_at->diffForHumans() }}). Please renew to avoid interruption.</span>
+                    </div>
+                    <a href="{{ route('subscription.plans') }}" class="btn btn-info btn-sm text-white fw-bold rounded-pill px-3 py-1.5 ms-3 flex-shrink-0" style="background-color: #0284c7; border-color: #0284c7;">Renew Now</a>
+                </div>
+            @endif
         @endif
 
         @yield('content')
@@ -959,6 +1050,12 @@
                 }
             });
         }
+
+        // Initialize Bootstrap tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
     </script>
     @stack('scripts')
 </body>

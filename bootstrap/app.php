@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'maintenance.restrict' => \App\Http\Middleware\RestrictDuringMaintenanceMode::class,
             'shop.owner' => \App\Http\Middleware\EnsureShopOwnership::class,
             'subscription.active' => \App\Http\Middleware\EnsureSubscriptionActive::class,
+            'subscription.validate' => \App\Http\Middleware\ValidateSubscription::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

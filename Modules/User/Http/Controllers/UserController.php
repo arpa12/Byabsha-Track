@@ -28,6 +28,7 @@ class UserController extends Controller
             'restock' => __('app.restocks'),
             'damage' => __('app.damages'),
             'report' => __('app.reports'),
+            'subscription' => __('app.subscription'),
         ];
     }
 
@@ -136,7 +137,6 @@ class UserController extends Controller
         $validated['password'] = Hash::make($validated['password']);
 
         if ($role === 'manager') {
-            // Admin-created managers: set pending if no shop/branch assigned, otherwise approved
             $hasAssignment = !empty($validated['shop_id']) && !empty($validated['branch_id']);
             $validated['is_approved'] = $hasAssignment ? true : false;
             $validated['shop_id'] = $validated['shop_id'] ?? null;
@@ -210,12 +210,10 @@ class UserController extends Controller
         if ($role === 'manager') {
             $validated['shop_id'] = $validated['shop_id'] ?? null;
             $validated['branch_id'] = $validated['branch_id'] ?? null;
-            // Preserve is_approved unless both shop and branch are now set (auto-approve)
             if (!empty($validated['shop_id']) && !empty($validated['branch_id']) && !$user->is_approved) {
                 $validated['is_approved'] = true;
             }
         } else {
-            // Changing from manager to another role — reset manager-specific fields
             $validated['is_approved'] = null;
             $validated['shop_id'] = null;
             $validated['branch_id'] = null;
@@ -291,7 +289,6 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // Prevent self-deactivation
         if ($user->id === Auth::id()) {
             return back()->withErrors(['error' => __('user.cannot_deactivate_self')]);
         }
@@ -337,7 +334,6 @@ class UserController extends Controller
     {
         $user = User::withTrashed()->findOrFail($id);
 
-        // Prevent self-deletion
         if ($user->id === Auth::id()) {
             return back()->withErrors(['error' => __('user.cannot_delete_self')]);
         }

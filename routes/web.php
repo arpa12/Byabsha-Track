@@ -20,8 +20,4 @@ Route::middleware(['auth'])->prefix('notifications')->name('notifications.')->gr
 });
 
 // Root handled by Landing module
-// Admin subscriptions page (simple static model-driven view)
-Route::middleware(['auth'])->prefix('admin/subscriptions')->name('admin.subscriptions.')->group(function () {
-    Route::get('/', [\App\Http\Controllers\Admin\SubscriptionController::class, 'index'])->name('index');
-});
 

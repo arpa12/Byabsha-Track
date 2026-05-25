@@ -18,6 +18,12 @@ class CategoryController extends Controller
 
     public function create()
     {
+        $user = auth()->user();
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->canCreate($user, 'categories')) {
+            return redirect()->route('category.index')->with('error', 'Your plan limit for categories has been reached. Please upgrade to add more categories.');
+        }
+
         return view('category::create');
     }
 
@@ -35,6 +41,11 @@ class CategoryController extends Controller
         ]);
 
         $validated['user_id'] = $user->id;
+
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->canCreate($user, 'categories')) {
+            return redirect()->route('category.index')->with('error', 'Your plan limit for categories has been reached. Please upgrade to add more categories.');
+        }
 
         Category::create($validated);
 

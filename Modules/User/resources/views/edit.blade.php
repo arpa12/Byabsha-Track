@@ -226,7 +226,7 @@
             <small class="helper-text">{{ __('user.role_description') }}</small>
         </div>
 
-        {{-- Manager-specific fields: shop & branch assignment --}}
+        
         @php $showManagerFields = in_array(old('role', $user->role), ['manager']); @endphp
         <div id="editManagerFields" style="display:{{ $showManagerFields ? 'block' : 'none' }};">
             <div class="mb-3">

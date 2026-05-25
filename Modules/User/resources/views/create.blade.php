@@ -225,7 +225,7 @@
             <small class="helper-text">{{ __('user.role_description') }}</small>
         </div>
 
-        {{-- Manager-specific fields: shop & branch assignment --}}
+        
         <div id="managerFields" style="display:{{ old('role') === 'manager' ? 'block' : 'none' }};">
             <div class="mb-3">
                 <label for="shop_id" class="form-label">{{ __('user.assign_shop') }}</label>

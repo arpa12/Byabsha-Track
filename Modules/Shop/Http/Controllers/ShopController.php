@@ -18,6 +18,12 @@ class ShopController extends Controller
 
     public function create()
     {
+        $user = auth()->user();
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->canCreate($user, 'shops')) {
+            return redirect()->route('shop.index')->with('error', 'Your plan limit for shops has been reached. Please upgrade to add more shops.');
+        }
+
         return view('shop::create');
     }
 
@@ -30,6 +36,11 @@ class ShopController extends Controller
         ]);
 
         $validated['user_id'] = Auth::id();
+
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->canCreate(auth()->user(), 'shops')) {
+            return redirect()->route('shop.index')->with('error', 'Your plan limit for shops has been reached. Please upgrade to add more shops.');
+        }
 
         Shop::create($validated);
 

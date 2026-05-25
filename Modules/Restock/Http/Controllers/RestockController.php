@@ -45,6 +45,10 @@ class RestockController extends Controller
     public function create()
     {
         $user = auth()->user();
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->isFeatureEnabled($user, 'restock')) {
+            return redirect()->route('restock.index')->with('error', 'Restock is not available on your current plan. Please upgrade to access this feature.');
+        }
         $shops = Shop::forUser($user)->get();
         $products = Product::with('shop')->whereIn('shop_id', $user->accessibleShopIds())->get();
 
@@ -58,6 +62,10 @@ class RestockController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->isFeatureEnabled($user, 'restock')) {
+            return redirect()->route('restock.index')->with('error', 'Restock is not available on your current plan. Please upgrade to access this feature.');
+        }
 
         $validated = $request->validate([
             'shop_id' => 'required|exists:shops,id',

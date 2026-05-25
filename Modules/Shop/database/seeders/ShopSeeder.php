@@ -18,7 +18,13 @@ class ShopSeeder extends Seeder
             ['name' => 'Mousumi Electronics'],
         ];
 
+        $owner = \App\Models\User::where('role', 'owner')->first();
+        $userId = $owner?->id;
+
         foreach ($shops as $shop) {
+            if ($userId) {
+                $shop['user_id'] = $userId;
+            }
             Shop::create($shop);
         }
     }

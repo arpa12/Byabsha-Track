@@ -173,6 +173,10 @@ class ProductController extends Controller
     public function create(Request $request)
     {
         $user = auth()->user();
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->canCreate($user, 'products')) {
+            return redirect()->route('product.index')->with('error', 'Your plan limit for products has been reached. Please upgrade to add more products.');
+        }
         $shops = Shop::forUser($user)->get();
         $categories = Category::forUser($user)->orderBy('name')->get();
         $brands = Brand::forUser($user)->orderBy('name')->get();
@@ -194,6 +198,11 @@ class ProductController extends Controller
     {
         $user = auth()->user();
         abort_unless($user->ownsShop((int) $request->input('shop_id')), 403, 'You do not have access to this shop.');
+
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->canCreate($user, 'products')) {
+            return back()->withInput()->withErrors(['error' => 'Your plan limit for products has been reached. Please upgrade to add more products.']);
+        }
 
         $supportsModelName = Schema::hasColumn('products', 'model_name');
 

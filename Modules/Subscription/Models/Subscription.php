@@ -41,6 +41,22 @@ class Subscription extends Model
 
     public function isActive(): bool
     {
-        return $this->status === 'active' && $this->ends_at?->isFuture();
+        return $this->status === 'active' && ($this->ends_at === null || $this->ends_at->isFuture());
+    }
+
+    public function inGracePeriod(): bool
+    {
+        return $this->status === 'active'
+            && $this->ends_at
+            && $this->ends_at->isPast()
+            && $this->ends_at->gt(now()->subDays(3));
+    }
+
+    public function isExpiringSoon(): bool
+    {
+        return $this->status === 'active'
+            && $this->ends_at
+            && $this->ends_at->isFuture()
+            && $this->ends_at->lt(now()->addDays(3));
     }
 }

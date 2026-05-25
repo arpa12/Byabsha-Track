@@ -38,6 +38,10 @@ class BranchController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->isFeatureEnabled($user, 'branches')) {
+            return redirect()->route('branch.index')->with('error', 'Branches are not available on your current plan. Please upgrade to access this feature.');
+        }
         $shops = Shop::forUser($user)->orderBy('name')->get(['id', 'name']);
         $selectedShopId = $request->integer('shop_id');
 
@@ -52,6 +56,10 @@ class BranchController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->isFeatureEnabled($user, 'branches')) {
+            return redirect()->route('branch.index')->with('error', 'Branches are not available on your current plan. Please upgrade to access this feature.');
+        }
 
         $validated = $request->validate([
             'shop_id' => 'required|exists:shops,id',

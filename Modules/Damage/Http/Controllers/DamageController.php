@@ -50,6 +50,11 @@ class DamageController extends Controller
         abort_unless($user, 401);
         /** @var \App\Models\User $user */
 
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->isFeatureEnabled($user, 'damages')) {
+            return redirect()->route('damage.index')->with('error', 'Damage tracking is not available on your current plan. Please upgrade to access this feature.');
+        }
+
         $shops = Shop::forUser($user)->get();
 
         return view('damage::create', compact('shops'));
@@ -77,6 +82,11 @@ class DamageController extends Controller
         $user = Auth::user();
         abort_unless($user, 401);
         /** @var \App\Models\User $user */
+
+        $planService = app(\App\Services\PlanService::class);
+        if (!$planService->isFeatureEnabled($user, 'damages')) {
+            return redirect()->route('damage.index')->with('error', 'Damage tracking is not available on your current plan. Please upgrade to access this feature.');
+        }
 
         $validated = $request->validate([
             'shop_id' => 'required|exists:shops,id',

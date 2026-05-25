@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Subscription;
+use Modules\Subscription\Models\SubscriptionPlan;
 
 class SubscriptionController extends Controller
 {
@@ -12,7 +12,7 @@ class SubscriptionController extends Controller
      */
     public function index()
     {
-        $plans = Subscription::plans();
+        $plans = SubscriptionPlan::orderBy('sort_order')->get();
 
         return view('admin.subscriptions', compact('plans'));
     }

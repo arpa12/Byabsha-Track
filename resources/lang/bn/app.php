@@ -33,8 +33,15 @@ return [
     'reports'         => 'প্রতিবেদন',
     'daily_pnl'       => 'দৈনিক লাভ/ক্ষতি',
     'monthly_pnl'     => 'মাসিক লাভ/ক্ষতি',
+    'subscription'    => 'সাবস্ক্রিপশন',
+    'subscriptions'   => 'সাবস্ক্রিপশনসমূহ',
     'users'           => 'ব্যবহারকারী',
     'settings'        => 'সেটিংস',
+
+    // Dashboard subscription notice
+    'free_plan_active' => 'ফ্রি প্ল্যান সক্রিয়',
+    'basic_plan_message' => 'আপনি বর্তমানে বেসিক (ফ্রি) প্ল্যানে আছেন। আরও ফিচার ও সীমাবদ্ধতা দূর করতে স্ট্যান্ডার্ড বা প্রিমিয়ামে আপগ্রেড করুন।',
+    'go_to_subscription' => 'সাবস্ক্রিপশনে যান',
 
     // Common actions
     'back'            => 'পেছনে',
@@ -79,4 +86,9 @@ return [
     'maintenance_badge' => 'সিস্টেম রক্ষণাবেক্ষণ',
     'maintenance_heading' => 'সাময়িকভাবে বন্ধ',
     'maintenance_message' => 'সুপার অ্যাডমিন রক্ষণাবেক্ষণ মোড চালু করেছেন। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।',
+
+    // Singular labels
+    'user'            => 'ব্যবহারকারী',
+    'shop'            => 'দোকান',
+    'branch'          => 'শাখা',
 ];

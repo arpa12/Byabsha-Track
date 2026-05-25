@@ -16,14 +16,12 @@ return new class extends Migration
             $table->string('billing_cycle')->default('monthly'); // monthly, yearly, lifetime
             $table->text('description')->nullable();
 
-            // Limits (null = unlimited)
             $table->unsignedSmallInteger('max_shops')->nullable();
             $table->unsignedSmallInteger('max_branches')->nullable();
             $table->unsignedSmallInteger('max_brands')->nullable();
             $table->unsignedSmallInteger('max_categories')->nullable();
             $table->unsignedInteger('max_sales')->nullable();
 
-            // Feature flags
             $table->boolean('has_capital')->default(false);
             $table->boolean('has_restock')->default(false);
             $table->boolean('has_reports')->default(false);

@@ -23,6 +23,12 @@ class CheckModuleAccess
             return $next($request);
         }
 
-        abort(403, __('user.module_access_denied'));
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Subscription plan upgrade required to access this feature.',
+            ], 402);
+        }
+
+        return response()->view('subscription::subscription-required', [], 402);
     }
 }
