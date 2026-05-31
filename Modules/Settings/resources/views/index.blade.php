@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('settings.title'))
+@section('title', $activeGroup === 'system' ? __('settings.system_settings') : ($activeGroup === 'landing' ? __('settings.landing_settings') : __('settings.dashboard_settings')))
 
 @push('styles')
 <style>
@@ -9,31 +9,19 @@
         color: var(--ink-900);
     }
 
-    .settings-shell::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
-        background:
-            radial-gradient(900px 500px at 85% -5%, rgba(15, 118, 110, 0.19), transparent 60%),
-            radial-gradient(650px 420px at -5% 8%, rgba(245, 158, 11, 0.16), transparent 55%),
-            linear-gradient(180deg, #f7fafc 0%, #f1f6f9 60%, #edf3f8 100%);
-    }
-
     .settings-kicker {
         display: inline-flex;
         align-items: center;
         gap: 0.48rem;
-        background: rgba(15, 118, 110, 0.12);
-        color: #0f766e;
-        border: 1px solid rgba(15, 118, 110, 0.22);
+        background: color-mix(in srgb, var(--brand) 12%, transparent);
+        color: var(--brand);
+        border: 1px solid color-mix(in srgb, var(--brand) 22%, transparent);
         border-radius: 999px;
         padding: 0.42rem 0.92rem;
         font-size: 0.76rem;
         font-weight: 700;
         margin-bottom: 0.8rem;
-        box-shadow: 0 8px 18px rgba(15, 118, 110, 0.13);
+        box-shadow: 0 8px 18px color-mix(in srgb, var(--brand) 13%, transparent);
     }
 
     .settings-title {
@@ -60,59 +48,32 @@
         overflow: hidden;
     }
 
-    .settings-tabs {
-        border-bottom: 1px solid #dce8f3;
-        background: #f7fbff;
-        padding: 0.7rem 0.9rem 0;
-        gap: 0.25rem;
-    }
-
-    .settings-tabs .nav-link {
-        border: 1px solid transparent;
-        border-radius: 12px 12px 0 0;
-        color: #4f647a;
-        font-size: 0.85rem;
-        font-weight: 700;
-        padding: 0.62rem 0.9rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.42rem;
-    }
-
-    .settings-tabs .nav-link:hover {
-        color: #0f172a;
-        background: #edf5fc;
-    }
-
-    .settings-tabs .nav-link.active {
-        color: #0f766e;
-        border-color: #d3e1ee #d3e1ee #ffffff;
-        background: #ffffff;
-    }
-
     .settings-tab-content {
-        padding: 1.35rem;
+        padding: 1.75rem;
     }
 
     .settings-section-title {
-        margin-bottom: 1rem;
-        font-size: 1rem;
-        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 1.14rem;
+        font-weight: 800;
         color: #1f3348;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .settings-section-meta {
         color: #64748b;
         font-size: 0.88rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.75rem;
     }
 
     .settings-field {
-        padding: 0.92rem;
+        padding: 1rem;
         border: 1px solid #e4edf6;
         border-radius: 14px;
         background: #fcfeff;
-        margin-bottom: 0.85rem;
+        margin-bottom: 1rem;
     }
 
     .settings-label {
@@ -139,8 +100,8 @@
     .settings-input:focus,
     .settings-select:focus,
     .settings-textarea:focus {
-        border-color: #53a89f;
-        box-shadow: 0 0 0 0.2rem rgba(15, 118, 110, 0.14);
+        border-color: color-mix(in srgb, var(--brand) 70%, #ffffff);
+        box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--brand) 14%, transparent);
         background: #ffffff;
     }
 
@@ -152,7 +113,7 @@
     }
 
     .settings-footer {
-        padding: 1rem 1.35rem 1.2rem;
+        padding: 1rem 1.75rem 1.5rem;
         border-top: 1px solid #e1eaf3;
         display: flex;
         justify-content: space-between;
@@ -168,6 +129,7 @@
         font-size: 0.82rem;
         font-weight: 700;
         padding: 0.58rem 1rem;
+        transition: all 0.2s;
     }
 
     .btn-clear-cache:hover {
@@ -177,21 +139,24 @@
     }
 
     .btn-save-settings {
-        background: linear-gradient(140deg, #0f766e, #155e75);
+        background: linear-gradient(140deg, var(--brand), var(--brand-deep));
         color: #fff;
         border: 0;
         border-radius: 999px;
-        padding: 0.62rem 1.18rem;
+        padding: 0.62rem 1.5rem;
         font-size: 0.84rem;
         font-weight: 700;
         display: inline-flex;
         align-items: center;
         gap: 0.45rem;
-        box-shadow: 0 14px 28px rgba(15, 118, 110, 0.28);
+        box-shadow: 0 8px 20px color-mix(in srgb, var(--brand) 28%, transparent);
+        transition: all 0.2s;
     }
 
     .btn-save-settings:hover {
         color: #fff;
+        opacity: 0.92;
+        transform: translateY(-1px);
     }
 
     @media (max-width: 768px) {
@@ -217,58 +182,54 @@
 @section('content')
 <div class="settings-shell">
 <div class="mb-4">
-    <span class="settings-kicker"><i class="bi bi-sliders"></i>{{ __('settings.title') }}</span>
-    <h1 class="settings-title">{{ __('settings.title') }}</h1>
+    @php
+        if ($activeGroup === 'system') {
+            $sectionLabel = __('settings.system_settings');
+            $sectionIcon = 'bi-cpu';
+            $displayGroups = ['system'];
+        } elseif ($activeGroup === 'landing') {
+            $sectionLabel = __('settings.landing_settings');
+            $sectionIcon = 'bi-browser-safari';
+            $displayGroups = ['landing'];
+        } else {
+            $sectionLabel = __('settings.dashboard_settings');
+            $sectionIcon = 'bi-sliders';
+            $displayGroups = ['dashboard'];
+        }
+    @endphp
+
+    <span class="settings-kicker"><i class="bi {{ $sectionIcon }}"></i> {{ $sectionLabel }}</span>
+    <h1 class="settings-title">{{ $sectionLabel }}</h1>
     <p class="settings-subtitle">{{ __('settings.subtitle') }}</p>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <strong>{{ __('app.success') }}!</strong> {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-
-@if($errors->any())
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>{{ __('app.error') }}!</strong>
-        <ul class="mb-0">
-            @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-
 <div class="settings-card">
-    <form action="{{ route('settings.update', ['group' => $activeGroup]) }}" method="POST">
+    <form action="{{ route('settings.update', ['group' => $activeGroup]) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
-        @php
-            $sectionLabel = $activeGroup === 'system' ? __('settings.system_settings') : __('settings.general_settings');
-            $sectionIcon = $activeGroup === 'system' ? 'bi-cpu' : 'bi-sliders';
-            $displayGroups = $activeGroup === 'system' ? ['system'] : ['general', 'business'];
-        @endphp
-
         <div class="settings-tab-content">
-            <h5 class="settings-section-title"><i class="bi {{ $sectionIcon }} me-1"></i>{{ $sectionLabel }}</h5>
-            <p class="settings-section-meta">{{ __('settings.subtitle') }}</p>
+            @if($activeGroup === 'landing')
+                <div class="alert alert-info border-0 rounded-4 p-3 mb-4 d-flex gap-3 align-items-center" style="background: color-mix(in srgb, var(--brand) 8%, transparent); color: var(--brand-deep);">
+                    <i class="bi bi-info-circle-fill fs-4"></i>
+                    <div>
+                        <strong class="d-block mb-1">Landing Page Customization Settings</strong>
+                        <span class="fs-7 opacity-90">Landing Page Settings allow you to customize the public homepage of your application. You will be able to customize more sections soon.</span>
+                    </div>
+                </div>
+            @endif
 
             @php $hasAnySetting = false; @endphp
             @foreach($displayGroups as $group)
                 @php $groupSettings = $settings->get($group, collect()); @endphp
                 @if($groupSettings->count() > 0)
                     @php $hasAnySetting = true; @endphp
-                    @if($activeGroup === 'general' && $group === 'business')
-                        <h6 class="settings-section-title mt-4"><i class="bi bi-briefcase me-1"></i>{{ __('settings.business_settings') }}</h6>
-                    @endif
 
                     @foreach($groupSettings as $setting)
                         <div class="settings-field">
-                            <label for="{{ $setting->key }}" class="form-label settings-label">
-                                {{ __('settings.' . $setting->key) }}
+                            <label for="{{ $setting->key }}" class="form-label settings-label d-flex justify-content-between align-items-center">
+                                <span>{{ __('settings.' . $setting->key) }}</span>
+                                <span class="badge text-uppercase opacity-75 font-monospace" style="font-size: 0.62rem; background: #e2e8f0; color: #475569;">{{ $setting->key }}</span>
                             </label>
 
                             @if($setting->type === 'boolean')
@@ -283,15 +244,52 @@
                                 </select>
                             @elseif($setting->key === 'app_timezone')
                                 <select class="form-select settings-select" id="{{ $setting->key }}" name="settings[{{ $setting->key }}]">
-                                    <option value="Asia/Dhaka" {{ $setting->value === 'Asia/Dhaka' ? 'selected' : '' }}>Asia/Dhaka</option>
-                                    <option value="Asia/Kolkata" {{ $setting->value === 'Asia/Kolkata' ? 'selected' : '' }}>Asia/Kolkata</option>
-                                    <option value="UTC" {{ $setting->value === 'UTC' ? 'selected' : '' }}>UTC</option>
+                                    @foreach(timezone_identifiers_list() as $timezone)
+                                        <option value="{{ $timezone }}" {{ $setting->value === $timezone ? 'selected' : '' }}>{{ $timezone }}</option>
+                                    @endforeach
                                 </select>
-                            @elseif($setting->key === 'business_address')
+                            @elseif($setting->key === 'currency')
+                                <select class="form-select settings-select" id="{{ $setting->key }}" name="settings[{{ $setting->key }}]">
+                                    <option value="USD" {{ $setting->value === 'USD' ? 'selected' : '' }}>USD (United States Dollar)</option>
+                                    <option value="EUR" {{ $setting->value === 'EUR' ? 'selected' : '' }}>EUR (Euro)</option>
+                                    <option value="GBP" {{ $setting->value === 'GBP' ? 'selected' : '' }}>GBP (British Pound)</option>
+                                    <option value="BDT" {{ $setting->value === 'BDT' ? 'selected' : '' }}>BDT (Bangladeshi Taka)</option>
+                                    <option value="INR" {{ $setting->value === 'INR' ? 'selected' : '' }}>INR (Indian Rupee)</option>
+                                </select>
+                            @elseif($setting->key === 'business_address' || $setting->key === 'company_address')
                                 <textarea class="form-control settings-textarea"
                                           id="{{ $setting->key }}"
                                           name="settings[{{ $setting->key }}]"
                                           rows="3">{{ old('settings.' . $setting->key, $setting->value) }}</textarea>
+                            @elseif($setting->key === 'dashboard_logo' || $setting->key === 'dashboard_favicon')
+                                <div class="branding-upload-wrap">
+                                    @if($setting->value)
+                                        <div class="mb-3 d-flex align-items-center gap-3 p-3 border rounded-3 bg-light">
+                                            <img src="{{ asset($setting->value) }}" alt="Preview" style="max-height: {{ $setting->key === 'dashboard_logo' ? '50px' : '28px' }}; max-width: 140px; object-fit: contain;">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="remove_files[]" value="{{ $setting->key }}" id="remove_{{ $setting->key }}">
+                                                <label class="form-check-label text-danger fw-bold fs-7" for="remove_{{ $setting->key }}">
+                                                    <i class="bi bi-trash"></i> {{ __('app.delete') }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    @endif
+                                    <input type="file"
+                                           class="form-control settings-input"
+                                           id="{{ $setting->key }}"
+                                           name="settings_files[{{ $setting->key }}]"
+                                           accept="image/*">
+                                </div>
+                            @elseif($setting->key === 'dashboard_theme_color')
+                                <div class="d-flex align-items-center gap-3">
+                                    <input type="color"
+                                           class="form-control form-control-color settings-color-input"
+                                           id="{{ $setting->key }}"
+                                           name="settings[{{ $setting->key }}]"
+                                           value="{{ old('settings.' . $setting->key, $setting->value ?: '#0f766e') }}"
+                                           style="width: 60px; height: 42px; border-radius: 8px; border: 1px solid #d6e2ee; padding: 4px;">
+                                    <span class="text-muted font-monospace fs-7">{{ $setting->value ?: '#0f766e' }}</span>
+                                </div>
                             @else
                                 <input type="{{ $setting->type === 'number' ? 'number' : 'text' }}"
                                        class="form-control settings-input"
@@ -309,17 +307,17 @@
             @endforeach
 
             @if(!$hasAnySetting)
-                <div class="settings-field mb-0">
+                <div class="settings-field mb-0 text-center py-4">
                     <span class="settings-help mb-0">{{ __('settings.subtitle') }}</span>
                 </div>
             @endif
         </div>
 
         <div class="settings-footer">
-            <a href="{{ route('settings.clear-cache', ['group' => $activeGroup]) }}" class="btn btn-clear-cache">
+            <a href="{{ route('settings.clear-cache', ['group' => $activeGroup]) }}" class="btn btn-clear-cache shadow-sm">
                 <i class="bi bi-arrow-clockwise"></i> {{ __('settings.clear_cache') }}
             </a>
-            <button type="submit" class="btn btn-save-settings">
+            <button type="submit" class="btn btn-save-settings shadow">
                 <i class="bi bi-check-circle"></i> {{ __('app.save') }}
             </button>
         </div>

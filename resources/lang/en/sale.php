@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 return [
     // Index
@@ -174,4 +174,9 @@ return [
     'replacement_batch_optional' => 'Replacement Batch (Optional for Return Only)',
     'no_replacement_batch' => 'No replacement batch',
     'exchange_created' => 'Exchange recorded successfully.',
+
+    'why_warranty_title' => 'Why use Warranty Tracking?',
+    'why_warranty_desc' => 'Warranty tracking allows you to link specific products and sales to active service agreements, monitor expiration timelines, and process claims. Use it to build customer trust, ensure post-sale accountability, and protect your business against invalid warranty claims.',
+    'why_exchange_title' => 'Why use Exchange Tracking?',
+    'why_exchange_desc' => 'Exchange tracking enables you to record product returns, issue replacements, and manage stock adjustments seamlessly. Use it to trace reasons for returns, maintain precise inventory quantities across shops, and optimize customer satisfaction through smooth exchange processing.',
 ];

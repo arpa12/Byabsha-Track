@@ -4,9 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
-    <title><?php echo $__env->yieldContent('title', 'Byabsha Track'); ?> - Business Tracking System</title>
-    <link rel="icon" type="image/svg+xml" href="<?php echo e(asset('favicon.svg')); ?>">
-    <link rel="alternate icon" href="<?php echo e(asset('favicon.ico')); ?>">
+    <title><?php echo $__env->yieldContent('title', \Modules\Settings\Models\Setting::get('app_name', 'Byabsha Track')); ?> - Business Tracking System</title>
+    <link rel="icon" href="<?php echo e(\Modules\Settings\Models\Setting::get('dashboard_favicon') ?: asset('favicon.svg')); ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -22,12 +21,12 @@
             --ink-900: #0f172a;
             --ink-700: #334155;
             --ink-500: #64748b;
-            --brand: #0f766e;
-            --brand-deep: #155e75;
+            --brand: <?php echo e(\Modules\Settings\Models\Setting::get('dashboard_theme_color', '#0f766e')); ?>;
+            --brand-deep: color-mix(in srgb, var(--brand) 80%, #000000);
             --line: #d8e4ee;
             --primary-color: var(--brand);
             --primary-dark: var(--brand-deep);
-            --sidebar-bg: linear-gradient(180deg, #0f766e 0%, #0b5f58 52%, #0a4f4a 100%);
+            --sidebar-bg: linear-gradient(180deg, var(--brand) 0%, color-mix(in srgb, var(--brand) 80%, #000000) 52%, color-mix(in srgb, var(--brand) 60%, #000000) 100%);
             --sidebar-hover: rgba(255, 255, 255, 0.14);
             --text-muted: var(--ink-500);
         }
@@ -41,7 +40,7 @@
         body {
             font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
             background:
-                radial-gradient(900px 500px at 85% -5%, rgba(15, 118, 110, 0.15), transparent 60%),
+                radial-gradient(900px 500px at 85% -5%, color-mix(in srgb, var(--brand) 15%, transparent), transparent 60%),
                 radial-gradient(650px 420px at -5% 8%, rgba(245, 158, 11, 0.16), transparent 55%),
                 linear-gradient(180deg, #f7fafc 0%, #f1f6f9 60%, #edf3f8 100%);
             color: var(--ink-900);
@@ -133,8 +132,8 @@
             gap: 0.45rem;
             padding: 0.42rem 0.8rem;
             border-radius: 999px;
-            background: rgba(15, 118, 110, 0.09);
-            border: 1px solid rgba(15, 118, 110, 0.18);
+            background: color-mix(in srgb, var(--brand) 9%, transparent);
+            border: 1px solid color-mix(in srgb, var(--brand) 18%, transparent);
         }
 
         .header-user {
@@ -176,9 +175,9 @@
             color: #0f172a;
         }
         .lang-btn.active {
-            background: #0f766e;
+            background: var(--brand);
             color: #fff;
-            box-shadow: 0 1px 4px rgba(15, 118, 110, .3);
+            box-shadow: 0 1px 4px color-mix(in srgb, var(--brand) 30%, transparent);
         }
 
         /* Sidebar */
@@ -462,7 +461,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(15, 118, 110, 0.06);
+            background: color-mix(in srgb, var(--brand) 6%, transparent);
         }
 
         .notification-dropdown-header h6 {
@@ -571,14 +570,14 @@
         }
 
         .btn-outline-primary {
-            --bs-btn-color: #0f766e;
-            --bs-btn-border-color: #0f766e;
-            --bs-btn-hover-bg: #0f766e;
-            --bs-btn-hover-border-color: #0f766e;
-            --bs-btn-active-bg: #155e75;
-            --bs-btn-active-border-color: #155e75;
-            --bs-btn-disabled-color: #0f766e;
-            --bs-btn-disabled-border-color: #0f766e;
+            --bs-btn-color: var(--brand);
+            --bs-btn-border-color: var(--brand);
+            --bs-btn-hover-bg: var(--brand);
+            --bs-btn-hover-border-color: var(--brand);
+            --bs-btn-active-bg: var(--brand-deep);
+            --bs-btn-active-border-color: var(--brand-deep);
+            --bs-btn-disabled-color: var(--brand);
+            --bs-btn-disabled-border-color: var(--brand);
         }
 
         .btn-outline-danger {
@@ -609,10 +608,14 @@
             <i class="bi bi-list"></i>
         </button>
         <a href="<?php echo e(url('/')); ?>" class="header-brand">
-            <span class="brand-chip">
-                <i class="bi bi-graph-up-arrow"></i>
-            </span>
-            <span class="display-font">Byabsha Track</span>
+            <?php if(\Modules\Settings\Models\Setting::get('dashboard_logo')): ?>
+                <img src="<?php echo e(asset(\Modules\Settings\Models\Setting::get('dashboard_logo'))); ?>" alt="Logo" style="height: 38px; max-width: 120px; object-fit: contain;" class="me-1">
+            <?php else: ?>
+                <span class="brand-chip">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </span>
+            <?php endif; ?>
+            <span class="display-font"><?php echo e(\Modules\Settings\Models\Setting::get('app_name', 'Byabsha Track')); ?></span>
         </a>
         <?php
             $activeShopIdForHeader = app(\App\Services\ShopContext::class)->getActiveShopId();
@@ -848,13 +851,23 @@
                     <i class="bi bi-chevron-down"></i>
                 </a>
                 <div class="collapse submenu <?php echo e($isOperationsOpen ? 'show' : ''); ?>" id="operationsSubmenu">
-                    <a href="<?php echo e($sidebarUser->hasModuleAccess('sale') ? route('sale.index') : route('subscription.plans')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('sale.*') ? 'active' : ''); ?> <?php echo e(!$sidebarUser->hasModuleAccess('sale') ? 'opacity-75' : ''); ?>" <?php echo !$sidebarUser->hasModuleAccess('sale') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : ''; ?>>
+                    <a href="<?php echo e($sidebarUser->hasModuleAccess('sale') ? route('sale.index') : route('subscription.plans')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('sale.*') && !request()->routeIs('sale.warranties.*') && !request()->routeIs('sale.exchanges.*') ? 'active' : ''); ?> <?php echo e(!$sidebarUser->hasModuleAccess('sale') ? 'opacity-75' : ''); ?>" <?php echo !$sidebarUser->hasModuleAccess('sale') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : ''; ?>>
                         <i class="bi bi-cart-check"></i>
                         <span><?php echo e(__('app.sales')); ?></span>
                         <?php if(!$sidebarUser->hasModuleAccess('sale')): ?>
                             <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
                         <?php endif; ?>
                     </a>
+                    <?php if($sidebarUser->hasModuleAccess('sale')): ?>
+                        <a href="<?php echo e(route('sale.warranties.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('sale.warranties.*') ? 'active' : ''); ?>">
+                            <i class="bi bi-shield-check"></i>
+                            <span><?php echo e(__('sale.warranty_title')); ?></span>
+                        </a>
+                        <a href="<?php echo e(route('sale.exchanges.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('sale.exchanges.*') ? 'active' : ''); ?>">
+                            <i class="bi bi-arrow-left-right"></i>
+                            <span><?php echo e(__('sale.exchange_title')); ?></span>
+                        </a>
+                    <?php endif; ?>
                     <a href="<?php echo e($sidebarUser->hasModuleAccess('capital') ? route('capital.index') : route('subscription.plans')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('capital.*') ? 'active' : ''); ?> <?php echo e(!$sidebarUser->hasModuleAccess('capital') ? 'opacity-75' : ''); ?>" <?php echo !$sidebarUser->hasModuleAccess('capital') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : ''; ?>>
                         <i class="bi bi-cash-coin"></i>
                         <span><?php echo e(__('app.capitals')); ?></span>
@@ -909,9 +922,9 @@
                     <i class="bi bi-chevron-down"></i>
                 </a>
                 <div class="collapse submenu <?php echo e($isSettingsMenuOpen ? 'show' : ''); ?>" id="settingsSubmenu">
-                    <a href="<?php echo e(route('settings.general')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('settings.general') || request()->routeIs('settings.index') ? 'active' : ''); ?>">
+                    <a href="<?php echo e(route('settings.dashboard')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('settings.dashboard') || request()->routeIs('settings.index') ? 'active' : ''); ?>">
                         <i class="bi bi-sliders"></i>
-                        <span><?php echo e(__('settings.general_settings')); ?></span>
+                        <span><?php echo e(__('settings.dashboard_settings')); ?></span>
                     </a>
                     <a href="<?php echo e(route('settings.system')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('settings.system') ? 'active' : ''); ?>">
                         <i class="bi bi-cpu"></i>

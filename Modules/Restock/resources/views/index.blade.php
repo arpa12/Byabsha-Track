@@ -75,14 +75,14 @@
         background: linear-gradient(140deg, var(--restock-brand), var(--restock-brand-deep));
         color: #fff;
         border: 0;
-        border-radius: 999px;
-        padding: 0.66rem 1.22rem;
-        font-size: 0.86rem;
+        border-radius: 12px;
+        padding: 0.52rem 1.1rem;
+        font-size: 0.84rem;
         font-weight: 700;
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        box-shadow: 0 14px 28px rgba(15, 118, 110, 0.28);
+        box-shadow: 0 8px 20px rgba(15, 118, 110, 0.2);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         text-decoration: none;
         white-space: nowrap;
@@ -90,14 +90,14 @@
 
     .btn-new-restock:hover {
         color: #fff;
-        transform: translateY(-2px);
-        box-shadow: 0 20px 30px rgba(15, 118, 110, 0.34);
+        transform: translateY(-1px);
+        box-shadow: 0 12px 24px rgba(15, 118, 110, 0.28);
     }
 
     .content-card {
         background: #ffffff;
         border: 1px solid var(--restock-line);
-        border-radius: 20px;
+        border-radius: 16px;
         box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
         overflow: hidden;
     }
@@ -147,19 +147,83 @@
         background: #ffffff;
     }
 
-    .btn-apply-filter {
-        background: linear-gradient(140deg, var(--restock-brand), var(--restock-brand-deep));
-        color: #fff;
-        border: 0;
-        border-radius: 999px;
-        font-size: 0.82rem;
-        font-weight: 700;
-        padding: 0.62rem 0.95rem;
-        box-shadow: 0 14px 28px rgba(15, 118, 110, 0.28);
+    /* Single-row Filter Toolbar */
+    .filter-toolbar {
+        background: #ffffff;
+        border: 1px solid var(--restock-line);
+        border-radius: 14px;
+        padding: 0.75rem 1rem;
     }
 
-    .btn-apply-filter:hover {
-        color: #fff;
+    .search-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        color: var(--restock-ink-500);
+        font-size: 0.9rem;
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    .filter-search-control {
+        padding-left: 36px !important;
+        border-radius: 10px !important;
+        border: 1px solid #cedce9 !important;
+        background-color: #f8fafc !important;
+        font-size: 0.88rem !important;
+        height: 38px !important;
+        color: var(--restock-ink-900) !important;
+    }
+
+    .filter-search-control:focus {
+        background-color: #ffffff !important;
+        border-color: var(--restock-brand) !important;
+        box-shadow: 0 0 0 0.15rem rgba(15, 118, 110, 0.15) !important;
+    }
+
+    .filter-select-control {
+        border-radius: 10px !important;
+        border: 1px solid #cedce9 !important;
+        background-color: #f8fafc !important;
+        font-size: 0.88rem !important;
+        height: 38px !important;
+        color: var(--restock-ink-900) !important;
+        padding-top: 0.4rem !important;
+        padding-bottom: 0.4rem !important;
+    }
+
+    .filter-select-control:focus {
+        background-color: #ffffff !important;
+        border-color: var(--restock-brand) !important;
+        box-shadow: 0 0 0 0.15rem rgba(15, 118, 110, 0.15) !important;
+    }
+
+    .btn-filter-submit {
+        background: var(--restock-brand);
+        color: #ffffff;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 0.5rem 1.25rem;
+        border: 1px solid var(--restock-brand);
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+
+    .btn-filter-submit:hover {
+        background: var(--restock-brand-deep);
+        border-color: var(--restock-brand-deep);
+        color: #ffffff;
     }
 
     .restock-table {
@@ -167,21 +231,22 @@
     }
 
     .restock-table thead th {
-        background: #f7fbff !important;
-        border-bottom: 1px solid #dce8f3;
-        color: #4b637b;
-        font-size: 0.74rem;
+        background: #f8fafc !important;
+        border-bottom: 1px solid var(--restock-line) !important;
+        color: var(--restock-ink-700);
+        font-size: 0.72rem;
         font-weight: 700;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.05em;
         text-transform: uppercase;
-        padding: 0.9rem 0.95rem;
+        padding: 0.8rem 0.95rem;
         white-space: nowrap;
     }
 
     .restock-table tbody td,
     .restock-table tfoot td {
         border-color: #e7edf4;
-        padding: 0.92rem 0.95rem;
+        padding: 0.5rem 0.95rem !important;
+        font-size: 0.85rem;
         vertical-align: middle;
     }
 
@@ -303,6 +368,7 @@
         }
     }
 </style>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 @endpush
 
 @section('content')
@@ -318,20 +384,22 @@
     </a>
 </div>
 
-<!-- Filters -->
-<div class="content-card mb-4">
-    <div class="content-card-header">
-        <h5 class="content-card-title">
-            <i class="bi bi-funnel"></i>
-            {{ __('restock.filters') }}
-        </h5>
-    </div>
-    <div class="p-4">
-        <form action="{{ route('restock.index') }}" method="GET">
-            <div class="row">
+    {{-- Single-row Filter Toolbar --}}
+    <div class="filter-toolbar mb-4 shadow-sm">
+        <form id="restocksFilterForm" class="m-0 w-100">
+            <div class="row g-2 align-items-center">
                 <div class="col-md-3">
-                    <label for="shop_id" class="form-label fw-semibold">{{ __('restock.shop') }}</label>
-                    <select class="form-select" id="filter_shop_id" name="shop_id">
+                    <div class="search-input-wrapper">
+                        <i class="bi bi-search search-icon"></i>
+                        <input
+                            type="text"
+                            id="search"
+                            class="form-control filter-search-control"
+                            placeholder="Search product, batch, note...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select filter-select-control" id="filter_shop_id" name="shop_id">
                         <option value="">{{ __('restock.all_shops') }}</option>
                         @foreach($shops as $shop)
                             <option value="{{ $shop->id }}" {{ ($filters['shop_id'] ?? '') == $shop->id ? 'selected' : '' }}>
@@ -340,134 +408,140 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label for="date_from" class="form-label fw-semibold">{{ __('restock.date_from') }}</label>
-                    <input type="date" class="form-control" id="date_from" name="date_from"
-                           value="{{ $filters['date_from'] ?? '' }}">
+                <div class="col-md-2">
+                    <input type="date" class="form-control filter-select-control" id="date_from" name="date_from"
+                           value="{{ $filters['date_from'] ?? '' }}" placeholder="From Date">
                 </div>
-                <div class="col-md-3">
-                    <label for="date_to" class="form-label fw-semibold">{{ __('restock.date_to') }}</label>
-                    <input type="date" class="form-control" id="date_to" name="date_to"
-                           value="{{ $filters['date_to'] ?? '' }}">
+                <div class="col-md-2">
+                    <input type="date" class="form-control filter-select-control" id="date_to" name="date_to"
+                           value="{{ $filters['date_to'] ?? '' }}" placeholder="To Date">
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">&nbsp;</label>
-                    <button type="submit" class="btn btn-apply-filter w-100">
-                        <i class="bi bi-search"></i> {{ __('restock.apply_filters') }}
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-filter-submit w-100">
+                        <i class="bi bi-funnel"></i> {{ __('restock.apply_filters') }}
                     </button>
                 </div>
             </div>
         </form>
     </div>
-</div>
 
-<!-- Restocks Table -->
-<div class="content-card">
-    @if($restocks->count() > 0)
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 restock-table">
-                <thead class="table-light">
-                    <tr>
-                        <th>{{ __('restock.col_date') }}</th>
-                        <th>{{ __('restock.col_shop') }}</th>
-                        <th>{{ __('restock.col_product') }}</th>
-                        <th>{{ __('restock.batch_code') }}</th>
-                        <th>{{ __('restock.table_attributes') }}</th>
-                        <th class="text-center">{{ __('restock.col_quantity') }}</th>
-                        <th class="text-end">{{ __('restock.col_price_per_unit') }}</th>
-                        <th class="text-end">{{ __('restock.col_total_cost') }}</th>
-                        <th class="text-center">{{ __('restock.col_current_stock') }}</th>
-                        <th>{{ __('restock.col_note') }}</th>
-                        <th class="text-end">{{ __('app.actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($restocks as $restock)
-                    <tr>
-                        <td>{{ $restock->restock_date->format('d M Y') }}</td>
-                        <td>
-                            <span class="shop-pill">{{ $restock->shop?->name ?? 'Deleted shop' }}</span>
-                        </td>
-                        <td>{{ $restock->product?->name ?? 'Deleted product' }}</td>
-                        <td>{{ $restock->productBatch?->batch_code ?? '-' }}</td>
-                        <td>{{ $restock->productBatch?->attribute_summary ?? '-' }}</td>
-                        <td class="text-center">
-                            <span class="qty-pill">+{{ number_format($restock->quantity) }}</span>
-                        </td>
-                        <td class="text-end">{{ number_format($restock->purchase_price_per_unit, 2) }}</td>
-                        <td class="text-end"><strong>{{ number_format($restock->total_cost, 2) }}</strong></td>
-                        <td class="text-center">
-                            <span class="stock-pill {{ (($restock->product?->stock_quantity ?? 0) > 0) ? 'stock-pill-ok' : 'stock-pill-out' }}">
-                                {{ $restock->product?->stock_quantity !== null ? number_format($restock->product->stock_quantity) : 'N/A' }}
-                            </span>
-                        </td>
-                        <td>
-                            @if($restock->note)
-                                <span class="text-muted small" title="{{ $restock->note }}">
-                                    {{ Str::limit($restock->note, 30) }}
-                                </span>
-                            @else
-                                <span class="text-muted">—</span>
-                            @endif
-                        </td>
-                        <td class="text-end">
-                            <a href="{{ route('product.batches', $restock->product_id) }}"
-                               class="btn btn-sm btn-row-action"
-                               style="color:#0f766e;border-color:rgba(15,118,110,.35);background:#fff;"
-                               title="View Batch Tracker">
-                                <i class="bi bi-layers"></i>
-                            </a>
-                            <a href="{{ route('restock.edit', $restock->id) }}" class="btn btn-sm btn-row-action btn-row-edit" title="{{ __('app.edit') }}">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form action="{{ route('restock.destroy', $restock->id) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('restock.confirm_delete') }}')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-row-action btn-row-delete" title="{{ __('app.delete') }}">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-                <tfoot class="table-light fw-semibold">
-                    @php
-                        $pageTotalQty  = $restocks->sum('quantity');
-                        $pageTotalCost = $restocks->sum('total_cost');
-                    @endphp
-                    <tr>
-                        <td colspan="5" class="text-muted small">
-                            {{ __('restock.page_totals') }} ({{ $restocks->count() }} {{ __('restock.records') }})
-                        </td>
-                        <td class="text-center">
-                            <span class="qty-pill">+{{ number_format($pageTotalQty) }}</span>
-                        </td>
-                        <td></td>
-                        <td class="text-end">{{ number_format($pageTotalCost, 2) }}</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-
-        <div class="p-3">
-            {{ $restocks->links() }}
-        </div>
-    @endif
-
-    @if($restocks->count() === 0)
-        <div class="empty-state">
-            <i class="bi bi-box-seam"></i>
-            <h3>{{ __('restock.no_restocks') }}</h3>
-            <p>{{ __('restock.no_restocks_sub') }}</p>
-            <a href="{{ route('restock.create') }}" class="btn btn-empty-restock">
-                <i class="bi bi-plus-circle"></i> {{ __('restock.create_title') }}
-            </a>
-        </div>
-    @endif
+    <!-- Restocks Table -->
+    <div class="content-card p-3">
+    <div class="table-responsive">
+        <table id="restocksTable" class="table table-hover align-middle mb-0 restock-table w-100">
+            <thead>
+                <tr>
+                    <th>{{ __('restock.col_date') }}</th>
+                    <th>{{ __('restock.col_shop') }}</th>
+                    <th>{{ __('restock.col_product') }}</th>
+                    <th>{{ __('restock.batch_code') }}</th>
+                    <th>{{ __('restock.table_attributes') }}</th>
+                    <th class="text-center">{{ __('restock.col_quantity') }}</th>
+                    <th class="text-end">{{ __('restock.col_price_per_unit') }}</th>
+                    <th class="text-end">{{ __('restock.col_total_cost') }}</th>
+                    <th class="text-center">{{ __('restock.col_current_stock') }}</th>
+                    <th>{{ __('restock.col_note') }}</th>
+                    <th class="text-end">{{ __('app.actions') }}</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot class="table-light fw-semibold">
+                <tr>
+                    <td colspan="5" class="text-muted small">
+                        {{ __('restock.page_totals') }} (0 {{ __('restock.records') }})
+                    </td>
+                    <td class="text-center">
+                        <span class="qty-pill">+0</span>
+                    </td>
+                    <td></td>
+                    <td class="text-end">0.00</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
 </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script>
+$(document).ready(function () {
+    const tableUrl = @json(route('restock.table'));
+    
+    const table = $('#restocksTable').DataTable({
+        processing: true,
+        serverSide: true,
+        searching: true,
+        dom: 'rtip',
+        order: [[0, 'desc']],
+        ajax: {
+            url: tableUrl,
+            data: function (d) {
+                d.shop_id = $('#filter_shop_id').val();
+                d.date_from = $('#date_from').val();
+                d.date_to = $('#date_to').val();
+                d.search = { value: $('#search').val() };
+            }
+        },
+        columns: [
+            { data: 'restock_date', name: 'restocks.restock_date' },
+            { data: 'shop_name_label', name: 'shops.name' },
+            { data: 'product_name', name: 'products.name' },
+            { data: 'batch_label', name: 'product_batches.batch_code' },
+            { data: 'attribute_summary', name: 'attribute_summary', orderable: false, searchable: false },
+            { data: 'quantity', name: 'restocks.quantity', className: 'text-center' },
+            { data: 'purchase_price_per_unit', name: 'restocks.purchase_price_per_unit', className: 'text-end' },
+            { data: 'total_cost', name: 'restocks.total_cost', className: 'text-end' },
+            { data: 'current_stock_label', name: 'products.stock_quantity', className: 'text-center' },
+            { data: 'note', name: 'restocks.note' },
+            { data: 'actions', name: 'actions', orderable: false, searchable: false, className: 'text-end' }
+        ],
+        footerCallback: function (row, data, start, end, display) {
+            const api = this.api();
+            
+            const intVal = function (i) {
+                return typeof i === 'string' ?
+                    i.replace(/[^\d\.-]/g, '') * 1 :
+                    typeof i === 'number' ?
+                        i : 0;
+            };
+            
+            const pageTotalQty = api
+                .column(5, { page: 'current' })
+                .data()
+                .reduce(function (a, b) {
+                    const valA = typeof a === 'string' ? a.replace(/<[^>]*>/g, '') : a;
+                    const valB = typeof b === 'string' ? b.replace(/<[^>]*>/g, '') : b;
+                    return intVal(valA) + intVal(valB);
+                }, 0);
+            
+            const pageTotalCost = api
+                .column(7, { page: 'current' })
+                .data()
+                .reduce(function (a, b) {
+                    const valA = typeof a === 'string' ? a.replace(/<[^>]*>/g, '') : a;
+                    const valB = typeof b === 'string' ? b.replace(/<[^>]*>/g, '') : b;
+                    return intVal(valA) + intVal(valB);
+                }, 0);
+            
+            $(api.column(5).footer()).html('<span class="qty-pill">+' + pageTotalQty.toLocaleString() + '</span>');
+            $(api.column(7).footer()).html('<strong>' + pageTotalCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</strong>');
+            
+            const recordsCount = api.rows({ page: 'current' }).count();
+            $(api.column(0).footer()).html("{{ __('restock.page_totals') }} (" + recordsCount + " {{ __('restock.records') }})");
+        }
+    });
+
+    $('#restocksFilterForm').on('submit', function (e) {
+        e.preventDefault();
+        table.ajax.reload();
+    });
+});
+</script>
+@endpush

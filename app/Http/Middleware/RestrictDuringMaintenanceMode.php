@@ -15,21 +15,7 @@ class RestrictDuringMaintenanceMode
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (app()->runningInConsole()) {
-            return $next($request);
-        }
-
-        $user = $request->user();
-
-        if (!$user) {
-            return $next($request);
-        }
-
-        if ($request->routeIs('logout') || $user->isSuperAdmin()) {
-            return $next($request);
-        }
-
-        if (!in_array($user->role, ['owner', 'manager'], true)) {
+        if (app()->runningInConsole() && !app()->runningUnitTests()) {
             return $next($request);
         }
 
@@ -43,6 +29,28 @@ class RestrictDuringMaintenanceMode
             return $next($request);
         }
 
+        // 1. Always allow Super Admins to bypass maintenance mode.
+        $user = $request->user();
+        if ($user && $user->isSuperAdmin()) {
+            return $next($request);
+        }
+
+        // 2. Whitelist essential authentication and locale routes
+        if ($request->routeIs('login', 'login.submit', 'register', 'register.submit', 'logout', 'password.*', 'language.switch')) {
+            return $next($request);
+        }
+
+        // 3. Whitelist landing page with auth query parameters (so login/register modals can load)
+        if ($request->routeIs('landing.index') && in_array($request->query('auth'), ['login', 'register'], true)) {
+            return $next($request);
+        }
+
+        // 4. Whitelist essential paths and assets
+        if ($request->is('up', '_tailwind*', 'livewire*', 'storage/*', 'sanctum/*')) {
+            return $next($request);
+        }
+
+        // 5. Otherwise, return the maintenance page view with 503 status code
         return response()->view('maintenance.role-maintenance', [], 503);
     }
 }

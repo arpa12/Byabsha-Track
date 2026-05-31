@@ -284,10 +284,13 @@
                         <tr>
                             <td class="fw-semibold"><?php echo e(__('product.current_stock')); ?>:</td>
                             <td>
-                                <?php if($product->stock_quantity <= 5): ?>
+                                <?php
+                                    $lowStockAlert = (int) \Modules\Settings\Models\Setting::get('low_stock_alert', 5);
+                                ?>
+                                <?php if($product->stock_quantity <= $lowStockAlert): ?>
                                     <span class="stock-pill stock-low"><?php echo e($product->stock_quantity); ?> <?php echo e(__('app.units')); ?></span>
                                     <small class="text-danger d-block mt-1"> <?php echo e(__('product.low_stock_alert')); ?></small>
-                                <?php elseif($product->stock_quantity <= 20): ?>
+                                <?php elseif($product->stock_quantity <= ($lowStockAlert * 4)): ?>
                                     <span class="stock-pill stock-mid"><?php echo e($product->stock_quantity); ?> <?php echo e(__('app.units')); ?></span>
                                 <?php else: ?>
                                     <span class="stock-pill stock-high"><?php echo e($product->stock_quantity); ?> <?php echo e(__('app.units')); ?></span>

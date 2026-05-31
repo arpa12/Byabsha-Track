@@ -205,7 +205,7 @@ class ReportService
         $totalPotentialProfit = $totalPotentialRevenue - $totalStockValue;
 
         $lowStockProducts = $products->filter(function($product) {
-            return $product->stock_quantity <= 5;
+            return $product->stock_quantity <= (int) \Modules\Settings\Models\Setting::get('low_stock_alert', 5);
         })->count();
 
         $outOfStockProducts = $products->filter(function($product) {

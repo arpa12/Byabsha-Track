@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Modules\Damage\Services\DamageService;
+use Modules\Damage\Models\Damage;
 use Modules\Product\Models\ProductBatch;
 use Modules\Shop\Models\Shop;
+use Yajra\DataTables\Facades\DataTables;
 
 class DamageController extends Controller
 {
@@ -25,23 +27,114 @@ class DamageController extends Controller
         /** @var \App\Models\User $user */
 
         $allowedShopIds = $user->accessibleShopIds();
-
         $filters = $request->only(['shop_id', 'date_from', 'date_to']);
 
         if (!empty($filters['shop_id']) && !in_array((int) $filters['shop_id'], $allowedShopIds, true)) {
             abort(403, 'You do not have access to this shop.');
         }
 
-        $filters['shop_ids'] = $allowedShopIds;
-        $damages = $this->damageService->getDamages($filters);
-
         if ($request->expectsJson()) {
+            $filters['shop_ids'] = $allowedShopIds;
+            $damages = $this->damageService->getDamages($filters);
             return response()->json($damages);
         }
 
         $shops = Shop::forUser($user)->get();
 
-        return view('damage::index', compact('damages', 'shops', 'filters'));
+        return view('damage::index', compact('shops', 'filters'));
+    }
+
+    public function damagesTable(Request $request)
+    {
+        $user = Auth::user();
+        abort_unless($user, 401);
+        /** @var \App\Models\User $user */
+        $allowedShopIds = $user->accessibleShopIds();
+
+        $shopId = $request->input('shop_id');
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
+
+        if ($shopId && !in_array((int) $shopId, $allowedShopIds, true)) {
+            abort(403, 'You do not have access to this shop.');
+        }
+
+        $query = Damage::query()
+            ->join('shops', 'shops.id', '=', 'damages.shop_id')
+            ->leftJoin('users', 'users.id', '=', 'damages.created_by')
+            ->whereIn('damages.shop_id', $allowedShopIds)
+            ->select([
+                'damages.id',
+                'damages.reference_no',
+                'damages.damage_date',
+                'damages.shop_id',
+                'damages.total_quantity',
+                'damages.total_loss',
+                'damages.created_by',
+                'shops.name as shop_name',
+                'users.name as creator_name',
+            ]);
+
+        if ($shopId) {
+            $query->where('damages.shop_id', (int) $shopId);
+        }
+        if ($dateFrom) {
+            $query->whereDate('damages.damage_date', '>=', $dateFrom);
+        }
+        if ($dateTo) {
+            $query->whereDate('damages.damage_date', '<=', $dateTo);
+        }
+
+        return DataTables::eloquent($query)
+            ->filter(function ($q) {
+                $search = request('search')['value'] ?? null;
+                if ($search) {
+                    $q->where(function ($sub) use ($search) {
+                        $sub->where('damages.reference_no', 'like', '%' . $search . '%')
+                            ->orWhere('shops.name', 'like', '%' . $search . '%')
+                            ->orWhere('users.name', 'like', '%' . $search . '%');
+                    });
+                }
+            }, false)
+            ->addColumn('reference_no_label', function (Damage $damage) {
+                return '<strong class="text-teal" style="font-size: 0.88rem;"><i class="bi bi-exclamation-triangle"></i> ' . e($damage->reference_no) . '</strong>';
+            })
+            ->addColumn('shop_name_label', function (Damage $damage) {
+                return '<span class="badge bg-light text-dark border"><i class="bi bi-shop"></i> ' . e($damage->shop_name ?? '-') . '</span>';
+            })
+            ->editColumn('damage_date', function (Damage $damage) {
+                return optional($damage->damage_date)->format('d M Y') ?? '-';
+            })
+            ->editColumn('total_quantity', function (Damage $damage) {
+                return number_format((int)$damage->total_quantity);
+            })
+            ->editColumn('total_loss', function (Damage $damage) {
+                return number_format((float)$damage->total_loss, 2);
+            })
+            ->addColumn('actions', function (Damage $damage) {
+                $showUrl = route('damage.show', $damage->id);
+                $deleteUrl = route('damage.destroy', $damage->id);
+                $csrf = csrf_field();
+                $method = method_field('DELETE');
+                $confirmMsg = __('damage.confirm_delete');
+
+                return '
+                    <div class="d-flex gap-2">
+                        <a href="' . $showUrl . '" class="btn btn-sm btn-outline-info">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <form action="' . $deleteUrl . '" method="POST" onsubmit="return confirm(\'' . e($confirmMsg) . '\')" class="d-inline">
+                            ' . $csrf . '
+                            ' . $method . '
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                ';
+            })
+            ->rawColumns(['reference_no_label', 'shop_name_label', 'actions'])
+            ->make(true);
     }
 
     public function create()

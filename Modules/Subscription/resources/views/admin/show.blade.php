@@ -56,7 +56,7 @@
               </div>
               <div>
                 <label class="form-label small fw-semibold mb-1" style="color: #4b637b; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.78rem;">{{ __('Amount') }}</label>
-                <div style="font-size: 1.5rem; font-weight: 700; color: #047857;">{{ number_format($paymentRequest->amount) }} ৳</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #047857;">{{ currency_symbol() }}{{ number_format($paymentRequest->amount) }}</div>
               </div>
             </div>
           </div>

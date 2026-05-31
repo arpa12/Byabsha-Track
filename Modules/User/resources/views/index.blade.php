@@ -134,16 +134,12 @@
 
     .table.table-custom tbody td {
         border-color: #e7edf4;
-        padding: 0.92rem 0.95rem;
+        padding: 0.55rem 0.95rem !important;
         vertical-align: middle;
     }
 
     .table.table-custom tbody tr:hover {
         background: #fbfdff;
-    }
-
-    .user-deleted {
-        background: #fff6f6;
     }
 
     .user-name {
@@ -283,42 +279,32 @@
         border-color: #10b981;
     }
 
-    .btn-row-force-delete {
-        color: #991b1b;
-        border-color: rgba(153, 27, 27, 0.36);
+    /* DataTable Pagination Overrides */
+    .dataTables_wrapper .paginate_button.page-item.active .page-link {
+        background-color: var(--user-brand) !important;
+        border-color: var(--user-brand) !important;
+        color: #fff !important;
+    }
+    .dataTables_wrapper .paginate_button.page-item .page-link {
+        color: var(--user-ink-700);
+        border-radius: 8px;
+        margin: 0 2px;
+        font-size: 0.82rem;
+    }
+    .dataTables_wrapper .paginate_button.page-item .page-link:hover {
+        background-color: #f1f5f9;
+        border-color: #cbd5e1;
+        color: var(--user-ink-900);
+    }
+    .dataTables_wrapper .dataTables_info {
+        font-size: 0.8rem;
+        color: var(--user-ink-500);
+        margin-top: 1rem;
+        font-weight: 500;
     }
 
-    .btn-row-force-delete:hover {
-        color: #fff;
-        background: #991b1b;
-        border-color: #991b1b;
-    }
-
-    .empty-state {
-        padding: 2.5rem 1rem;
-        text-align: center;
-    }
-
-    .empty-state i {
-        font-size: 2.2rem;
-        color: #8aa0b6;
-        display: block;
-        margin-bottom: 0.65rem;
-    }
-
-    .btn-create-first {
-        background: linear-gradient(140deg, var(--user-brand), var(--user-brand-deep));
-        color: #fff;
-        border: 0;
-        border-radius: 999px;
-        padding: 0.48rem 0.88rem;
-        font-size: 0.78rem;
-        font-weight: 700;
-        text-decoration: none;
-    }
-
-    .btn-create-first:hover {
-        color: #fff;
+    .dropdown-toggle.no-caret::after {
+        display: none !important;
     }
 
     @media (max-width: 767.98px) {
@@ -332,6 +318,7 @@
         }
     }
 </style>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 @endpush
 
 @section('content')
@@ -347,8 +334,6 @@
     </a>
 </div>
 
-<<<<<<< HEAD
-=======
 @if($errors->any())
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         @foreach($errors->all() as $error)
@@ -358,93 +343,137 @@
     </div>
 @endif
 
->>>>>>> d42f583 (initial commit)
-<div class="content-card">
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+{{-- Filters Card toolbar --}}
+<div class="card border-0 rounded-4 shadow-sm mb-4" style="background: rgba(255,255,255,0.7); border: 1px solid var(--user-line) !important; backdrop-filter: blur(8px);">
+    <div class="card-body p-3">
+        <form id="filterForm" class="row g-2 align-items-center">
+            <div class="col-12 col-md-4">
+                <div class="position-relative">
+                    <i class="bi bi-search position-absolute top-50 translate-middle-y text-muted" style="left: 1rem;"></i>
+                    <input type="text" id="custom_search" class="form-control form-control-sm border-0 bg-white" placeholder="Search by name or email..." style="border-radius: 12px; padding: 0.65rem 1rem 0.65rem 2.5rem; font-size: 0.88rem; border: 1px solid #e2edf6 !important; box-shadow: 0 4px 10px rgba(15,23,42,0.02);">
+                </div>
+            </div>
+            
+            <div class="col-12 col-md-3">
+                <div class="position-relative">
+                    <i class="bi bi-person-badge position-absolute top-50 translate-middle-y text-muted" style="left: 1rem;"></i>
+                    <select id="filter_role" class="form-select form-select-sm border-0 bg-white" style="border-radius: 12px; padding: 0.65rem 1rem 0.65rem 2.5rem; font-size: 0.88rem; border: 1px solid #e2edf6 !important;">
+                        <option value="">All Roles</option>
+                        <option value="superadmin">{{ __('user.role_superadmin') }}</option>
+                        <option value="owner">{{ __('user.role_owner') }}</option>
+                        <option value="manager">{{ __('user.role_manager') }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-3">
+                <div class="position-relative">
+                    <i class="bi bi-activity position-absolute top-50 translate-middle-y text-muted" style="left: 1rem;"></i>
+                    <select id="filter_status" class="form-select form-select-sm border-0 bg-white" style="border-radius: 12px; padding: 0.65rem 1rem 0.65rem 2.5rem; font-size: 0.88rem; border: 1px solid #e2edf6 !important;">
+                        <option value="">All Statuses</option>
+                        <option value="active">{{ __('user.active') }}</option>
+                        <option value="pending">{{ __('user.pending_approval') }}</option>
+                        <option value="deactive">{{ __('user.deactive') }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-2 text-md-end text-stretch">
+                <button type="submit" class="btn btn-sm w-100" style="background: var(--user-brand); color: #fff; border-radius: 12px; padding: 0.65rem 1rem; font-size: 0.86rem; font-weight: 700; border: 0; box-shadow: 0 4px 12px rgba(15, 118, 110, 0.2);">
+                    <i class="bi bi-funnel-fill me-1"></i> Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="content-card p-3">
     <div class="table-responsive">
-        <table class="table table-custom">
+        <table class="table table-custom w-100" id="usersDataTable">
             <thead>
                 <tr>
                     <th>{{ __('user.col_name') }}</th>
                     <th>{{ __('user.col_email') }}</th>
                     <th>{{ __('user.col_role') }}</th>
+                    <th>{{ __('user.assigned_shop') }}</th>
                     <th>{{ __('user.col_created') }}</th>
                     <th>{{ __('user.col_status') }}</th>
-                    <th class="text-end">{{ __('app.actions') }}</th>
+                    <th class="text-end" style="min-width:100px;">{{ __('app.actions') }}</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($users as $user)
-                    <tr class="{{ $user->trashed() ? 'user-deleted' : '' }}">
-                        <td>
-                            <strong class="user-name">{{ $user->name }}</strong>
-                            @if($user->id === auth()->id())
-                                <span class="you-chip ms-1">{{ __('user.you') }}</span>
-                            @endif
-                        </td>
-                        <td>{{ $user->email }}</td>
-                        <td>
-                            <span class="role-badge {{ $user->role === 'superadmin' ? 'badge-superadmin' : ($user->role === 'manager' ? 'badge-manager' : 'badge-owner') }}">
-                                {{ __('user.role_' . $user->role) }}
-                            </span>
-                        </td>
-                        <td>{{ $user->created_at->format('M d, Y') }}</td>
-                        <td>
-                            @if($user->trashed())
-                                <span class="status-badge status-deactive">{{ __('user.deactive') }}</span>
-                            @elseif($user->isPendingApproval())
-                                <span class="status-badge status-pending"><i class="bi bi-clock-history me-1"></i>{{ __('user.pending_approval') }}</span>
-                            @else
-                                <span class="status-badge status-active">{{ __('user.active') }}</span>
-                            @endif
-                        </td>
-                        <td class="text-end actions-cell">
-                            <a href="{{ route('user.show', $user->id) }}" class="btn btn-sm btn-row-action btn-row-view" title="{{ __('app.view') }}">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            @if($user->trashed())
-                                <form action="{{ route('user.activate', $user->id) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('user.confirm_activate') }}')">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-row-action btn-row-restore" title="{{ __('user.activate') }}">
-                                        <i class="bi bi-arrow-counterclockwise"></i>
-                                    </button>
-                                </form>
-                            @elseif($user->isPendingApproval())
-                                <a href="{{ route('user.approve.form', $user->id) }}" class="btn btn-sm btn-row-action" style="color:#d97706;border-color:rgba(217,119,6,.38);background:#fffbf5;" title="{{ __('user.approve_title') }}">
-                                    <i class="bi bi-person-check"></i>
-                                </a>
-                            @else
-                                <a href="{{ route('user.edit', $user->id) }}" class="btn btn-sm btn-row-action btn-row-edit" title="{{ __('app.edit') }}">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                @if($user->id !== auth()->id())
-                                    <form action="{{ route('user.deactivate', $user->id) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('user.confirm_deactivate') }}')">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-row-action btn-row-delete" title="{{ __('user.deactivate') }}">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                @endif
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="text-center empty-state">
-                            <i class="bi bi-people"></i>
-                            <div class="mb-2 text-muted">{{ __('user.no_users') }}</div>
-                            <a href="{{ route('user.create') }}" class="btn-create-first">
-                                <i class="bi bi-plus-circle"></i> {{ __('user.add_new') }}
-                            </a>
-                        </td>
-                    </tr>
-                @endforelse
+                {{-- Loaded via Ajax --}}
             </tbody>
         </table>
-    </div>
-
-    <div class="mt-3">
-        {{ $users->links() }}
     </div>
 </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!window.jQuery || !$('#usersDataTable').length) {
+            return;
+        }
+
+        var table = $('#usersDataTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: '{{ route("user.table") }}',
+                data: function (d) {
+                    d.role = $('#filter_role').val();
+                    d.status = $('#filter_status').val();
+                    d.custom_search = $('#custom_search').val();
+                }
+            },
+            columns: [
+                { data: 'name', name: 'name' },
+                { data: 'email', name: 'email' },
+                { data: 'role', name: 'role' },
+                { data: 'shop_branch', name: 'shop_branch', orderable: false, searchable: false },
+                { data: 'created_at', name: 'created_at' },
+                { data: 'status', name: 'status', orderable: false, searchable: false },
+                { data: 'actions', name: 'actions', orderable: false, searchable: false, className: 'text-end actions-cell' }
+            ],
+            pageLength: 15,
+            order: [[4, 'desc']],
+            responsive: true,
+            language: {
+                search: '',
+                searchPlaceholder: 'Search users...',
+            },
+            dom: 'rtip',
+        });
+
+        $('#filterForm').on('submit', function (e) {
+            e.preventDefault();
+            table.ajax.reload();
+        });
+        
+        $('#filter_role, #filter_status').on('change', function () {
+            table.ajax.reload();
+        });
+
+        // Trigger reload when search is cleared manually or typed
+        var searchTimeout = null;
+        $('#custom_search').on('input', function () {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function () {
+                table.ajax.reload();
+            }, 300);
+        });
+    });
+</script>
+@endpush

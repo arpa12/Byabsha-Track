@@ -95,7 +95,7 @@
                 <td class="text-center">
                     @if($product->stock_quantity == 0)
                         <span class="badge badge-danger">{{ __('report.out_of_stock_badge') }}</span>
-                    @elseif($product->stock_quantity <= 5)
+                    @elseif($product->stock_quantity <= (int) \Modules\Settings\Models\Setting::get('low_stock_alert', 5))
                         <span class="badge badge-warning">{{ $product->stock_quantity }}</span>
                     @else
                         <span class="badge badge-success">{{ $product->stock_quantity }}</span>

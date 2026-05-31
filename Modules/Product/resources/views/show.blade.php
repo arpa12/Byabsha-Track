@@ -282,10 +282,13 @@
                         <tr>
                             <td class="fw-semibold">{{ __('product.current_stock') }}:</td>
                             <td>
-                                @if($product->stock_quantity <= 5)
+                                @php
+                                    $lowStockAlert = (int) \Modules\Settings\Models\Setting::get('low_stock_alert', 5);
+                                @endphp
+                                @if($product->stock_quantity <= $lowStockAlert)
                                     <span class="stock-pill stock-low">{{ $product->stock_quantity }} {{ __('app.units') }}</span>
                                     <small class="text-danger d-block mt-1"> {{ __('product.low_stock_alert') }}</small>
-                                @elseif($product->stock_quantity <= 20)
+                                @elseif($product->stock_quantity <= ($lowStockAlert * 4))
                                     <span class="stock-pill stock-mid">{{ $product->stock_quantity }} {{ __('app.units') }}</span>
                                 @else
                                     <span class="stock-pill stock-high">{{ $product->stock_quantity }} {{ __('app.units') }}</span>

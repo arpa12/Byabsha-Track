@@ -181,7 +181,7 @@
                                         <span class="font-monospace text-slate-700" style="font-size: 0.85rem;">{{ $req->sender_bkash_number }}</span>
                                     </td>
                                     <td>
-                                        <div class="fw-bold text-emerald-700" style="font-size: 0.95rem;">৳{{ number_format($req->amount) }}</div>
+                                        <div class="fw-bold text-emerald-700" style="font-size: 0.95rem;">{{ currency_symbol() }}{{ number_format($req->amount) }}</div>
                                     </td>
                                     <td class="small text-muted">
                                         <div>{{ $req->created_at->format('d M Y') }}</div>

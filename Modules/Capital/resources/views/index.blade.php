@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', __('capital.title'))
 
@@ -294,6 +294,46 @@
             gap: 0.85rem;
         }
     }
+
+    /* Search Toolbar */
+    .filter-toolbar {
+        background: #ffffff;
+        border: 1px solid var(--capital-line);
+        border-radius: 14px;
+        padding: 0.75rem 1rem;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        color: var(--capital-ink-500);
+        font-size: 0.9rem;
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    .filter-search-control {
+        padding-left: 36px !important;
+        border-radius: 10px !important;
+        border: 1px solid #cedce9 !important;
+        background-color: #f8fafc !important;
+        font-size: 0.88rem !important;
+        height: 38px !important;
+        color: var(--capital-ink-900) !important;
+    }
+
+    .filter-search-control:focus {
+        background-color: #ffffff !important;
+        border-color: var(--capital-brand) !important;
+        box-shadow: 0 0 0 0.15rem rgba(15, 118, 110, 0.15) !important;
+    }
 </style>
 @endpush
 
@@ -314,13 +354,7 @@
     </form>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
+
 
 {{-- Formula Explanation Banner --}}
 <div class="alert mb-4 p-3 formula-banner" style="font-size:0.85rem;">
@@ -333,16 +367,38 @@
     </div>
 </div>
 
+{{-- Search Toolbar --}}
+<div class="filter-toolbar mb-4 shadow-sm">
+    <div class="d-flex align-items-center gap-2">
+        <div class="flex-grow-1">
+            <div class="search-input-wrapper">
+                <i class="bi bi-search search-icon"></i>
+                <input
+                    type="text"
+                    id="search"
+                    class="form-control filter-search-control"
+                    placeholder="{{ __('capital.search_placeholder') }}">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="search-empty-state" class="empty-state mb-4" style="display: none;">
+    <i class="bi bi-search"></i>
+    <h5>{{ __('capital.no_search_results') }}</h5>
+    <p>{{ __('capital.no_search_results_sub') }}</p>
+</div>
+
 @forelse($capitals as $capital)
     @if($capital->shop)
-        @php $products = $capital->shop->products; @endphp
+        @php $batches = $capital->shop->batches; @endphp
         <div class="capital-card">
             <div class="capital-header">
                 <h3 class="shop-name">
                     <i class="bi bi-shop-window"></i>
                     {{ $capital->shop->name }}
                 </h3>
-                <span class="capital-shop-badge">{{ $products->count() }} product(s)</span>
+                <span class="capital-shop-badge">{{ $batches->count() }} batch(es)</span>
             </div>
 
             <div class="capital-body">
@@ -373,7 +429,7 @@
                     <i class="bi bi-table me-1"></i>{{ __('capital.show_breakdown') }}
                 </button>
                 <div class="collapse mt-2" id="breakdown-{{ $capital->id }}">
-                    @if($products->count() > 0)
+                    @if($batches->count() > 0)
                         <div class="table-responsive" style="font-size:0.85rem;">
                             <table class="table table-sm table-bordered mb-1 breakdown-table">
                                 <thead class="table-light">
@@ -386,14 +442,20 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($products as $p)
-                                        @php $stockValue = $p->stock_quantity * $p->purchase_price; @endphp
+                                    @foreach($batches as $batch)
+                                        @php
+                                            $product = $batch->product;
+                                            $stockValue = $batch->remaining_quantity * $batch->purchase_price;
+                                        @endphp
                                         <tr>
-                                            <td>{{ $p->name }}</td>
-                                            <td class="text-center">{{ $p->stock_quantity }}</td>
-                                            <td class="text-end">{{ number_format($p->purchase_price, 2) }}</td>
+                                            <td>
+                                                <span class="product-item-name">{{ $product ? $product->name : 'N/A' }}</span>
+                                                <span class="text-muted" style="font-size:0.75rem;">({{ $batch->batch_code }})</span>
+                                            </td>
+                                            <td class="text-center">{{ $batch->remaining_quantity }}</td>
+                                            <td class="text-end">{{ number_format($batch->purchase_price, 2) }}</td>
                                             <td class="text-center text-muted" style="font-size:0.78rem;">
-                                                {{ $p->stock_quantity }} &times; {{ number_format($p->purchase_price, 2) }}
+                                                {{ $batch->remaining_quantity }} &times; {{ number_format($batch->purchase_price, 2) }}
                                             </td>
                                             <td class="text-end fw-semibold">{{ number_format($stockValue, 2) }}</td>
                                         </tr>
@@ -423,3 +485,44 @@
 @endforelse
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('search');
+        if (!searchInput) return;
+
+        searchInput.addEventListener('input', function (e) {
+            const query = e.target.value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.capital-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const shopName = card.querySelector('.shop-name').textContent.toLowerCase();
+                
+                let productMatch = false;
+                const productNames = card.querySelectorAll('.product-item-name');
+                productNames.forEach(span => {
+                    if (span.textContent.toLowerCase().includes(query)) {
+                        productMatch = true;
+                    }
+                });
+
+                if (shopName.includes(query) || productMatch) {
+                    card.style.setProperty('display', '', 'important');
+                    visibleCount++;
+                } else {
+                    card.style.setProperty('display', 'none', 'important');
+                }
+            });
+
+            const emptyState = document.getElementById('search-empty-state');
+            if (visibleCount === 0 && cards.length > 0) {
+                emptyState.style.setProperty('display', 'block', 'important');
+            } else {
+                emptyState.style.setProperty('display', 'none', 'important');
+            }
+        });
+    });
+</script>
+@endpush

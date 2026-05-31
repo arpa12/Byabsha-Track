@@ -28,8 +28,6 @@ return new class extends Migration
             ['key' => 'app_timezone', 'value' => 'Asia/Dhaka', 'type' => 'text', 'group' => 'general', 'created_at' => now(), 'updated_at' => now()],
             ['key' => 'currency', 'value' => 'BDT', 'type' => 'text', 'group' => 'general', 'created_at' => now(), 'updated_at' => now()],
             ['key' => 'currency_symbol', 'value' => '৳', 'type' => 'text', 'group' => 'general', 'created_at' => now(), 'updated_at' => now()],
-            ['key' => 'date_format', 'value' => 'd/m/Y', 'type' => 'text', 'group' => 'general', 'created_at' => now(), 'updated_at' => now()],
-            ['key' => 'time_format', 'value' => 'H:i', 'type' => 'text', 'group' => 'general', 'created_at' => now(), 'updated_at' => now()],
             ['key' => 'default_language', 'value' => 'en', 'type' => 'text', 'group' => 'general', 'created_at' => now(), 'updated_at' => now()],
 
             // Business Settings
@@ -40,7 +38,6 @@ return new class extends Migration
 
             // System Settings
             ['key' => 'low_stock_alert', 'value' => '10', 'type' => 'number', 'group' => 'system', 'created_at' => now(), 'updated_at' => now()],
-            ['key' => 'pagination_limit', 'value' => '15', 'type' => 'number', 'group' => 'system', 'created_at' => now(), 'updated_at' => now()],
             ['key' => 'maintenance_mode', 'value' => '0', 'type' => 'boolean', 'group' => 'system', 'created_at' => now(), 'updated_at' => now()],
         ]);
     }

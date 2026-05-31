@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?php echo e(__('landing.page_title')); ?></title>
+    <title><?php echo e(\Modules\Settings\Models\Setting::get('app_name', 'Byabsha Track')); ?> - <?php echo e(__('landing.smart_business')); ?></title>
+    <link rel="icon" href="<?php echo e(\Modules\Settings\Models\Setting::get('dashboard_favicon') ?: asset('favicon.svg')); ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -15,8 +16,8 @@
             --ink-900: #0f172a;
             --ink-700: #334155;
             --ink-500: #64748b;
-            --brand: #0f766e;
-            --brand-deep: #155e75;
+            --brand: <?php echo e(\Modules\Settings\Models\Setting::get('dashboard_theme_color', '#0f766e')); ?>;
+            --brand-deep: color-mix(in srgb, var(--brand) 80%, #000000);
             --card: #ffffff;
             --line: #d8e4ee;
         }
@@ -42,7 +43,7 @@
         .site-wrap {
             min-height: 100vh;
             background:
-                radial-gradient(900px 500px at 85% -5%, rgba(15, 118, 110, 0.23), transparent 60%),
+                radial-gradient(900px 500px at 85% -5%, color-mix(in srgb, var(--brand) 23%, transparent), transparent 60%),
                 radial-gradient(650px 420px at -5% 8%, rgba(245, 158, 11, 0.2), transparent 55%),
                 linear-gradient(180deg, #f7fafc 0%, #f1f6f9 60%, #edf3f8 100%);
         }
@@ -200,7 +201,7 @@
             width: 360px;
             height: 360px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(15, 118, 110, 0.24) 0%, rgba(15, 118, 110, 0) 72%);
+            background: radial-gradient(circle, color-mix(in srgb, var(--brand) 24%, transparent) 0%, transparent 72%);
             z-index: -1;
         }
 
@@ -219,15 +220,15 @@
             display: inline-flex;
             align-items: center;
             gap: 0.48rem;
-            background: rgba(15, 118, 110, 0.12);
-            color: #0f766e;
-            border: 1px solid rgba(15, 118, 110, 0.22);
+            background: color-mix(in srgb, var(--brand) 12%, transparent);
+            color: var(--brand);
+            border: 1px solid color-mix(in srgb, var(--brand) 22%, transparent);
             border-radius: 999px;
             padding: 0.44rem 0.92rem;
             font-size: 0.78rem;
             font-weight: 700;
             margin-bottom: 1rem;
-            box-shadow: 0 8px 18px rgba(15, 118, 110, 0.13);
+            box-shadow: 0 8px 18px color-mix(in srgb, var(--brand) 13%, transparent);
         }
 
         .hero-title {
@@ -525,7 +526,7 @@
             left: 8%;
             right: 8%;
             height: 2px;
-            background: linear-gradient(90deg, rgba(15, 118, 110, 0.2), rgba(15, 118, 110, 0.65), rgba(15, 118, 110, 0.2));
+            background: linear-gradient(90deg, color-mix(in srgb, var(--brand) 20%, transparent), color-mix(in srgb, var(--brand) 65%, transparent), color-mix(in srgb, var(--brand) 20%, transparent));
             z-index: 0;
         }
 
@@ -544,7 +545,7 @@
             height: 34px;
             border-radius: 999px;
             margin: 0 auto 0.85rem;
-            background: linear-gradient(150deg, var(--brand), #0b6b67);
+            background: linear-gradient(150deg, var(--brand), color-mix(in srgb, var(--brand) 85%, #000000));
             color: #fff;
             display: flex;
             align-items: center;
@@ -554,7 +555,7 @@
         }
 
         .cta-shell {
-            background: linear-gradient(135deg, #0c2f44 0%, #0f766e 60%, #0d5969 100%);
+            background: linear-gradient(135deg, color-mix(in srgb, var(--brand) 80%, #000000) 0%, var(--brand) 60%, color-mix(in srgb, var(--brand) 80%, #000000) 100%);
             border-radius: 24px;
             padding: clamp(2rem, 4vw, 3.3rem);
             position: relative;
@@ -753,10 +754,14 @@
     <nav class="navbar navbar-expand-lg sticky-top site-navbar">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2" href="<?php echo e(route('landing.index')); ?>">
-                <span class="brand-chip">
-                    <i class="bi bi-graph-up-arrow"></i>
-                </span>
-                <span class="display-font">Byabsha Track</span>
+                <?php if(\Modules\Settings\Models\Setting::get('dashboard_logo')): ?>
+                    <img src="<?php echo e(asset(\Modules\Settings\Models\Setting::get('dashboard_logo'))); ?>" alt="Logo" style="height: 38px; max-width: 120px; object-fit: contain;" class="me-1">
+                <?php else: ?>
+                    <span class="brand-chip">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </span>
+                <?php endif; ?>
+                <span class="display-font"><?php echo e(\Modules\Settings\Models\Setting::get('app_name', 'Byabsha Track')); ?></span>
             </a>
 
             <button class="navbar-toggler border-0 ms-auto me-2" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-label="Toggle navigation">
@@ -846,7 +851,7 @@
 
                     <div class="metrics-band reveal">
                         <div class="metric-item">
-                            <div class="metric-value">9+</div>
+                            <div class="metric-value"><?php echo e(__('landing.modules_count')); ?></div>
                             <div class="metric-label"><?php echo e(__('landing.modules')); ?></div>
                         </div>
                         <div class="metric-item">
@@ -889,7 +894,7 @@
                             <div class="hero-insight-title">Today Snapshot</div>
                             <div class="hero-insight-grid">
                                 <div class="hero-insight-item">
-                                    <strong>9+</strong>
+                                    <strong><?php echo e(__('landing.modules_count')); ?></strong>
                                     <span><?php echo e(__('landing.modules')); ?></span>
                                 </div>
                                 <div class="hero-insight-item">
@@ -959,6 +964,27 @@
                         <p class="mb-0 text-secondary small"><?php echo e(__('landing.feat6_desc')); ?></p>
                     </div>
                 </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <span class="feature-icon" style="background:#fdf2f8;color:#db2777;"><i class="bi bi-exclamation-octagon-fill"></i></span>
+                        <h3 class="h5 mb-2"><?php echo e(__('landing.feat7_title')); ?></h3>
+                        <p class="mb-0 text-secondary small"><?php echo e(__('landing.feat7_desc')); ?></p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <span class="feature-icon" style="background:#f5f3ff;color:#7c3aed;"><i class="bi bi-diagram-3-fill"></i></span>
+                        <h3 class="h5 mb-2"><?php echo e(__('landing.feat8_title')); ?></h3>
+                        <p class="mb-0 text-secondary small"><?php echo e(__('landing.feat8_desc')); ?></p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <span class="feature-icon" style="background:#ecfeff;color:#0891b2;"><i class="bi bi-shield-lock-fill"></i></span>
+                        <h3 class="h5 mb-2"><?php echo e(__('landing.feat9_title')); ?></h3>
+                        <p class="mb-0 text-secondary small"><?php echo e(__('landing.feat9_desc')); ?></p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -1017,7 +1043,7 @@
 
     <footer class="footer">
             <div class="footer-meta-row small">
-                <div class="footer-meta-col">&copy; <?php echo e(date('Y')); ?> <?php echo e(__('landing.footer_copyright')); ?></div>
+                <div class="footer-meta-col">&copy; <?php echo e(date('Y')); ?> <?php echo e(\Modules\Settings\Models\Setting::get('app_name', 'Byabsha Track')); ?>. <?php echo e(app()->getLocale() === 'bn' ? 'সর্বস্বত্ব সংরক্ষিত।' : 'All rights reserved.'); ?></div>
                 <div class="footer-meta-col"><?php echo e(__('landing.footer_developer')); ?></div>
 
             </div>
@@ -1052,10 +1078,14 @@
         <div class="modal-content p-4">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <a href="<?php echo e(route('landing.index')); ?>" class="d-flex align-items-center gap-2 text-decoration-none">
-                    <span class="brand-chip" style="width:38px;height:38px;">
-                        <i class="bi bi-graph-up-arrow" style="color:#fff;font-size:1rem;"></i>
-                    </span>
-                    <span style="font-size:1.2rem;font-weight:700;color:#fff;">Byabsha Track</span>
+                    <?php if(\Modules\Settings\Models\Setting::get('dashboard_logo')): ?>
+                        <img src="<?php echo e(asset(\Modules\Settings\Models\Setting::get('dashboard_logo'))); ?>" alt="Logo" style="height: 34px; max-width: 120px; object-fit: contain;" class="me-1">
+                    <?php else: ?>
+                        <span class="brand-chip" style="width:38px;height:38px;">
+                            <i class="bi bi-graph-up-arrow" style="color:#fff;font-size:1rem;"></i>
+                        </span>
+                    <?php endif; ?>
+                    <span style="font-size:1.2rem;font-weight:700;color:#fff;"><?php echo e(\Modules\Settings\Models\Setting::get('app_name', 'Byabsha Track')); ?></span>
                 </a>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>

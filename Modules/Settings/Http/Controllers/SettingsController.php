@@ -5,27 +5,28 @@ namespace Modules\Settings\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\Settings\Models\Setting;
+use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
 {
-    private const GROUPS = ['general', 'system'];
+    private const GROUPS = ['dashboard', 'landing', 'system'];
 
     /**
      * Display the settings form
      */
     public function index()
     {
-        return redirect()->route('settings.general');
+        return redirect()->route('settings.dashboard');
     }
 
-    public function general()
+    public function dashboard()
     {
-        return $this->showByGroup('general');
+        return $this->showByGroup('dashboard');
     }
 
-    public function business()
+    public function landing()
     {
-        return redirect()->route('settings.general');
+        return $this->showByGroup('landing');
     }
 
     public function system()
@@ -49,16 +50,54 @@ class SettingsController extends Controller
         $activeGroup = $this->normalizeGroup($group);
 
         $validated = $request->validate([
-            'settings' => 'required|array',
-            'settings.*' => 'nullable|string|max:500',
+            'settings' => 'nullable|array',
+            'settings.*' => 'nullable|string|max:1000',
+            'remove_files' => 'nullable|array',
+            'remove_files.*' => 'string',
+            'settings_files' => 'nullable|array',
+            'settings_files.*' => 'nullable|file|image|max:2048',
         ]);
 
         try {
-            foreach ($validated['settings'] as $key => $value) {
-                $setting = Setting::where('key', $key)->first();
+            // Handle file deletions
+            if ($request->has('remove_files')) {
+                foreach ($request->input('remove_files') as $key) {
+                    $setting = Setting::where('key', $key)->first();
+                    if ($setting && $setting->value) {
+                        $relativePath = str_replace('/storage/', '', $setting->value);
+                        if (Storage::disk('public')->exists($relativePath)) {
+                            Storage::disk('public')->delete($relativePath);
+                        }
+                        $setting->update(['value' => '']);
+                    }
+                }
+            }
 
-                if ($setting) {
-                    $setting->update(['value' => $value ?? '']);
+            // Handle file uploads (logo / favicon)
+            if ($request->hasFile('settings_files')) {
+                foreach ($request->file('settings_files') as $key => $file) {
+                    $path = $file->store('branding', 'public');
+                    $setting = Setting::where('key', $key)->first();
+                    if ($setting) {
+                        // Delete old file if exists
+                        if ($setting->value) {
+                            $oldRelativePath = str_replace('/storage/', '', $setting->value);
+                            if (Storage::disk('public')->exists($oldRelativePath)) {
+                                Storage::disk('public')->delete($oldRelativePath);
+                            }
+                        }
+                        $setting->update(['value' => '/storage/' . $path]);
+                    }
+                }
+            }
+
+            // Handle text/other settings
+            if (isset($validated['settings'])) {
+                foreach ($validated['settings'] as $key => $value) {
+                    $setting = Setting::where('key', $key)->first();
+                    if ($setting) {
+                        $setting->update(['value' => $value ?? '']);
+                    }
                 }
             }
 
@@ -71,7 +110,7 @@ class SettingsController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => __('settings.update_failed')]);
+                ->withErrors(['error' => __('settings.update_failed') . ' ' . $e->getMessage()]);
         }
     }
 
@@ -96,10 +135,6 @@ class SettingsController extends Controller
 
     private function normalizeGroup(?string $group): string
     {
-        if ($group === 'business') {
-            return 'general';
-        }
-
-        return in_array($group, self::GROUPS, true) ? $group : 'general';
+        return in_array($group, self::GROUPS, true) ? $group : 'dashboard';
     }
 }

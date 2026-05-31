@@ -10,6 +10,7 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'role:superadmin'])->prefix('users')->name('user.')->group(function () {
     Route::get('/', [UserController::class, 'index'])->name('index');
+    Route::get('/table', [UserController::class, 'usersTable'])->name('table');
     Route::get('/create', [UserController::class, 'create'])->name('create');
     Route::post('/', [UserController::class, 'store'])->name('store');
     Route::get('/{id}', [UserController::class, 'show'])->name('show');

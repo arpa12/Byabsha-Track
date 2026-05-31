@@ -16,7 +16,7 @@
         <div class="col-md-4">
             <div class="detail-box">
                 <span class="detail-label">Current Capital</span>
-                <span class="detail-value">৳ {{ $capital ? number_format($capital->total_capital, 2) : '0.00' }}</span>
+                <span class="detail-value">{{ currency_symbol() }} {{ $capital ? number_format($capital->total_capital, 2) : '0.00' }}</span>
                 <span class="detail-formula">&Sigma; (Stock Qty &times; Purchase Price)</span>
             </div>
         </div>
@@ -25,21 +25,21 @@
         <div class="col-md-4">
             <div class="detail-box">
                 <span class="detail-label">Today's Sales</span>
-                <span class="detail-value">৳ {{ number_format($todaySales, 2) }}</span>
+                <span class="detail-value">{{ currency_symbol() }} {{ number_format($todaySales, 2) }}</span>
                 <span class="detail-formula">&Sigma; (Qty &times; Sale Price) &mdash; today</span>
             </div>
         </div>
         <div class="col-md-4">
             <div class="detail-box">
                 <span class="detail-label">Today's Profit</span>
-                <span class="detail-value">৳ {{ number_format($todayProfit, 2) }}</span>
+                <span class="detail-value">{{ currency_symbol() }} {{ number_format($todayProfit, 2) }}</span>
                 <span class="detail-formula">&Sigma; (Sale &minus; Purchase) &times; Qty &mdash; today</span>
             </div>
         </div>
         <div class="col-md-4">
             <div class="detail-box">
                 <span class="detail-label">Monthly Profit</span>
-                <span class="detail-value">৳ {{ number_format($monthlyProfit, 2) }}</span>
+                <span class="detail-value">{{ currency_symbol() }} {{ number_format($monthlyProfit, 2) }}</span>
                 <span class="detail-formula">&Sigma; profit &mdash; this month</span>
             </div>
         </div>
@@ -61,7 +61,7 @@
     <ul class="list-group">
         @foreach($shop->sales->sortByDesc('sale_date')->take(5) as $sale)
             <li class="list-group-item">
-                <span class="fw-bold">{{ $sale->product->name ?? 'N/A' }}</span> - ৳{{ number_format($sale->total_amount, 2) }} <span class="text-muted">({{ $sale->sale_date }})</span>
+                <span class="fw-bold">{{ $sale->product->name ?? 'N/A' }}</span> - {{ currency_symbol() }}{{ number_format($sale->total_amount, 2) }} <span class="text-muted">({{ $sale->sale_date }})</span>
             </li>
         @endforeach
         @if($shop->sales->count() == 0)

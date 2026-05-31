@@ -345,5 +345,49 @@ test('admin can monitor who created product in stock overview list', function ()
     $response->assertSee('Shop Owner User');
 });
 
+test('admin can view products table for sales with yajra datatable structure and primary sale button', function () {
+    $this->withoutMiddleware([
+        \App\Http\Middleware\EnsureSubscriptionActive::class,
+        \App\Http\Middleware\CheckModuleAccess::class,
+    ]);
+
+    $superadmin = User::factory()->create(['role' => 'superadmin', 'name' => 'Admin User']);
+    $owner = User::factory()->create(['role' => 'owner', 'name' => 'Shop Owner User']);
+
+    $shop = Shop::create([
+        'name' => 'Sales Test Shop',
+        'user_id' => $owner->id
+    ]);
+
+    $product = Modules\Product\Models\Product::create([
+        'shop_id' => $shop->id,
+        'name' => 'Redesigned Sale Product',
+        'purchase_price' => 200,
+        'sale_price' => 250,
+        'stock_quantity' => 10,
+        'created_by' => $owner->id,
+    ]);
+
+    // Create a product batch for this product
+    $batch = Modules\Product\Models\ProductBatch::create([
+        'product_id' => $product->id,
+        'shop_id' => $shop->id,
+        'batch_code' => 'BATCH-SALES-XYZ',
+        'purchase_price' => 200,
+        'initial_quantity' => 10,
+        'remaining_quantity' => 10,
+        'batch_date' => now(),
+    ]);
+
+    $response = $this->actingAs($superadmin)
+        ->get(route('sale.products-table', ['shop_id' => $shop->id]), ['HTTP_X-Requested-With' => 'XMLHttpRequest']);
+
+    $response->assertStatus(200);
+    $response->assertSee('BATCH-SALES-XYZ');
+    $response->assertSee('batch-code-pill');
+    $response->assertSee('btn-sale-primary js-sale-btn');
+    $response->assertSee('btn-actions-dropdown');
+});
+
 
 

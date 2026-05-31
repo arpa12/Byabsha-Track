@@ -34,7 +34,7 @@
                 @if($currentPlan->isFree())
                   <span class="badge" style="background: rgba(22, 163, 74, 0.14); color: #166534; border: 1px solid rgba(22, 163, 74, 0.24); padding: 0.36rem 0.76rem; border-radius: 999px; font-size: 0.7rem; font-weight: 700;">{{ __('subscription::subscription.free') }}</span>
                 @else
-                  <small style="color: #64748b; font-weight: 600;">৳{{ number_format($currentPlan->price) }} / {{ $currentPlan->billing_cycle }}</small>
+                  <small style="color: #64748b; font-weight: 600;">{{ currency_symbol() }}{{ number_format($currentPlan->price) }} / {{ $currentPlan->billing_cycle }}</small>
                 @endif
               </div>
             </div>
@@ -111,7 +111,7 @@
                     <i class="bi bi-shop me-1 text-secondary"></i>{{ $req->shop->name ?? 'N/A' }}
                   </span>
                 </td>
-                <td>৳{{ number_format($req->amount) }}</td>
+                <td>{{ currency_symbol() }}{{ number_format($req->amount) }}</td>
                 <td>
                   <span class="badge bg-info-subtle text-info">
                     {{ $req->duration_months }} {{ $req->duration_months > 1 ? __('subscription::subscription.months') : __('subscription::subscription.month') }}

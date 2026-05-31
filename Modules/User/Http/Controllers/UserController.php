@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Modules\Branch\Models\Branch;
 use Modules\Shop\Models\Shop;
+use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
 {
@@ -94,8 +95,149 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::withTrashed()->orderBy('created_at', 'desc')->paginate(15);
-        return view('user::index', compact('users'));
+        return view('user::index');
+    }
+
+    /**
+     * Get users AJAX data for Yajra DataTable
+     */
+    public function usersTable(Request $request)
+    {
+        $query = User::withTrashed()->with(['assignedShop', 'assignedBranch']);
+
+        $customSearch = $request->input('custom_search');
+
+        // Apply filters
+        if ($request->filled('role')) {
+            $query->where('role', $request->input('role'));
+        }
+
+        if ($request->filled('status')) {
+            $status = $request->input('status');
+            if ($status === 'deactive') {
+                $query->onlyTrashed();
+            } elseif ($status === 'pending') {
+                $query->whereNull('deleted_at')
+                    ->where('role', 'manager')
+                    ->where(function ($q) {
+                        $q->whereNull('is_approved')
+                          ->orWhere('is_approved', false);
+                    });
+            } elseif ($status === 'active') {
+                $query->whereNull('deleted_at')
+                    ->where(function ($q) {
+                        $q->where('role', '!=', 'manager')
+                          ->orWhere('is_approved', true);
+                    });
+            }
+        }
+
+        return DataTables::eloquent($query)
+            ->filter(function ($q) use ($request, $customSearch) {
+                $datatableSearch = $request->input('search.value');
+                $searchTerm = trim($datatableSearch ?: $customSearch ?: '');
+                if ($searchTerm !== '') {
+                    $q->where(function ($subQ) use ($searchTerm) {
+                        $subQ->where('name', 'like', "%{$searchTerm}%")
+                             ->orWhere('email', 'like', "%{$searchTerm}%");
+                    });
+                }
+            })
+            ->editColumn('name', function ($user) {
+                $youHtml = '';
+                if ($user->id === auth()->id()) {
+                    $youHtml = ' <span class="you-chip ms-1">' . __('user.you') . '</span>';
+                }
+                return '<strong class="user-name">' . e($user->name) . '</strong>' . $youHtml;
+            })
+            ->editColumn('email', function ($user) {
+                return e($user->email);
+            })
+            ->editColumn('role', function ($user) {
+                $class = match($user->role) {
+                    'superadmin' => 'badge-superadmin',
+                    'manager' => 'badge-manager',
+                    default => 'badge-owner',
+                };
+                return '<span class="role-badge ' . $class . '">' . __('user.role_' . $user->role) . '</span>';
+            })
+            ->addColumn('shop_branch', function ($user) {
+                if ($user->role === 'manager') {
+                    $shopName = $user->assignedShop?->name;
+                    $branchName = $user->assignedBranch?->name;
+                    if ($shopName) {
+                        return e($shopName) . ($branchName ? ' (' . e($branchName) . ')' : '');
+                    }
+                }
+                return '-';
+            })
+            ->editColumn('created_at', function ($user) {
+                return $user->created_at ? $user->created_at->format('M d, Y') : '-';
+            })
+            ->addColumn('status', function ($user) {
+                if ($user->trashed()) {
+                    return '<span class="status-badge status-deactive">' . __('user.deactive') . '</span>';
+                } elseif ($user->isPendingApproval()) {
+                    return '<span class="status-badge status-pending"><i class="bi bi-clock-history me-1"></i>' . __('user.pending_approval') . '</span>';
+                } else {
+                    return '<span class="status-badge status-active">' . __('user.active') . '</span>';
+                }
+            })
+            ->addColumn('actions', function ($user) {
+                $showUrl = route('user.show', $user->id);
+                $editUrl = route('user.edit', $user->id);
+                $activateUrl = route('user.activate', $user->id);
+                $deactivateUrl = route('user.deactivate', $user->id);
+                $approveUrl = route('user.approve.form', $user->id);
+                
+                $csrfToken = csrf_token();
+                $confirmDeactivate = __('user.confirm_deactivate');
+                $confirmActivate = __('user.confirm_activate');
+                $deactivateLabel = __('user.deactivate');
+                $activateLabel = __('user.activate');
+                $editLabel = __('app.edit');
+                $approveLabel = __('user.approve_title');
+
+                // View Details
+                $html = '<a href="' . $showUrl . '" class="btn btn-sm btn-row-action btn-row-view" title="' . __('app.view') . '"><i class="bi bi-eye"></i></a> ';
+
+                // Dropdown trigger
+                $html .= '<div class="d-inline-block dropdown">';
+                $html .= '<button class="btn btn-sm btn-row-action dropdown-toggle no-caret" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border-color: #d8e4ee; background: #f8fafc;"><i class="bi bi-three-dots-vertical"></i></button>';
+                $html .= '<ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius:12px; border: 1px solid #e2edf6; font-size: 0.85rem;">';
+
+                if ($user->trashed()) {
+                    $html .= '<li>';
+                    $html .= '<form action="' . $activateUrl . '" method="POST" onsubmit="return confirm(\'' . e($confirmActivate) . '\')">';
+                    $html .= '<input type="hidden" name="_token" value="' . $csrfToken . '">';
+                    $html .= '<button type="submit" class="dropdown-item text-success"><i class="bi bi-arrow-counterclockwise me-2"></i>' . $activateLabel . '</button>';
+                    $html .= '</form>';
+                    $html .= '</li>';
+                } else {
+                    if ($user->isPendingApproval()) {
+                        $html .= '<li><a class="dropdown-item text-warning" href="' . $approveUrl . '"><i class="bi bi-person-check me-2"></i>' . $approveLabel . '</a></li>';
+                    } else {
+                        $html .= '<li><a class="dropdown-item text-primary" href="' . $editUrl . '"><i class="bi bi-pencil me-2"></i>' . $editLabel . '</a></li>';
+                    }
+
+                    if ($user->id !== auth()->id()) {
+                        $html .= '<li><hr class="dropdown-divider" style="border-color: #e4edf6;"></li>';
+                        $html .= '<li>';
+                        $html .= '<form action="' . $deactivateUrl . '" method="POST" onsubmit="return confirm(\'' . e($confirmDeactivate) . '\')">';
+                        $html .= '<input type="hidden" name="_token" value="' . $csrfToken . '">';
+                        $html .= '<button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i>' . $deactivateLabel . '</button>';
+                        $html .= '</form>';
+                        $html .= '</li>';
+                    }
+                }
+
+                $html .= '</ul>';
+                $html .= '</div>';
+
+                return $html;
+            })
+            ->rawColumns(['name', 'role', 'status', 'actions'])
+            ->make(true);
     }
 
     /**

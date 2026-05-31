@@ -103,12 +103,13 @@ class ProductController extends Controller
                     return $product->creator?->name ?? '-';
                 })
                 ->editColumn('purchase_price', function ($product) {
-                    return '৳' . number_format($product->purchase_price, 2);
+                    return currency_symbol() . number_format($product->purchase_price, 2);
                 })
                 ->editColumn('stock_quantity', function ($product) {
-                    if ($product->stock_quantity <= 5) {
+                    $lowStockAlert = (int) \Modules\Settings\Models\Setting::get('low_stock_alert', 5);
+                    if ($product->stock_quantity <= $lowStockAlert) {
                         return '<span class="stock-badge stock-low">' . $product->stock_quantity . '</span>';
-                    } elseif ($product->stock_quantity <= 20) {
+                    } elseif ($product->stock_quantity <= ($lowStockAlert * 4)) {
                         return '<span class="stock-badge stock-mid">' . $product->stock_quantity . '</span>';
                     } else {
                         return '<span class="stock-badge stock-high">' . $product->stock_quantity . '</span>';

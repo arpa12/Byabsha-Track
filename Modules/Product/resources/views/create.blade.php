@@ -288,7 +288,7 @@
                                 {{ __('product.purchase_price') }} <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text">৳</span>
+                                <span class="input-group-text">{{ currency_symbol() }}</span>
                                 <input type="number"
                                        class="form-control @error('purchase_price') is-invalid @enderror"
                                        id="purchase_price"

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 return [
     'page_title'       => 'Byabsha Track - Smart Business Tracking System',
@@ -68,4 +68,14 @@ return [
     'footer_built'     => 'Built with Laravel & Bootstrap 5 - Modular Business Tracking System',
     'footer_developer' => 'Developed by Arpa Nihan',
     'footer_copyright' => 'Byabsha Track. All rights reserved.',
+
+    // Extended modules
+    'modules_count'    => '17+',
+    'feat7_title'      => 'Damage & Loss Tracking',
+    'feat7_desc'       => 'Record and monitor product damages or losses. Keep stock levels and profit calculations 100% accurate.',
+    'feat8_title'      => 'Multi-Branch Hierarchy',
+    'feat8_desc'       => 'Establish multiple branches under each shop. Delegate management tasks and view branch-level reports.',
+    'feat9_title'      => 'Subscriptions & RBAC',
+    'feat9_desc'       => 'Manage flexible subscription plans. Role-Based Access Control (Owner, Manager, Staff) keeps operations secure.',
 ];
+

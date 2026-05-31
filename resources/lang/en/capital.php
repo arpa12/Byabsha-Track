@@ -30,4 +30,9 @@ return [
     // Empty state
     'no_capitals'         => 'No Capital Records Found',
     'no_capitals_sub'     => 'Click "Update All Capitals" to calculate and create capital records for all shops.',
+
+    // Search
+    'search_placeholder'  => 'Search by shop name or product...',
+    'no_search_results'   => 'No Matching Shop Capitals',
+    'no_search_results_sub'=> 'Try searching for a different shop name or product.',
 ];

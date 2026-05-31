@@ -45,6 +45,11 @@ class Shop extends TenantModel
         return $this->hasMany(Product::class);
     }
 
+    public function batches()
+    {
+        return $this->hasMany(\Modules\Product\Models\ProductBatch::class);
+    }
+
     public function sales()
     {
         return $this->hasMany(Sale::class);

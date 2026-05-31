@@ -50,7 +50,7 @@
                             </div>
                             <div class="mt-4">
                                 <span class="fs-2 fw-black" style="font-family: 'Space Grotesk', sans-serif;">
-                                    {{ $plan->price > 0 ? '৳' . number_format($plan->price, 0) : 'Free' }}
+                                    {{ $plan->price > 0 ? currency_symbol() . number_format($plan->price, 0) : 'Free' }}
                                 </span>
                                 @if($plan->price > 0)
                                     <span class="text-white-50 small">/ {{ $plan->duration_days }} Days</span>

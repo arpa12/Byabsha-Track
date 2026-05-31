@@ -29,6 +29,7 @@ class StockController extends Controller
 
         if ($request->ajax()) {
             $supportsModelName = Schema::hasColumn('products', 'model_name');
+            $lowStockAlert = (int) \Modules\Settings\Models\Setting::get('low_stock_alert', 5);
 
             $query = Product::with(['shop', 'creator:id,name', 'dynamicValues.dynamicField'])
                 ->whereIn('shop_id', $allowedShopIds);
@@ -75,10 +76,10 @@ class StockController extends Controller
                 ->editColumn('sale_price', function ($product) {
                     return number_format($product->sale_price, 2);
                 })
-                ->editColumn('stock_quantity', function ($product) {
+                ->editColumn('stock_quantity', function ($product) use ($lowStockAlert) {
                     if ($product->stock_quantity <= 0) {
                         return '<span class="status-pill status-pill-danger"><span class="status-indicator"></span>' . __('stock::stock.out') . '</span>';
-                    } elseif ($product->stock_quantity <= 5) {
+                    } elseif ($product->stock_quantity <= $lowStockAlert) {
                         return '<span class="status-pill status-pill-warning"><span class="status-indicator"></span>' . $product->stock_quantity . '</span>';
                     } else {
                         return '<span class="status-pill status-pill-success"><span class="status-indicator"></span>' . $product->stock_quantity . '</span>';

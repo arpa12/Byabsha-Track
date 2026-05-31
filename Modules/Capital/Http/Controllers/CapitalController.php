@@ -46,6 +46,6 @@ class CapitalController extends Controller
         $totalCapital = $this->capitalService->updateShopCapital($shopId);
 
         return redirect()->route('capital.index')
-            ->with('success', "Shop capital updated successfully! New capital: ৳" . number_format($totalCapital, 2));
+            ->with('success', "Shop capital updated successfully! New capital: " . currency_symbol() . number_format($totalCapital, 2));
     }
 }

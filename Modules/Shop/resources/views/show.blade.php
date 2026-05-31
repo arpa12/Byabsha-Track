@@ -225,8 +225,8 @@
                             <td><strong>{{ $product->name }}</strong></td>
                             <td>{{ $product->category }}</td>
                             <td>{{ $product->brand }}</td>
-                            <td>৳{{ number_format($product->purchase_price, 2) }}</td>
-                            <td>৳{{ number_format($product->sale_price, 2) }}</td>
+                            <td>{{ currency_symbol() }}{{ number_format($product->purchase_price, 2) }}</td>
+                            <td>{{ currency_symbol() }}{{ number_format($product->sale_price, 2) }}</td>
                             <td>
                                 <span class="badge {{ $product->stock_quantity < 10 ? 'bg-danger' : 'bg-info' }}">
                                     {{ $product->stock_quantity }}

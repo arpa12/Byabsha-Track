@@ -183,7 +183,9 @@ class SaleController extends Controller
                 return $batch->product_category ?? '-';
             })
             ->addColumn('batch_label', function (ProductBatch $batch) {
-                return $batch->batch_code . ' (' . optional($batch->batch_date)->format('d M Y') . ')';
+                $code = '<span class="batch-code-pill"><i class="bi bi-qr-code"></i> ' . e($batch->batch_code) . '</span>';
+                $date = $batch->batch_date ? '<div class="batch-date-sub text-muted small mt-1"><i class="bi bi-calendar3"></i> ' . e($batch->batch_date->format('d M Y')) . '</div>' : '';
+                return '<div class="batch-info-wrapper">' . $code . $date . '</div>';
             })
             ->addColumn('attribute_summary', function (ProductBatch $batch) {
                 return $this->buildSaleAttributeSummary($batch);
@@ -213,7 +215,7 @@ class SaleController extends Controller
                 ]);
                 $canSell = $batch->remaining_quantity > 0;
 
-                $saleButton = '<button type="button" class="btn btn-sm btn-outline-success js-sale-btn" '
+                $saleButton = '<button type="button" class="btn btn-sm btn-sale-primary js-sale-btn" '
                     . 'data-product-id="' . e((string) $batch->product_id) . '" '
                     . 'data-batch-id="' . e((string) $batch->id) . '" '
                     . 'data-batch-code="' . e((string) $batch->batch_code) . '" '
@@ -229,33 +231,37 @@ class SaleController extends Controller
                     . 'data-free-service-terms="' . e((string) ($batch->free_service_terms ?? '')) . '" '
                     . ($canSell ? '' : 'disabled ')
                     . 'title="Sale">'
-                    . '<i class="bi bi-cart-plus"></i> ' . e(__('sale.sale_button'))
+                    . '<i class="bi bi-cart-plus-fill"></i> ' . e(__('sale.sale_button'))
                     . '</button>';
 
                 $deleteForm = '<form action="' . e($deleteUrl) . '" method="POST" class="d-inline" '
                     . 'onsubmit="return confirm(\'' . e(__('product.confirm_delete')) . '\')">'
                     . csrf_field()
                     . method_field('DELETE')
-                    . '<button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">'
-                    . '<i class="bi bi-trash"></i>'
+                    . '<button type="submit" class="dropdown-item text-danger">'
+                    . '<i class="bi bi-trash me-2"></i>' . e(__('app.delete'))
                     . '</button>'
                     . '</form>';
 
-                return '<div class="d-flex gap-1 justify-content-center">'
-                    . '<a href="' . e($viewSalesUrl) . '" class="btn btn-sm btn-outline-info" title="' . e(__('sale.view_all_sales')) . '">'
-                        . '<i class="bi bi-eye"></i>'
-                    . '</a>'
-                    . '<a href="' . e($createUrl) . '" class="btn btn-sm btn-outline-primary" title="Create">'
-                    . '<i class="bi bi-plus-circle"></i>'
-                    . '</a>'
-                    . '<a href="' . e($editUrl) . '" class="btn btn-sm btn-outline-secondary" title="Edit">'
-                    . '<i class="bi bi-pencil"></i>'
-                    . '</a>'
-                    . $deleteForm
+                $dropdown = '<div class="dropdown d-inline-block">'
+                    . '<button class="btn btn-sm btn-outline-secondary dropdown-toggle btn-actions-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">'
+                    . '<i class="bi bi-three-dots-vertical"></i>'
+                    . '</button>'
+                    . '<ul class="dropdown-menu dropdown-menu-end shadow-sm border-light">'
+                    . '<li><a class="dropdown-item" href="' . e($viewSalesUrl) . '"><i class="bi bi-eye me-2"></i>' . e(__('sale.view_all_sales')) . '</a></li>'
+                    . '<li><a class="dropdown-item" href="' . e($createUrl) . '"><i class="bi bi-plus-circle me-2"></i>' . e(__('app.create')) . '</a></li>'
+                    . '<li><a class="dropdown-item" href="' . e($editUrl) . '"><i class="bi bi-pencil me-2"></i>' . e(__('app.edit')) . '</a></li>'
+                    . '<li><hr class="dropdown-divider"></li>'
+                    . '<li>' . $deleteForm . '</li>'
+                    . '</ul>'
+                    . '</div>';
+
+                return '<div class="d-flex gap-2 justify-content-center align-items-center">'
                     . $saleButton
+                    . $dropdown
                     . '</div>';
             })
-            ->rawColumns(['actions'])
+            ->rawColumns(['actions', 'batch_label'])
             ->toJson();
     }
 

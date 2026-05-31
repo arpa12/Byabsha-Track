@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Modules\Product\Models\ProductDynamicValue;
+use Modules\Restock\Models\Restock;
+use Yajra\DataTables\Facades\DataTables;
 
 class RestockController extends Controller
 {
@@ -24,22 +26,128 @@ class RestockController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $allowedShopIds = $user->accessibleShopIds();
-
+        $shops = Shop::forUser($user)->get();
         $filters = $request->only(['shop_id', 'date_from', 'date_to']);
 
-        // Prevent filtering by a shop the user doesn't own
-        if (!empty($filters['shop_id']) && !in_array((int) $filters['shop_id'], $allowedShopIds)) {
-            abort(403, 'You do not have access to this shop.');
+        return view('restock::index', compact('shops', 'filters'));
+    }
+
+    public function restocksTable(Request $request)
+    {
+        $user = auth()->user();
+        $allowedShopIds = $user->accessibleShopIds();
+
+        $query = Restock::query()
+            ->join('shops', 'shops.id', '=', 'restocks.shop_id')
+            ->join('products', 'products.id', '=', 'restocks.product_id')
+            ->leftJoin('product_batches', 'product_batches.id', '=', 'restocks.product_batch_id')
+            ->whereIn('restocks.shop_id', $allowedShopIds)
+            ->select([
+                'restocks.id',
+                'restocks.product_id',
+                'restocks.shop_id',
+                'restocks.quantity',
+                'restocks.purchase_price_per_unit',
+                'restocks.total_cost',
+                'restocks.restock_date',
+                'restocks.note',
+                'restocks.product_batch_id',
+                'shops.name as shop_name',
+                'products.name as product_name',
+                'products.stock_quantity as product_stock_quantity',
+                'product_batches.batch_code as batch_code',
+                'product_batches.attribute_values as batch_attribute_values',
+            ]);
+
+        $shopId = $request->input('shop_id');
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
+
+        if ($shopId) {
+            $query->where('restocks.shop_id', $shopId);
+        }
+        if ($dateFrom) {
+            $query->whereDate('restocks.restock_date', '>=', $dateFrom);
+        }
+        if ($dateTo) {
+            $query->whereDate('restocks.restock_date', '<=', $dateTo);
         }
 
-        // Inject allowed shop IDs so the service always scopes correctly
-        $filters['shop_ids'] = $allowedShopIds;
+        return DataTables::eloquent($query)
+            ->filter(function ($q) {
+                $search = request('search')['value'] ?? null;
+                if ($search) {
+                    $q->where(function ($sub) use ($search) {
+                        $sub->where('products.name', 'like', '%' . $search . '%')
+                           ->orWhere('product_batches.batch_code', 'like', '%' . $search . '%')
+                           ->orWhere('shops.name', 'like', '%' . $search . '%')
+                           ->orWhere('restocks.note', 'like', '%' . $search . '%');
+                    });
+                }
+            }, false)
+            ->editColumn('restock_date', function (Restock $restock) {
+                return $restock->restock_date->format('d M Y');
+            })
+            ->addColumn('shop_name_label', function (Restock $restock) {
+                return '<span class="shop-pill">' . e($restock->shop_name ?? 'Deleted shop') . '</span>';
+            })
+            ->addColumn('batch_label', function (Restock $restock) {
+                return e($restock->batch_code ?? '-');
+            })
+            ->addColumn('attribute_summary', function (Restock $restock) {
+                $attrs = $restock->batch_attribute_values;
+                if (is_string($attrs)) {
+                    $attrs = json_decode($attrs, true);
+                }
+                if (!is_array($attrs) || empty($attrs)) {
+                    return '-';
+                }
+                return collect($attrs)
+                    ->map(fn($item) => ($item['label'] ?? $item['field_key'] ?? 'Attribute') . ': ' . ($item['value'] ?? ''))
+                    ->implode(' | ');
+            })
+            ->editColumn('quantity', function (Restock $restock) {
+                return '<span class="qty-pill">+' . number_format($restock->quantity) . '</span>';
+            })
+            ->editColumn('purchase_price_per_unit', function (Restock $restock) {
+                return number_format($restock->purchase_price_per_unit, 2);
+            })
+            ->editColumn('total_cost', function (Restock $restock) {
+                return '<strong>' . number_format($restock->total_cost, 2) . '</strong>';
+            })
+            ->addColumn('current_stock_label', function (Restock $restock) {
+                $stock = $restock->product_stock_quantity;
+                $class = $stock > 0 ? 'stock-pill-ok' : 'stock-pill-out';
+                return '<span class="stock-pill ' . $class . '">' . ($stock !== null ? number_format($stock) : 'N/A') . '</span>';
+            })
+            ->editColumn('note', function (Restock $restock) {
+                if ($restock->note) {
+                    return '<span class="text-muted small" title="' . e($restock->note) . '">' . e(\Str::limit($restock->note, 30)) . '</span>';
+                }
+                return '<span class="text-muted">—</span>';
+            })
+            ->addColumn('actions', function (Restock $restock) {
+                $batchUrl = route('product.batches', $restock->product_id);
+                $editUrl = route('restock.edit', $restock->id);
+                $deleteUrl = route('restock.destroy', $restock->id);
+                $confirmMsg = __('restock.confirm_delete');
 
-        $restocks = $this->restockService->getRestocks($filters);
-        $shops = Shop::forUser($user)->get();
+                $deleteForm = '<form action="' . e($deleteUrl) . '" method="POST" class="d-inline" onsubmit="return confirm(\'' . e($confirmMsg) . '\')">'
+                    . csrf_field()
+                    . method_field('DELETE')
+                    . '<button type="submit" class="btn btn-sm btn-row-action btn-row-delete" title="' . e(__('app.delete')) . '">'
+                    . '<i class="bi bi-trash"></i>'
+                    . '</button>'
+                    . '</form>';
 
-        return view('restock::index', compact('restocks', 'shops', 'filters'));
+                return '<div class="d-flex gap-1 justify-content-end">'
+                    . '<a href="' . e($batchUrl) . '" class="btn btn-sm btn-row-action" style="color:#0f766e;border-color:rgba(15,118,110,.35);background:#fff;" title="View Batch Tracker"><i class="bi bi-layers"></i></a>'
+                    . '<a href="' . e($editUrl) . '" class="btn btn-sm btn-row-action btn-row-edit" title="' . e(__('app.edit')) . '"><i class="bi bi-pencil"></i></a>'
+                    . $deleteForm
+                    . '</div>';
+            })
+            ->rawColumns(['shop_name_label', 'quantity', 'total_cost', 'current_stock_label', 'note', 'actions'])
+            ->toJson();
     }
 
     public function create()

@@ -4,66 +4,402 @@
 
 @push('styles')
 <style>
-    .shop-switcher .btn {
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+    :root {
+        --sale-ink-900: #0f172a;
+        --sale-ink-700: #334155;
+        --sale-ink-500: #64748b;
+        --sale-brand: #0f766e;
+        --sale-brand-deep: #155e75;
+        --sale-line: #d8e4ee;
+    }
+
+    .sale-shell {
+        position: relative;
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+        color: var(--sale-ink-900);
+    }
+
+    .display-font {
+        font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+        letter-spacing: -0.02em;
+    }
+
+    .sale-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(15, 118, 110, 0.08);
+        color: var(--sale-brand);
+        border: 1px solid rgba(15, 118, 110, 0.18);
         border-radius: 999px;
+        padding: 0.3rem 0.8rem;
+        font-size: 0.74rem;
         font-weight: 700;
     }
 
-    .shop-switcher .btn.active {
-        background: #0f766e;
-        color: #fff;
-        border-color: #0f766e;
+    .page-title {
+        font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+        font-weight: 800;
+        color: var(--sale-ink-900);
     }
 
+    .page-subtitle {
+        color: var(--sale-ink-500);
+        font-size: 0.88rem;
+    }
+
+    /* Actions Header */
+    .btn-new-sale {
+        background: linear-gradient(140deg, var(--sale-brand), var(--sale-brand-deep));
+        color: #fff;
+        border: 0;
+        border-radius: 12px;
+        padding: 0.52rem 1.1rem;
+        font-size: 0.84rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 8px 20px rgba(15, 118, 110, 0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn-new-sale:hover {
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 12px 24px rgba(15, 118, 110, 0.28);
+    }
+
+    /* Shop switcher segmented pill buttons */
+    .shop-switcher-card {
+        background: #ffffff;
+        border: 1px solid var(--sale-line);
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+    }
+
+    .shop-switcher {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .shop-tab-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.48rem 0.95rem;
+        border-radius: 10px;
+        border: 1px solid #d8e4ee;
+        background: #ffffff;
+        color: var(--sale-ink-700);
+        font-weight: 600;
+        font-size: 0.84rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .shop-tab-btn:hover {
+        background: #f8fafc;
+        color: var(--sale-brand);
+        border-color: #cbd5e1;
+    }
+
+    .shop-tab-btn.active {
+        background: var(--sale-brand);
+        color: #ffffff;
+        border-color: var(--sale-brand);
+        box-shadow: 0 4px 10px rgba(15, 118, 110, 0.18);
+    }
+
+    /* Single-row Filter Toolbar */
+    .filter-toolbar {
+        background: #ffffff;
+        border: 1px solid var(--sale-line);
+        border-radius: 14px;
+        padding: 0.75rem 1rem;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        color: var(--sale-ink-500);
+        font-size: 0.9rem;
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    .filter-search-control {
+        padding-left: 36px !important;
+        border-radius: 10px !important;
+        border: 1px solid #cedce9 !important;
+        background-color: #f8fafc !important;
+        font-size: 0.88rem !important;
+        height: 38px !important;
+        color: var(--sale-ink-900) !important;
+    }
+
+    .filter-search-control:focus {
+        background-color: #ffffff !important;
+        border-color: var(--sale-brand) !important;
+        box-shadow: 0 0 0 0.15rem rgba(15, 118, 110, 0.15) !important;
+    }
+
+    .btn-filter-submit {
+        background: var(--sale-brand);
+        color: #ffffff;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 0.5rem 1.25rem;
+        border: 1px solid var(--sale-brand);
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+
+    .btn-filter-submit:hover {
+        background: var(--sale-brand-deep);
+        border-color: var(--sale-brand-deep);
+        color: #ffffff;
+    }
+
+    /* Product Table Wrap & Row Height */
     .product-table-wrap {
         background: #fff;
-        border: 1px solid #d8e4ee;
+        border: 1px solid var(--sale-line);
         border-radius: 16px;
         box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
         overflow: hidden;
     }
 
     #shopProductsTable thead th {
-        white-space: nowrap;
-        font-size: 0.78rem;
-        text-transform: uppercase;
+        background: #f8fafc;
+        border-bottom: 1px solid var(--sale-line) !important;
+        color: var(--sale-ink-700);
+        font-size: 0.72rem;
+        font-weight: 700;
         letter-spacing: 0.05em;
+        text-transform: uppercase;
+        padding: 0.8rem 1rem;
+        white-space: nowrap;
     }
 
-    .profit-positive {
+    #shopProductsTable tbody td {
+        border-bottom: 1px solid #f1f5f9 !important;
+        padding: 0.5rem 1rem !important; /* Reduced row height! */
+        font-size: 0.85rem;
+        vertical-align: middle;
+    }
+
+    #shopProductsTable tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    /* Attributes Chips list */
+    .attribute-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        max-width: 220px;
+        margin: 0;
+        padding: 0;
+    }
+
+    .custom-attr-badge {
+        display: inline-flex;
+        align-items: center;
+        background-color: #f1f5f9;
+        color: var(--sale-ink-700);
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        padding: 0.1rem 0.35rem;
+        font-size: 0.68rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .custom-attr-badge strong {
+        font-weight: 700;
+        color: var(--sale-ink-900);
+    }
+
+    /* Batch presentation wrapper */
+    .batch-info-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    .batch-code-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        border-radius: 6px;
+        padding: 0.15rem 0.45rem;
+        font-size: 0.76rem;
+        font-weight: 700;
+        background: #f1f5f9;
+        color: var(--sale-ink-900);
+        border: 1px solid #e2e8f0;
+        align-self: start;
+        white-space: nowrap;
+    }
+
+    .batch-date-sub {
+        font-size: 0.68rem;
+        color: var(--sale-ink-500);
+    }
+
+    /* Status badges for Stock */
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border-radius: 999px;
+        padding: 0.15rem 0.6rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        border-width: 1px;
+        border-style: solid;
+        white-space: nowrap;
+    }
+
+    .status-indicator {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-pill-success {
+        background: rgba(16, 185, 129, 0.08);
         color: #047857;
-        font-weight: 700;
+        border-color: rgba(16, 185, 129, 0.2);
     }
 
-    .profit-negative {
+    .status-pill-success .status-indicator {
+        background-color: #10b981;
+    }
+
+    .status-pill-warning {
+        background: rgba(245, 158, 11, 0.08);
+        color: #b45309;
+        border-color: rgba(245, 158, 11, 0.2);
+    }
+
+    .status-pill-warning .status-indicator {
+        background-color: #f59e0b;
+    }
+
+    .status-pill-danger {
+        background: rgba(239, 68, 68, 0.08);
         color: #b91c1c;
-        font-weight: 700;
+        border-color: rgba(239, 68, 68, 0.2);
     }
 
-    .profit-neutral {
-        color: #475569;
+    .status-pill-danger .status-indicator {
+        background-color: #ef4444;
+        animation: statusPulse 2s infinite ease-in-out;
+    }
+
+    @keyframes statusPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+    }
+
+    /* Profit and Loss Badges */
+    .profit-badge {
+        display: inline-flex;
+        align-items: center;
+        font-size: 0.78rem;
         font-weight: 700;
+        padding: 0.22rem 0.55rem;
+        border-radius: 6px;
+        border-width: 1px;
+        border-style: solid;
+        white-space: nowrap;
+    }
+
+    .profit-badge-positive {
+        background: rgba(16, 185, 129, 0.08);
+        color: #047857;
+        border-color: rgba(16, 185, 129, 0.2);
+    }
+
+    .profit-badge-negative {
+        background: rgba(220, 38, 38, 0.08);
+        color: #b91c1c;
+        border-color: rgba(220, 38, 38, 0.2);
+    }
+
+    .profit-badge-neutral {
+        background: #f1f5f9;
+        color: #475569;
+        border-color: #cbd5e1;
+    }
+
+    /* Actions styling */
+    .btn-sale-primary {
+        background-color: var(--sale-brand);
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 0.8rem;
+        border-radius: 8px;
+        padding: 0.35rem 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border: 1px solid var(--sale-brand);
+        box-shadow: 0 4px 10px rgba(15, 118, 110, 0.15);
+        transition: all 0.2s;
+    }
+
+    .btn-sale-primary:hover:not(:disabled) {
+        background-color: var(--sale-brand-deep);
+        border-color: var(--sale-brand-deep);
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(15, 118, 110, 0.22);
+    }
+
+    .btn-sale-primary:disabled {
+        background-color: #cbd5e1;
+        border-color: #cbd5e1;
+        color: #94a3b8;
+        box-shadow: none;
+        cursor: not-allowed;
+    }
+
+    .btn-actions-dropdown {
+        border-radius: 8px !important;
+        padding: 0.35rem 0.5rem !important;
+        border: 1px solid #cedce9 !important;
+        background-color: #ffffff;
+    }
+
+    .btn-actions-dropdown:hover {
+        background-color: #f8fafc;
+        border-color: #94a3b8 !important;
     }
 
     .stock-hint {
         font-size: 0.86rem;
         color: #64748b;
-    }
-
-    .attribute-list {
-        display: grid;
-        gap: 0.2rem;
-        line-height: 1.35;
-        word-break: break-word;
-    }
-
-    .attribute-item-label {
-        font-weight: 700;
-        color: #0f172a;
-    }
-
-    .attribute-item-value {
-        color: #334155;
     }
 </style>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
@@ -71,35 +407,39 @@
 
 @section('content')
 <div class="sale-shell">
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 sale-header">
+    {{-- Header Section --}}
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 sale-header">
         <div>
-            <span class="sale-kicker"><i class="bi bi-receipt-cutoff"></i>{{ __('sale.title') }}</span>
-            <h1 class="page-title display-font">{{ __('sale.shop_products_title') }}</h1>
+            <span class="sale-kicker"><i class="bi bi-receipt-cutoff"></i> {{ __('sale.title') }}</span>
+            <h1 class="page-title display-font mb-1"><i class="bi bi-cart-check"></i> {{ __('sale.shop_products_title') }}</h1>
             <p class="page-subtitle mb-0">{{ __('sale.shop_products_subtitle') }}</p>
         </div>
         <div class="d-flex gap-2 flex-wrap">
-            <a href="{{ route('sale.warranties.index') }}" class="btn btn-outline-secondary btn-sm">
+            <a href="{{ route('sale.warranties.index') }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
                 <i class="bi bi-shield-check"></i> {{ __('sale.warranty_title') }}
             </a>
-            <a href="{{ route('sale.exchanges.index') }}" class="btn btn-outline-secondary btn-sm">
+            <a href="{{ route('sale.exchanges.index') }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
                 <i class="bi bi-arrow-left-right"></i> {{ __('sale.exchange_title') }}
             </a>
-            <a href="{{ route('sale.create') }}" class="btn-new-sale">
+            <a href="{{ route('sale.create') }}" class="btn-new-sale shadow-sm">
                 <i class="bi bi-plus-circle"></i> {{ __('sale.new_sale') }}
             </a>
         </div>
     </div>
 
-    <div class="content-card mb-3 p-3">
-        <div class="d-flex flex-wrap align-items-center gap-2 shop-switcher" id="shopSwitcher">
+    {{-- Shop Tabs Selector --}}
+    <div class="shop-switcher-card mb-4 p-3">
+        <div class="selected-shop-title mb-2 text-muted small fw-bold text-uppercase" style="letter-spacing: 0.05em;">{{ __('sale.col_shop') }}</div>
+        <div class="d-flex flex-wrap gap-2 shop-switcher" id="shopSwitcher">
             @foreach($shops as $shop)
                 <button
                     type="button"
-                    class="btn btn-outline-secondary btn-sm {{ (int) $selectedShopId === (int) $shop->id ? 'active' : '' }}"
+                    class="shop-tab-btn {{ (int) $selectedShopId === (int) $shop->id ? 'active' : '' }}"
                     data-shop-id="{{ $shop->id }}"
                     data-shop-name="{{ $shop->name }}"
                 >
-                    {{ $shop->name }}
+                    <i class="bi bi-shop"></i>
+                    <span>{{ $shop->name }}</span>
                 </button>
             @endforeach
         </div>
@@ -108,23 +448,49 @@
         @endif
     </div>
 
+    {{-- Single-row Filter Toolbar --}}
+    <div class="filter-toolbar mb-4 shadow-sm">
+        <form class="m-0 w-100" id="salesFilterForm">
+            <div class="d-flex align-items-center gap-2">
+                <div class="flex-grow-1">
+                    <div class="search-input-wrapper">
+                        <i class="bi bi-search search-icon"></i>
+                        <input
+                            type="text"
+                            id="search"
+                            class="form-control filter-search-control"
+                            placeholder="Search by product name, batch code, category, or attributes...">
+                    </div>
+                </div>
+                <div class="flex-shrink-0 d-flex gap-2">
+                    <button type="submit" class="btn btn-filter-submit">
+                        <i class="bi bi-funnel"></i> <span class="d-none d-sm-inline">{{ __('app.apply_filters') }}</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {{-- Products Table Card --}}
     <div class="product-table-wrap p-3">
-        <table id="shopProductsTable" class="table table-striped table-bordered mb-0" style="width:100%">
-            <thead>
-                <tr>
-                    <th>{{ __('sale.table_product_name') }}</th>
-                    <th>{{ __('sale.table_batch') }}</th>
-                    <th>{{ __('sale.table_attributes') }}</th>
-                    <th>{{ __('sale.table_buying_price') }}</th>
-                    <th>{{ __('sale.table_category') }}</th>
-                    <th>{{ __('sale.table_stock') }}</th>
-                    <th>{{ __('sale.table_profit') }}</th>
-                    <th>{{ __('sale.table_loss') }}</th>
-                    <th>{{ __('sale.col_actions') }}</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div class="table-responsive">
+            <table id="shopProductsTable" class="table align-middle mb-0 w-100">
+                <thead>
+                    <tr>
+                        <th>{{ __('sale.table_product_name') }}</th>
+                        <th>{{ __('sale.table_batch') }}</th>
+                        <th>{{ __('sale.table_attributes') }}</th>
+                        <th class="text-end">{{ __('sale.table_buying_price') }}</th>
+                        <th>{{ __('sale.table_category') }}</th>
+                        <th class="text-center">{{ __('sale.table_stock') }}</th>
+                        <th class="text-end">{{ __('sale.table_profit') }}</th>
+                        <th class="text-end">{{ __('sale.table_loss') }}</th>
+                        <th class="text-center">{{ __('sale.col_actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -299,7 +665,7 @@
         return '<div class="attribute-list">' + visibleItems.map((item) => {
             const label = escapeHtml(item.label || item.field_key || 'Attribute');
             const value = escapeHtml(item.value || '');
-            return '<div><span class="attribute-item-label">' + label + ':</span> <span class="attribute-item-value">' + value + '</span></div>';
+            return '<span class="custom-attr-badge" title="' + label + ': ' + value + '"><strong>' + label + ':</strong> ' + value + '</span>';
         }).join('') + '</div>';
     }
 
@@ -307,10 +673,12 @@
         processing: true,
         serverSide: true,
         searching: true,
+        dom: 'rtip',
         ajax: {
             url: productsTableUrl,
             data: function (d) {
                 d.shop_id = selectedShopId;
+                d.search = { value: $('#search').val() };
             }
         },
         columns: [
@@ -330,7 +698,24 @@
             },
             { data: 'purchase_price', name: 'product_batches.purchase_price', className: 'text-end' },
             { data: 'category_name', name: 'products.category' },
-            { data: 'stock_quantity', name: 'product_batches.remaining_quantity', className: 'text-end' },
+            {
+                data: 'stock_quantity',
+                name: 'product_batches.remaining_quantity',
+                className: 'text-center',
+                render: function (data, type) {
+                    const stock = parseInt(data || 0);
+                    if (type !== 'display') {
+                        return stock;
+                    }
+                    if (stock <= 0) {
+                        return '<span class="status-pill status-pill-danger"><span class="status-indicator"></span>' + stock + ' (Out)</span>';
+                    } else if (stock <= 5) {
+                        return '<span class="status-pill status-pill-warning"><span class="status-indicator"></span>' + stock + ' (Low)</span>';
+                    } else {
+                        return '<span class="status-pill status-pill-success"><span class="status-indicator"></span>' + stock + '</span>';
+                    }
+                }
+            },
             {
                 data: 'latest_profit',
                 name: 'latest_profit',
@@ -340,8 +725,8 @@
                     if (type !== 'display') {
                         return value;
                     }
-                    const klass = value > 0 ? 'profit-positive' : (value < 0 ? 'profit-negative' : 'profit-neutral');
-                    return '<span class="' + klass + '">' + numberFormatter.format(value) + '</span>';
+                    const badgeClass = value > 0 ? 'profit-badge-positive' : (value < 0 ? 'profit-badge-negative' : 'profit-badge-neutral');
+                    return '<span class="profit-badge ' + badgeClass + '">' + numberFormatter.format(value) + '</span>';
                 }
             },
             {
@@ -355,12 +740,19 @@
                     if (type !== 'display') {
                         return value;
                     }
-                    return '<span class="' + (value > 0 ? 'profit-negative' : 'profit-neutral') + '">' + numberFormatter.format(value) + '</span>';
+                    const badgeClass = value > 0 ? 'profit-badge-negative' : 'profit-badge-neutral';
+                    return '<span class="profit-badge ' + badgeClass + '">' + numberFormatter.format(value) + '</span>';
                 }
             },
             { data: 'actions', name: 'actions', orderable: false, searchable: false, className: 'text-center' },
         ],
         order: [[0, 'asc']],
+    });
+
+    // Intercept custom search form
+    $('#salesFilterForm').on('submit', function (e) {
+        e.preventDefault();
+        table.ajax.reload();
     });
 
     function recalculateQuickSalePreview() {

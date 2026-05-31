@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', __('restock.create_title'))
 
@@ -312,7 +312,7 @@
                                     {{ __('restock.purchase_price') }} <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
-                                    <span class="input-group-text">৳</span>
+                                    <span class="input-group-text">{{ currency_symbol() }}</span>
                                     <input type="number"
                                            class="form-control @error('purchase_price_per_unit') is-invalid @enderror"
                                            id="purchase_price_per_unit"
@@ -472,7 +472,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selected && selected.value) {
             const stock = selected.dataset.stock;
             const purchasePrice = parseFloat(selected.dataset.purchasePrice) || 0;
-            productInfo.innerHTML = '{{ __("restock.current_stock_label") }}: <strong>' + stock + '</strong> | {{ __("restock.product_purchase_price") }}: <strong>৳' + purchasePrice.toFixed(2) + '</strong>';
+            productInfo.innerHTML = '{{ __("restock.current_stock_label") }}: <strong>' + stock + '</strong> | {{ __("restock.product_purchase_price") }}: <strong>{{ currency_symbol() }}' + purchasePrice.toFixed(2) + '</strong>';
 
             const attributes = JSON.parse(selected.dataset.attributes || '[]');
             renderAttributeFields(attributes);
@@ -567,9 +567,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalCost = qty * price;
         const stockAfter = currentStock + qty;
 
-        document.getElementById('preview-product-price').textContent = '৳' + productPrice.toFixed(2);
-        document.getElementById('preview-formula').textContent = qty + ' × ৳' + price.toFixed(2);
-        document.getElementById('preview-total-cost').textContent = '৳' + totalCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('preview-product-price').textContent = '{{ currency_symbol() }}' + productPrice.toFixed(2);
+        document.getElementById('preview-formula').textContent = qty + ' × {{ currency_symbol() }}' + price.toFixed(2);
+        document.getElementById('preview-total-cost').textContent = '{{ currency_symbol() }}' + totalCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('preview-current-stock').textContent = currentStock + ' {{ __("app.units") }}';
         document.getElementById('preview-stock-after').textContent = stockAfter + ' {{ __("app.units") }}';
     }

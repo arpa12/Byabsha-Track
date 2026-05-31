@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', __('report.sales_report'))
 
@@ -88,7 +88,7 @@
                     </div>
                     <div class="ms-3">
                         <p class="text-muted small mb-1">{{ __('report.total_revenue') }}</p>
-                        <h4 class="mb-0">৳{{ number_format($salesSummary->total_revenue ?? 0, 2) }}</h4>
+                        <h4 class="mb-0">{{ currency_symbol() }}{{ number_format($salesSummary->total_revenue ?? 0, 2) }}</h4>
                     </div>
                 </div>
             </div>
@@ -103,7 +103,7 @@
                     </div>
                     <div class="ms-3">
                         <p class="text-muted small mb-1">{{ __('report.total_profit') }}</p>
-                        <h4 class="mb-0 text-success">৳{{ number_format($salesSummary->total_profit ?? 0, 2) }}</h4>
+                        <h4 class="mb-0 text-success">{{ currency_symbol() }}{{ number_format($salesSummary->total_profit ?? 0, 2) }}</h4>
                     </div>
                 </div>
             </div>
@@ -155,9 +155,9 @@
                     <td><span class="badge bg-primary">{{ $sale->shop->name }}</span></td>
                     <td><strong>{{ $sale->product->name }}</strong></td>
                     <td class="text-center">{{ $sale->quantity }}</td>
-                    <td class="text-end">৳{{ number_format($sale->sale_price, 2) }}</td>
-                    <td class="text-end"><strong>৳{{ number_format($sale->total_amount, 2) }}</strong></td>
-                    <td class="text-end text-success">৳{{ number_format($sale->profit, 2) }}</td>
+                    <td class="text-end">{{ currency_symbol() }}{{ number_format($sale->sale_price, 2) }}</td>
+                    <td class="text-end"><strong>{{ currency_symbol() }}{{ number_format($sale->total_amount, 2) }}</strong></td>
+                    <td class="text-end text-success">{{ currency_symbol() }}{{ number_format($sale->profit, 2) }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -166,8 +166,8 @@
                     <td colspan="3">{{ __('report.page_total') }}</td>
                     <td class="text-center">{{ $sales->sum('quantity') }}</td>
                     <td class="text-end"></td>
-                    <td class="text-end">৳{{ number_format($sales->sum('total_amount'), 2) }}</td>
-                    <td class="text-end text-success">৳{{ number_format($sales->sum('profit'), 2) }}</td>
+                    <td class="text-end">{{ currency_symbol() }}{{ number_format($sales->sum('total_amount'), 2) }}</td>
+                    <td class="text-end text-success">{{ currency_symbol() }}{{ number_format($sales->sum('profit'), 2) }}</td>
                 </tr>
             </tfoot>
         </table>

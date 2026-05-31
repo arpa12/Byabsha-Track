@@ -45,7 +45,12 @@ class CapitalService
 
     public function getAllShopCapitals(array $shopIds = [])
     {
-        $query = Capital::with(['shop', 'shop.products'])->whereHas('shop');
+        $query = Capital::with([
+            'shop',
+            'shop.batches' => function ($q) {
+                $q->where('remaining_quantity', '>', 0)->with('product');
+            }
+        ])->whereHas('shop');
         if (!empty($shopIds)) {
             $query->whereIn('shop_id', $shopIds);
         }

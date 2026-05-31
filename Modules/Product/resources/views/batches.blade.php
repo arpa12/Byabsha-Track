@@ -247,7 +247,7 @@
                                 <td>{{ optional($batch->restock_date)->format('d M Y') }}</td>
                                 <td>
                                     <strong>{{ number_format((float)$batch->purchase_price_per_unit, 2) }}</strong>
-                                    <span class="text-muted" style="font-size:.75rem;">৳</span>
+                                    <span class="text-muted" style="font-size:.75rem;">{{ currency_symbol() }}</span>
                                 </td>
                                 <td>{{ number_format($batch->quantity) }}</td>
                                 <td>{{ number_format($consumed) }}</td>
@@ -420,8 +420,8 @@
                                                             <td class="text-muted">#{{ $item->restock_id }}</td>
                                                             <td>{{ optional($item->restock?->restock_date)->format('d M Y') ?? '—' }}</td>
                                                             <td><strong>{{ (int)$item->quantity }}</strong> units</td>
-                                                            <td>{{ number_format((float)$item->purchase_price_per_unit, 2) }} ৳</td>
-                                                            <td>{{ number_format((float)$item->quantity * (float)$item->purchase_price_per_unit, 2) }} ৳</td>
+                                                            <td>{{ number_format((float)$item->purchase_price_per_unit, 2) }} {{ currency_symbol() }}</td>
+                                                            <td>{{ number_format((float)$item->quantity * (float)$item->purchase_price_per_unit, 2) }} {{ currency_symbol() }}</td>
                                                         </tr>
                                                     @endforeach
                                                 </tbody>
@@ -429,8 +429,8 @@
                                                     <tr style="background:#f1f5fb; font-weight:700; font-size:.8rem;">
                                                         <td colspan="2">Totals</td>
                                                         <td>{{ (int)$sale->quantity }} units</td>
-                                                        <td>{{ number_format((float)$sale->purchase_price_per_unit, 2) }} ৳ avg</td>
-                                                        <td>{{ number_format((float)$sale->quantity * (float)$sale->purchase_price_per_unit, 2) }} ৳</td>
+                                                        <td>{{ number_format((float)$sale->purchase_price_per_unit, 2) }} {{ currency_symbol() }} avg</td>
+                                                        <td>{{ number_format((float)$sale->quantity * (float)$sale->purchase_price_per_unit, 2) }} {{ currency_symbol() }}</td>
                                                     </tr>
                                                 </tfoot>
                                             </table>

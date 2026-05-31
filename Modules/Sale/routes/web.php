@@ -16,6 +16,7 @@ Route::middleware(['auth', 'module.access:sale'])->prefix('sales')->name('sale.'
 
     Route::prefix('warranties')->name('warranties.')->group(function () {
         Route::get('/', [WarrantyController::class, 'index'])->name('index');
+        Route::get('/table', [WarrantyController::class, 'warrantiesTable'])->name('table');
         Route::get('/create', [WarrantyController::class, 'create'])->name('create');
         Route::post('/', [WarrantyController::class, 'store'])->name('store');
         Route::post('/{id}/claim', [WarrantyController::class, 'claim'])->name('claim');
@@ -24,6 +25,7 @@ Route::middleware(['auth', 'module.access:sale'])->prefix('sales')->name('sale.'
 
     Route::prefix('exchanges')->name('exchanges.')->group(function () {
         Route::get('/', [ExchangeController::class, 'index'])->name('index');
+        Route::get('/table', [ExchangeController::class, 'exchangesTable'])->name('table');
         Route::get('/create', [ExchangeController::class, 'create'])->name('create');
         Route::post('/', [ExchangeController::class, 'store'])->name('store');
     });

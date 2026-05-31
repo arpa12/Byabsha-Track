@@ -57,9 +57,9 @@
                     <div class="card-body p-4">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label text-uppercase fw-bold text-muted mb-2" style="font-size: 0.72rem; tracking-wider;">Price (৳) <span class="text-danger">*</span></label>
+                                <label class="form-label text-uppercase fw-bold text-muted mb-2" style="font-size: 0.72rem; tracking-wider;">Price ({{ currency_symbol() }}) <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted">৳</span>
+                                    <span class="input-group-text bg-light text-muted">{{ currency_symbol() }}</span>
                                     <input type="number" name="price" class="form-control @error('price') is-invalid @enderror" placeholder="0.00" step="0.01" value="{{ old('price', 0) }}" required>
                                     @error('price')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>

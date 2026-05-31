@@ -65,7 +65,7 @@
               @if($plan->isFree())
                 <span class="fs-3 fw-bold text-success" style="font-family: 'Space Grotesk', sans-serif;">FREE</span>
               @else
-                <span class="fs-3 fw-bold text-slate-900" style="font-family: 'Space Grotesk', sans-serif;">৳{{ number_format($plan->price) }}</span>
+                <span class="fs-3 fw-bold text-slate-900" style="font-family: 'Space Grotesk', sans-serif;">{{ currency_symbol() }}{{ number_format($plan->price) }}</span>
                 <span class="text-muted small">/ {{ $plan->billing_cycle }}</span>
               @endif
             </div>
@@ -310,7 +310,7 @@ document.getElementById('duration_months').addEventListener('change', updateTota
 function updateTotal() {
   var months = parseInt(document.getElementById('duration_months').value, 10);
   var total = (window._planPrice || 0) * months;
-  document.getElementById('modal-total').textContent = '৳' + total.toLocaleString();
+  document.getElementById('modal-total').textContent = '{{ currency_symbol() }}' + total.toLocaleString();
 }
 
 var shopSelect   = document.getElementById('modal-shop-id');

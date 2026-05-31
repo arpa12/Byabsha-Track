@@ -81,7 +81,7 @@ class DashboardService
             'total_sales_today' => Sale::whereIn('shop_id', $shopIds)->whereDate('sale_date', today())->count(),
             'total_revenue_today' => Sale::whereIn('shop_id', $shopIds)->whereDate('sale_date', today())->sum('total_amount'),
             'total_profit_today' => Sale::whereIn('shop_id', $shopIds)->whereDate('sale_date', today())->sum('profit'),
-            'low_stock_count' => Product::whereIn('shop_id', $shopIds)->where('stock_quantity', '<=', 5)->count(),
+            'low_stock_count' => Product::whereIn('shop_id', $shopIds)->where('stock_quantity', '<=', (int) \Modules\Settings\Models\Setting::get('low_stock_alert', 5))->count(),
         ];
     }
 }
