@@ -160,6 +160,12 @@
         overflow: hidden;
     }
 
+    @media (min-width: 1200px) {
+        #monthlyRowDetailsModal .modal-dialog {
+            max-width: 92% !important;
+        }
+    }
+
     .modal-sales-table th {
         background: #f3f8fe;
         font-size: 0.72rem;
@@ -389,25 +395,27 @@
                             <input id="monthlyRowSalesSearch" type="text" class="form-control form-control-sm" placeholder="{{ __('report.search_placeholder') }}">
                         </div>
                     </div>
-                    <div class="table-responsive modal-table-wrap">
-                        <table class="table table-sm align-middle mb-0 modal-sales-table">
-                            <thead>
-                                <tr>
-                                    <th>{{ __('report.sale_date') }}</th>
-                                    <th>{{ __('report.shop') }}</th>
-                                    <th>{{ __('report.product_name') }}</th>
-                                    <th>{{ __('report.customer_name') }}</th>
-                                    <th>{{ __('report.customer_phone') }}</th>
-                                    <th>{{ __('report.customer_address') }}</th>
-                                    <th class="text-center">{{ __('report.quantity') }}</th>
-                                    <th class="text-end">{{ __('report.sale_price') }}</th>
-                                    <th class="text-end">{{ __('report.discount') }}</th>
-                                    <th class="text-end">{{ __('report.total_amount') }}</th>
-                                    <th class="text-end">{{ __('report.total_profit') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody id="monthlyRowDetailsModalBody"></tbody>
-                        </table>
+                    <div class="modal-table-wrap">
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0 modal-sales-table">
+                                <thead>
+                                    <tr>
+                                        <th>{{ __('report.sale_date') }}</th>
+                                        <th>{{ __('report.shop') }}</th>
+                                        <th>{{ __('report.product_name') }}</th>
+                                        <th>{{ __('report.customer_name') }}</th>
+                                        <th>{{ __('report.customer_phone') }}</th>
+                                        <th>{{ __('report.customer_address') }}</th>
+                                        <th class="text-center">{{ __('report.quantity') }}</th>
+                                        <th class="text-end">{{ __('report.sale_price') }}</th>
+                                        <th class="text-end">{{ __('report.discount') }}</th>
+                                        <th class="text-end">{{ __('report.total_amount') }}</th>
+                                        <th class="text-end">{{ __('report.total_profit') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="monthlyRowDetailsModalBody"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

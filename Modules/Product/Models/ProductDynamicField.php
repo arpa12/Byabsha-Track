@@ -26,6 +26,7 @@ class ProductDynamicField extends TenantModel
         'is_required',
         'is_active',
         'sort_order',
+        'created_by',
     ];
 
     protected $casts = [
@@ -34,11 +35,17 @@ class ProductDynamicField extends TenantModel
         'is_required' => 'boolean',
         'is_active' => 'boolean',
         'sort_order' => 'integer',
+        'created_by' => 'integer',
     ];
 
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'created_by')->withTrashed();
     }
 
     public function values(): HasMany

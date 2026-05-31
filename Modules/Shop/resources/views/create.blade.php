@@ -46,6 +46,29 @@
                 <form action="{{ route('shop.store') }}" method="POST">
                     @csrf
 
+                    {{-- Shop Owner Selection (for Superadmin only) --}}
+                    @if(auth()->user()->isSuperAdmin() && $shopOwners)
+                        <div class="mb-4">
+                            <label for="user_id" class="form-label fw-semibold">
+                                {{ __('app.shop_owner') }} <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select @error('user_id') is-invalid @enderror"
+                                    id="user_id"
+                                    name="user_id"
+                                    required>
+                                <option value="">{{ __('app.select_owner') }}</option>
+                                @foreach($shopOwners as $owner)
+                                    <option value="{{ $owner->id }}" {{ old('user_id') == $owner->id ? 'selected' : '' }}>
+                                        {{ $owner->name }} ({{ $owner->email }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('user_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    @endif
+
                     <div class="mb-4">
                         <label for="name" class="form-label fw-semibold">
                             {{ __('shop.name') }} <span class="text-danger">*</span>

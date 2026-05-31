@@ -267,9 +267,9 @@
 
             <p class="section-divider">{{ __('user.assign_branch') }}</p>
             <div class="mb-4">
-                <label for="branch_id" class="form-label">{{ __('user.branch') }} <span class="text-danger">*</span></label>
+                <label for="branch_id" class="form-label">{{ __('user.branch') }}</label>
                 <select class="form-select @error('branch_id') is-invalid @enderror"
-                        id="branch_id" name="branch_id" required>
+                        id="branch_id" name="branch_id">
                     <option value="">{{ __('user.select_branch') }}</option>
                     @foreach($branches as $branch)
                         <option value="{{ $branch->id }}"
@@ -285,7 +285,7 @@
                 @error('branch_id')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
-                <small class="helper-text">{{ __('user.branch_shop_filter_hint') }}</small>
+                <small class="helper-text">{{ __('user.branch_shop_filter_hint') }} {{ __('user.branch_optional_hint') }}</small>
             </div>
 
             <p class="section-divider">{{ __('user.manager_permissions') }}</p>

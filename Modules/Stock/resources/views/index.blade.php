@@ -21,284 +21,437 @@
         color: var(--stock-ink-900);
     }
 
-    .stock-shell::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
-        background:
-            radial-gradient(900px 500px at 85% -5%, rgba(15, 118, 110, 0.19), transparent 60%),
-            radial-gradient(650px 420px at -5% 8%, rgba(245, 158, 11, 0.16), transparent 55%),
-            linear-gradient(180deg, #f7fafc 0%, #f1f6f9 60%, #edf3f8 100%);
-    }
-
     .display-font {
         font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
-        letter-spacing: -0.03em;
-    }
-
-    .stock-header {
-        gap: 0.9rem;
+        letter-spacing: -0.02em;
     }
 
     .stock-kicker {
         display: inline-flex;
         align-items: center;
-        gap: 0.48rem;
-        background: rgba(15, 118, 110, 0.12);
+        gap: 0.4rem;
+        background: rgba(15, 118, 110, 0.08);
         color: var(--stock-brand);
-        border: 1px solid rgba(15, 118, 110, 0.22);
+        border: 1px solid rgba(15, 118, 110, 0.18);
         border-radius: 999px;
-        padding: 0.42rem 0.92rem;
-        font-size: 0.76rem;
+        padding: 0.3rem 0.8rem;
+        font-size: 0.74rem;
         font-weight: 700;
-        margin-bottom: 0.8rem;
-        box-shadow: 0 8px 18px rgba(15, 118, 110, 0.13);
     }
 
     .page-title {
-        font-size: clamp(1.55rem, 3.2vw, 2.3rem);
-        line-height: 1.1;
+        font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+        font-weight: 800;
         color: var(--stock-ink-900);
-        margin-bottom: 0.45rem;
     }
 
     .page-title i {
         color: var(--stock-brand);
-        font-size: 0.9em;
     }
 
     .page-subtitle {
-        color: var(--stock-ink-700);
-        line-height: 1.75;
-        font-size: 0.98rem;
-        margin-bottom: 0;
+        color: var(--stock-ink-500);
+        font-size: 0.88rem;
     }
 
     .btn-manage-products {
-        border-radius: 999px;
+        border-radius: 12px;
         border: 1px solid #cedce9;
-        background: rgba(255, 255, 255, 0.82);
-        color: #3f556c;
-        font-size: 0.82rem;
+        background: #ffffff;
+        color: var(--stock-ink-700);
+        font-size: 0.84rem;
         font-weight: 700;
-        padding: 0.58rem 1rem;
-        white-space: nowrap;
+        padding: 0.52rem 1.1rem;
+        transition: all 0.2s ease;
     }
 
     .btn-manage-products:hover {
-        background: #ffffff;
-        color: #1e293b;
-        border-color: #97b0c8;
+        background: #f8fafc;
+        color: var(--stock-ink-900);
+        border-color: #94a3b8;
     }
 
+    .shop-tabs-container {
+        border-bottom: 2px solid var(--stock-line);
+        padding-bottom: 0.75rem;
+    }
+
+    .shop-tab-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.48rem 0.95rem;
+        border-radius: 10px;
+        border: 1px solid #d8e4ee;
+        background: #ffffff;
+        color: var(--stock-ink-700);
+        font-weight: 600;
+        font-size: 0.84rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .shop-tab-btn:hover {
+        background: #f8fafc;
+        color: var(--stock-brand);
+        border-color: #cbd5e1;
+    }
+
+    .shop-tab-btn.active {
+        background: var(--stock-brand);
+        color: #ffffff;
+        border-color: var(--stock-brand);
+        box-shadow: 0 4px 10px rgba(15, 118, 110, 0.18);
+    }
+
+    /* KPI Summary Cards */
+    .kpi-card {
+        background: #ffffff;
+        border: 1px solid var(--stock-line);
+        border-radius: 16px;
+        padding: 1.15rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05) !important;
+    }
+
+    .kpi-card-inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .kpi-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .kpi-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--stock-ink-500);
+        letter-spacing: 0.05em;
+        margin-bottom: 0.35rem;
+    }
+
+    .kpi-value {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--stock-ink-900);
+        line-height: 1;
+    }
+
+    .kpi-icon-wrapper {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .bg-teal-light {
+        background-color: rgba(15, 118, 110, 0.08);
+    }
+
+    .text-teal {
+        color: var(--stock-brand);
+    }
+
+    .bg-amber-light {
+        background-color: rgba(245, 158, 11, 0.1);
+    }
+
+    .text-amber {
+        color: #d97706 !important;
+    }
+
+    .bg-red-light {
+        background-color: rgba(220, 38, 38, 0.1);
+    }
+
+    .text-red {
+        color: #dc2626 !important;
+    }
+
+    .bg-neutral-light {
+        background-color: #f1f5f9;
+    }
+
+    .text-neutral {
+        color: #64748b;
+    }
+
+    /* Horizontal Filter Toolbar */
+    .filter-toolbar {
+        background: #ffffff;
+        border: 1px solid var(--stock-line);
+        border-radius: 14px;
+        padding: 0.75rem 1rem;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        color: var(--stock-ink-500);
+        font-size: 0.9rem;
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    .filter-search-control {
+        padding-left: 36px !important;
+        border-radius: 10px !important;
+        border: 1px solid #cedce9 !important;
+        background-color: #f8fafc !important;
+        font-size: 0.88rem !important;
+        height: 38px !important;
+        color: var(--stock-ink-900) !important;
+    }
+
+    .filter-search-control:focus {
+        background-color: #ffffff !important;
+        border-color: var(--stock-brand) !important;
+        box-shadow: 0 0 0 0.15rem rgba(15, 118, 110, 0.15) !important;
+    }
+
+    .btn-filter-submit {
+        background: var(--stock-brand);
+        color: #ffffff;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 0.5rem 1.25rem;
+        border: 1px solid var(--stock-brand);
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+
+    .btn-filter-submit:hover {
+        background: var(--stock-brand-deep);
+        border-color: var(--stock-brand-deep);
+        color: #ffffff;
+    }
+
+    .btn-filter-clear {
+        background: #ffffff;
+        color: var(--stock-ink-700);
+        border: 1px solid #cedce9;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 0.5rem 1.25rem;
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-filter-clear:hover {
+        background: #f8fafc;
+        color: var(--stock-ink-900);
+        border-color: #cbd5e1;
+    }
+
+    /* Content Card & Stock Table */
     .content-card {
         background: #ffffff;
         border: 1px solid var(--stock-line);
-        border-radius: 20px;
-        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+        border-radius: 16px;
         overflow: hidden;
     }
 
     .content-card-header {
-        background: #f7fbff;
-        border-bottom: 1px solid #dce8f3;
-        padding: 0.9rem 1.2rem;
+        background: #f8fafc;
+        border-bottom: 1px solid var(--stock-line);
+        padding: 1rem 1.25rem;
     }
 
     .content-card-title {
         margin: 0;
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         font-weight: 700;
-        color: #36506b;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        display: flex;
-        align-items: center;
-        gap: 0.45rem;
-    }
-
-    .form-label {
-        font-size: 0.78rem;
-        font-weight: 700;
+        color: var(--stock-ink-700);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: #475569;
-        margin-bottom: 0.48rem;
-    }
-
-    .form-select,
-    .form-control {
-        border-radius: 11px;
-        border: 1px solid #d6e2ee;
-        background: #fbfdff;
-        color: var(--stock-ink-900);
-        font-size: 0.94rem;
-        padding-top: 0.62rem;
-        padding-bottom: 0.62rem;
-    }
-
-    .form-select:focus,
-    .form-control:focus {
-        border-color: #53a89f;
-        box-shadow: 0 0 0 0.2rem rgba(15, 118, 110, 0.14);
-        background: #ffffff;
-    }
-
-    .btn-apply-filter {
-        background: linear-gradient(140deg, var(--stock-brand), var(--stock-brand-deep));
-        color: #fff;
-        border: 0;
-        border-radius: 999px;
-        font-size: 0.82rem;
-        font-weight: 700;
-        padding: 0.62rem 0.95rem;
-        box-shadow: 0 14px 28px rgba(15, 118, 110, 0.28);
-    }
-
-    .btn-apply-filter:hover {
-        color: #fff;
-    }
-
-    .attribute-list {
-        display: grid;
-        gap: 0.2rem;
-        line-height: 1.35;
-        word-break: break-word;
-    }
-
-    .attribute-label {
-        font-weight: 700;
-        color: #0f172a;
-    }
-
-    .attribute-value {
-        color: #334155;
-    }
-
-    .shop-stat-card {
-        border: 1px solid #dbe7f2;
-        border-radius: 16px;
-        background: #fbfdff;
-    }
-
-    .shop-stat-head {
-        border-bottom: 1px solid #e4edf6;
-    }
-
-    .shop-stat-head h6 {
-        font-size: 0.95rem;
-    }
-
-    .stat-row {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        gap: 0.6rem;
-        font-size: 0.84rem;
-        margin-bottom: 0.6rem;
+        gap: 0.4rem;
     }
 
-    .stat-row:last-child {
-        margin-bottom: 0;
-    }
-
-    .stat-label {
+    .table-results-badge {
+        font-size: 0.72rem;
+        font-weight: 600;
         color: var(--stock-ink-500);
-    }
-
-    .stat-value {
-        color: var(--stock-ink-900);
-        font-weight: 700;
-    }
-
-    .stat-badge {
+        background: #ffffff;
+        border: 1px solid var(--stock-line);
         border-radius: 999px;
-        padding: 0.34rem 0.62rem;
-        font-size: 0.74rem;
-        font-weight: 700;
-    }
-
-    .badge-low {
-        background: rgba(245, 158, 11, 0.14);
-        color: #b45309;
-        border: 1px solid rgba(245, 158, 11, 0.24);
-    }
-
-    .badge-out {
-        background: rgba(220, 38, 38, 0.14);
-        color: #b91c1c;
-        border: 1px solid rgba(220, 38, 38, 0.24);
-    }
-
-    .badge-neutral {
-        background: #f1f5f9;
-        color: #64748b;
-        border: 1px solid #dbe6f1;
+        padding: 0.2rem 0.6rem;
     }
 
     .stock-table {
-        margin-bottom: 0;
+        width: 100%;
+        border-collapse: collapse;
     }
 
     .stock-table thead th {
-        background: #f7fbff !important;
-        border-bottom: 1px solid #dce8f3;
-        color: #4b637b;
-        font-size: 0.74rem;
+        background: #f8fafc;
+        border-bottom: 1px solid var(--stock-line) !important;
+        color: var(--stock-ink-700);
+        font-size: 0.72rem;
         font-weight: 700;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.05em;
         text-transform: uppercase;
-        padding: 0.9rem 0.95rem;
+        padding: 0.8rem 1rem;
         white-space: nowrap;
     }
 
     .stock-table tbody td {
-        border-color: #e7edf4;
-        padding: 0.92rem 0.95rem;
+        border-bottom: 1px solid #f1f5f9 !important;
+        padding: 0.8rem 1rem;
+        font-size: 0.85rem;
         vertical-align: middle;
     }
 
     .stock-table tbody tr:hover {
-        background: #fbfdff;
+        background-color: #f8fafc;
     }
 
-    .shop-pill {
+    .custom-shop-badge {
         display: inline-flex;
         align-items: center;
+        gap: 0.35rem;
         border-radius: 999px;
-        padding: 0.35rem 0.68rem;
-        font-size: 0.74rem;
+        padding: 0.2rem 0.55rem;
+        font-size: 0.72rem;
         font-weight: 700;
-        background: rgba(15, 118, 110, 0.14);
-        color: #0f766e;
-        border: 1px solid rgba(15, 118, 110, 0.22);
+        background: rgba(15, 118, 110, 0.08);
+        color: var(--stock-brand);
+        border: 1px solid rgba(15, 118, 110, 0.15);
+        white-space: nowrap;
     }
 
-    .stock-pill {
-        border-radius: 999px;
-        padding: 0.35rem 0.68rem;
-        font-size: 0.74rem;
+    .product-name {
+        color: var(--stock-ink-900);
+        font-weight: 600;
+    }
+
+    .text-semibold-muted {
+        color: var(--stock-ink-700);
+        font-weight: 500;
+    }
+
+    .stock-total-value {
+        color: var(--stock-ink-900);
         font-weight: 700;
     }
 
-    .stock-pill-low {
-        background: rgba(245, 158, 11, 0.14);
+    .bg-light-soft {
+        background-color: #f8fafc;
+    }
+
+    /* Attribute tags */
+    .attribute-badge-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        max-width: 220px;
+        margin: 0;
+        padding: 0;
+    }
+
+    .custom-attr-badge {
+        display: inline-flex;
+        align-items: center;
+        background-color: #f1f5f9;
+        color: var(--stock-ink-700);
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        padding: 0.1rem 0.35rem;
+        font-size: 0.68rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .custom-attr-badge strong {
+        font-weight: 700;
+        color: var(--stock-ink-900);
+    }
+
+    /* Status badges */
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border-radius: 999px;
+        padding: 0.15rem 0.6rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        border-width: 1px;
+        border-style: solid;
+        white-space: nowrap;
+    }
+
+    .status-indicator {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-pill-success {
+        background: rgba(16, 185, 129, 0.08);
+        color: #047857;
+        border-color: rgba(16, 185, 129, 0.2);
+    }
+
+    .status-pill-success .status-indicator {
+        background-color: #10b981;
+    }
+
+    .status-pill-warning {
+        background: rgba(245, 158, 11, 0.08);
         color: #b45309;
-        border: 1px solid rgba(245, 158, 11, 0.24);
+        border-color: rgba(245, 158, 11, 0.2);
     }
 
-    .stock-pill-out {
-        background: rgba(220, 38, 38, 0.14);
+    .status-pill-warning .status-indicator {
+        background-color: #f59e0b;
+    }
+
+    .status-pill-danger {
+        background: rgba(239, 68, 68, 0.08);
         color: #b91c1c;
-        border: 1px solid rgba(220, 38, 38, 0.24);
+        border-color: rgba(239, 68, 68, 0.2);
     }
 
-    .stock-pill-ok {
-        background: rgba(15, 118, 110, 0.14);
-        color: #0f766e;
-        border: 1px solid rgba(15, 118, 110, 0.22);
+    .status-pill-danger .status-indicator {
+        background-color: #ef4444;
+        animation: statusPulse 2s infinite ease-in-out;
+    }
+
+    @keyframes statusPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
     }
 
     .empty-state {
@@ -322,142 +475,193 @@
         color: var(--stock-ink-500);
         margin-bottom: 0;
     }
-
-    @media (max-width: 767.98px) {
-        .stock-header {
-            align-items: stretch !important;
-        }
-
-        .btn-manage-products,
-        .btn-apply-filter {
-            width: 100%;
-            justify-content: center;
-        }
-    }
 </style>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 @endpush
 
 @section('content')
 <div class="stock-shell">
-<div class="mb-4 d-flex justify-content-between align-items-center flex-wrap stock-header">
-    <div>
-        <span class="stock-kicker"><i class="bi bi-boxes"></i>{{ __('stock::stock.title') }}</span>
-        <h1 class="page-title display-font"><i class="bi bi-boxes"></i> {{ __('stock::stock.title') }}</h1>
-        <p class="page-subtitle">{{ __('stock::stock.subtitle') }}</p>
+    {{-- Header Section --}}
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-3">
+        <div>
+            <span class="stock-kicker mb-2"><i class="bi bi-boxes"></i> {{ __('stock::stock.title') }}</span>
+            <h1 class="page-title display-font mb-1"><i class="bi bi-boxes"></i> {{ __('stock::stock.title') }}</h1>
+            <p class="page-subtitle mb-0">{{ __('stock::stock.subtitle') }}</p>
+        </div>
+        <a href="{{ route('product.index') }}" class="btn btn-manage-products shadow-sm">
+            <i class="bi bi-box-seam"></i> {{ __('stock::stock.manage_products') }}
+        </a>
     </div>
-    <a href="{{ route('product.index') }}" class="btn btn-manage-products">
-        <i class="bi bi-box-seam"></i> {{ __('stock::stock.manage_products') }}
-    </a>
-</div>
 
-<div class="content-card mb-4">
-    <div class="content-card-header">
-        <h5 class="content-card-title">
-            <i class="bi bi-funnel"></i>
-            {{ __('stock::stock.filter_title') }}
-        </h5>
+    {{-- Shop Tabs Selector --}}
+    <div class="shop-tabs-container mb-4">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ route('stock.index', array_filter(['search' => $searchTerm])) }}"
+               class="shop-tab-btn {{ is_null($selectedShopId) ? 'active' : '' }}">
+                <i class="bi bi-shop-window"></i>
+                <span>{{ __('stock::stock.all_shops') }}</span>
+            </a>
+            @foreach($shops as $shop)
+                <a href="{{ route('stock.index', array_filter(['shop_id' => $shop->id, 'search' => $searchTerm])) }}"
+                   class="shop-tab-btn {{ (int)$selectedShopId === (int)$shop->id ? 'active' : '' }}">
+                    <i class="bi bi-shop"></i>
+                    <span>{{ $shop->name }}</span>
+                </a>
+            @endforeach
+        </div>
     </div>
-    <div class="p-4">
-        <form action="{{ route('stock.index') }}" method="GET">
-            <div class="row">
-                <div class="col-md-4">
-                    <label for="shop_id" class="form-label fw-semibold">{{ __('stock::stock.shop') }}</label>
-                    <select id="shop_id" name="shop_id" class="form-select">
-                        <option value="">{{ __('stock::stock.all_shops') }}</option>
-                        @foreach($shops as $shop)
-                            <option value="{{ $shop->id }}" {{ (string) $selectedShopId === (string) $shop->id ? 'selected' : '' }}>
-                                {{ $shop->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label for="search" class="form-label fw-semibold">{{ __('stock::stock.search') }}</label>
-                    <input
-                        type="text"
-                        id="search"
-                        name="search"
-                        class="form-control"
-                        value="{{ $searchTerm ?? '' }}"
-                        placeholder="{{ __('stock::stock.search_placeholder') }}">
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-apply-filter w-100">
-                        <i class="bi bi-search"></i> {{ __('stock::stock.apply_filter') }}
-                    </button>
-                </div>
-            </div>
-            <div class="row mt-2">
-                <div class="col-md-6 offset-md-4">
-                    <div class="form-text">{{ __('stock::stock.search_help') }}</div>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
 
-<div class="row mb-4">
-    @foreach($shops as $shop)
-        @php
-            $totalProducts = $shop->products->count();
-            $totalUnits = $shop->products->sum('stock_quantity');
-            $stockValue = $shop->products->sum(function ($product) {
+    {{-- KPI Cards Metrics Computation --}}
+    @php
+        $activeShops = is_null($selectedShopId) ? $shops : $shops->where('id', $selectedShopId);
+        $kpiTotalProducts = 0;
+        $kpiTotalUnits = 0;
+        $kpiStockValue = 0;
+        $kpiLowStock = 0;
+        $kpiOutOfStock = 0;
+
+        foreach ($activeShops as $shop) {
+            $kpiTotalProducts += $shop->products->count();
+            $kpiTotalUnits += $shop->products->sum('stock_quantity');
+            $kpiStockValue += $shop->products->sum(function ($product) {
                 return $product->stock_quantity * $product->purchase_price;
             });
-            $lowStockCount = $shop->products->filter(function ($product) {
+            $kpiLowStock += $shop->products->filter(function ($product) {
                 return $product->stock_quantity > 0 && $product->stock_quantity <= 5;
             })->count();
-            $outOfStockCount = $shop->products->filter(function ($product) {
+            $kpiOutOfStock += $shop->products->filter(function ($product) {
                 return $product->stock_quantity <= 0;
             })->count();
-        @endphp
-        <div class="col-md-4 mb-3">
-            <div class="content-card shop-stat-card h-100">
-                <div class="p-3 shop-stat-head">
-                    <h6 class="mb-0 fw-semibold">{{ $shop->name }}</h6>
-                </div>
-                <div class="p-3">
-                    <div class="stat-row">
-                        <span class="stat-label">{{ __('stock::stock.total_products') }}</span>
-                        <strong class="stat-value">{{ $totalProducts }}</strong>
+        }
+    @endphp
+
+    {{-- KPI Summary Cards Grid --}}
+    <div class="row g-3 mb-4">
+        <!-- Card 1: Total Products -->
+        <div class="col-6 col-md">
+            <div class="kpi-card shadow-sm h-100">
+                <div class="kpi-card-inner">
+                    <div class="kpi-info">
+                        <span class="kpi-label">{{ __('stock::stock.total_products') }}</span>
+                        <strong class="kpi-value display-font">{{ $kpiTotalProducts }}</strong>
                     </div>
-                    <div class="stat-row">
-                        <span class="stat-label">{{ __('stock::stock.total_units') }}</span>
-                        <strong class="stat-value">{{ number_format($totalUnits) }}</strong>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">{{ __('stock::stock.stock_value') }}</span>
-                        <strong class="stat-value">{{ number_format($stockValue, 2) }}</strong>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">{{ __('stock::stock.low_stock') }}</span>
-                        <span class="stat-badge {{ $lowStockCount > 0 ? 'badge-low' : 'badge-neutral' }}">{{ $lowStockCount }}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">{{ __('stock::stock.out_of_stock') }}</span>
-                        <span class="stat-badge {{ $outOfStockCount > 0 ? 'badge-out' : 'badge-neutral' }}">{{ $outOfStockCount }}</span>
+                    <div class="kpi-icon-wrapper bg-teal-light">
+                        <i class="bi bi-grid text-teal"></i>
                     </div>
                 </div>
             </div>
         </div>
-    @endforeach
-</div>
 
-<div class="content-card">
-    <div class="content-card-header">
-        <h5 class="content-card-title">
-            <i class="bi bi-table"></i>
-            {{ __('stock::stock.stock_table_title') }}
-        </h5>
+        <!-- Card 2: Total Units -->
+        <div class="col-6 col-md">
+            <div class="kpi-card shadow-sm h-100">
+                <div class="kpi-card-inner">
+                    <div class="kpi-info">
+                        <span class="kpi-label">{{ __('stock::stock.total_units') }}</span>
+                        <strong class="kpi-value display-font">{{ number_format($kpiTotalUnits) }}</strong>
+                    </div>
+                    <div class="kpi-icon-wrapper bg-teal-light">
+                        <i class="bi bi-boxes text-teal"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Stock Value -->
+        <div class="col-6 col-md">
+            <div class="kpi-card shadow-sm h-100">
+                <div class="kpi-card-inner">
+                    <div class="kpi-info">
+                        <span class="kpi-label">{{ __('stock::stock.stock_value') }}</span>
+                        <strong class="kpi-value display-font">{{ number_format($kpiStockValue, 2) }}</strong>
+                    </div>
+                    <div class="kpi-icon-wrapper bg-teal-light">
+                        <i class="bi bi-currency-dollar text-teal"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Low Stock -->
+        <div class="col-6 col-md">
+            <div class="kpi-card shadow-sm h-100">
+                <div class="kpi-card-inner">
+                    <div class="kpi-info">
+                        <span class="kpi-label">{{ __('stock::stock.low_stock') }}</span>
+                        <strong class="kpi-value display-font {{ $kpiLowStock > 0 ? 'text-amber' : '' }}">{{ $kpiLowStock }}</strong>
+                    </div>
+                    <div class="kpi-icon-wrapper {{ $kpiLowStock > 0 ? 'bg-amber-light' : 'bg-neutral-light' }}">
+                        <i class="bi bi-exclamation-triangle {{ $kpiLowStock > 0 ? 'text-amber' : 'text-neutral' }}"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 5: Out of Stock -->
+        <div class="col-12 col-md">
+            <div class="kpi-card shadow-sm h-100">
+                <div class="kpi-card-inner">
+                    <div class="kpi-info">
+                        <span class="kpi-label">{{ __('stock::stock.out_of_stock') }}</span>
+                        <strong class="kpi-value display-font {{ $kpiOutOfStock > 0 ? 'text-red' : '' }}">{{ $kpiOutOfStock }}</strong>
+                    </div>
+                    <div class="kpi-icon-wrapper {{ $kpiOutOfStock > 0 ? 'bg-red-light' : 'bg-neutral-light' }}">
+                        <i class="bi bi-x-circle {{ $kpiOutOfStock > 0 ? 'text-red' : 'text-neutral' }}"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    @if($products->count() > 0)
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 stock-table">
-                <thead class="table-light">
+    {{-- Single-row Filter Toolbar --}}
+    <div class="filter-toolbar mb-4 shadow-sm">
+        <form action="{{ route('stock.index') }}" method="GET" class="m-0 w-100">
+            @if($selectedShopId)
+                <input type="hidden" name="shop_id" value="{{ $selectedShopId }}">
+            @endif
+            <div class="d-flex align-items-center gap-2">
+                <div class="flex-grow-1">
+                    <div class="search-input-wrapper">
+                        <i class="bi bi-search search-icon"></i>
+                        <input
+                            type="text"
+                            id="search"
+                            name="search"
+                            class="form-control filter-search-control"
+                            value="{{ $searchTerm ?? '' }}"
+                            placeholder="{{ __('stock::stock.search_placeholder') }}">
+                    </div>
+                </div>
+                <div class="flex-shrink-0 d-flex gap-2">
+                    <button type="submit" class="btn btn-filter-submit">
+                        <i class="bi bi-funnel"></i> <span class="d-none d-sm-inline">{{ __('stock::stock.apply_filter') }}</span>
+                    </button>
+                    @if($searchTerm)
+                        <a href="{{ route('stock.index', array_filter(['shop_id' => $selectedShopId])) }}" class="btn btn-filter-clear">
+                            Clear
+                        </a>
+                    @endif
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {{-- Stock Table Card --}}
+    <div class="content-card shadow-sm mb-4">
+        <div class="content-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5 class="content-card-title">
+                <i class="bi bi-table text-teal"></i>
+                {{ __('stock::stock.stock_table_title') }}
+            </h5>
+        </div>
+
+        <div class="table-responsive p-3">
+            <table class="table align-middle stock-table mb-0 w-100" id="stockDataTable">
+                <thead>
                     <tr>
                         <th>{{ __('stock::stock.shop') }}</th>
                         <th>{{ __('stock::stock.product') }}</th>
+                        <th>{{ __('stock::stock.created_by') }}</th>
                         <th>{{ __('stock::stock.category') }}</th>
                         <th>{{ __('stock::stock.brand') }}</th>
                         <th>{{ __('stock::stock.custom_attributes') }}</th>
@@ -468,57 +672,60 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($products as $product)
-                        @php($stockValue = $product->stock_quantity * $product->purchase_price)
-                        <tr>
-                            <td><span class="shop-pill">{{ $product->shop?->name ?? __('stock::stock.deleted_shop') }}</span></td>
-                            <td><strong>{{ $product->name }}</strong></td>
-                            <td class="text-muted">{{ $product->category ?? '-' }}</td>
-                            <td class="text-muted">{{ $product->brand ?? '-' }}</td>
-                            <td>
-                                @if(!empty($attributesByProductId[$product->id]))
-                                    <div class="attribute-list">
-                                        @foreach($attributesByProductId[$product->id] as $attribute)
-                                            <div>
-                                                <span class="attribute-label">{{ $attribute['label'] }}:</span>
-                                                <span class="attribute-value">{{ $attribute['value'] }}</span>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                            <td class="text-end">{{ number_format($product->purchase_price, 2) }}</td>
-                            <td class="text-end">{{ number_format($product->sale_price, 2) }}</td>
-                            <td class="text-center">
-                                @if($product->stock_quantity <= 0)
-                                    <span class="stock-pill stock-pill-out">{{ __('stock::stock.out') }}</span>
-                                @elseif($product->stock_quantity <= 5)
-                                    <span class="stock-pill stock-pill-low">{{ $product->stock_quantity }}</span>
-                                @else
-                                    <span class="stock-pill stock-pill-ok">{{ $product->stock_quantity }}</span>
-                                @endif
-                            </td>
-                            <td class="text-end"><strong>{{ number_format($stockValue, 2) }}</strong></td>
-                        </tr>
-                    @endforeach
                 </tbody>
             </table>
         </div>
-
-        <div class="p-3">
-            {{ $products->links() }}
-        </div>
-    @endif
-
-    @if($products->count() === 0)
-        <div class="empty-state">
-            <i class="bi bi-box-seam"></i>
-            <h3>{{ __('stock::stock.no_products') }}</h3>
-            <p>{{ __('stock::stock.no_products_subtitle') }}</p>
-        </div>
-    @endif
-</div>
+    </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!window.jQuery || !$('#stockDataTable').length) {
+            return;
+        }
+
+        var table = $('#stockDataTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: '{{ route("stock.index") }}',
+                data: function (d) {
+                    d.shop_id = '{{ $selectedShopId }}';
+                    d.search = $('#search').val();
+                }
+            },
+            columns: [
+                { data: 'shop_badge', name: 'shop.name', orderable: false, searchable: false },
+                { data: 'name', name: 'name' },
+                { data: 'creator_name', name: 'creator.name', orderable: false, searchable: false },
+                { data: 'category', name: 'category' },
+                { data: 'brand', name: 'brand' },
+                { data: 'custom_attributes', name: 'custom_attributes', orderable: false, searchable: false },
+                { data: 'purchase_price', name: 'purchase_price', className: 'text-end' },
+                { data: 'sale_price', name: 'sale_price', className: 'text-end' },
+                { data: 'stock_quantity', name: 'stock_quantity', className: 'text-center', orderable: true, searchable: false },
+                { data: 'stock_value', name: 'stock_value', className: 'text-end', orderable: false, searchable: false }
+            ],
+            pageLength: 20,
+            order: [[1, 'asc']],
+            responsive: true,
+            language: {
+                search: '',
+                searchPlaceholder: 'Search stocks...',
+            },
+            dom: 'rtip',
+        });
+
+        // Dynamic reload on filter change to avoid page refresh
+        $('.filter-toolbar form').on('submit', function (e) {
+            e.preventDefault();
+            table.ajax.reload();
+        });
+    });
+</script>
+@endpush

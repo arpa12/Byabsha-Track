@@ -91,4 +91,6 @@ return [
     'user'            => 'User',
     'shop'            => 'Shop',
     'branch'          => 'Branch',
+    'shop_owner'      => 'Shop Owner',
+    'select_owner'    => 'Select a Shop Owner',
 ];

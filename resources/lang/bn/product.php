@@ -14,6 +14,7 @@ return [
     'col_shop'            => 'দোকান',
     'col_category'        => 'বিভাগ',
     'col_brand'           => 'ব্র্যান্ড',
+    'col_created_by'      => 'তৈরি করেছেন',
     'col_purchase_price'  => 'ক্রয় মূল্য',
     'col_sale_price'      => 'বিক্রয় মূল্য',
     'col_stock'           => 'স্টক',

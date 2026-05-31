@@ -235,18 +235,18 @@ unset($__errorArgs, $__bag); ?>
                         </div>
 
                         <div class="mb-4">
-                            <label for="name" class="form-label">
-                                <?php echo e(__('branch::branch.name')); ?> <span class="text-danger">*</span>
+                            <label for="location" class="form-label">
+                                <?php echo e(__('branch::branch.location')); ?> <span class="text-danger">*</span>
                             </label>
-                            <input type="text" id="name" name="name" value="<?php echo e(old('name')); ?>" class="form-control <?php $__errorArgs = ['name'];
+                            <input type="text" id="location" name="location" value="<?php echo e(old('location')); ?>" class="form-control <?php $__errorArgs = ['location'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>" placeholder="<?php echo e(__('branch::branch.name_placeholder')); ?>" required>
-                            <?php $__errorArgs = ['name'];
+unset($__errorArgs, $__bag); ?>" placeholder="<?php echo e(__('branch::branch.location_placeholder')); ?>" required>
+                            <?php $__errorArgs = ['location'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -256,15 +256,9 @@ endif;
 unset($__errorArgs, $__bag); ?>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-4">
-                                <label for="location" class="form-label"><?php echo e(__('branch::branch.location')); ?></label>
-                                <input type="text" id="location" name="location" value="<?php echo e(old('location')); ?>" class="form-control" placeholder="<?php echo e(__('branch::branch.location_placeholder')); ?>">
-                            </div>
-                            <div class="col-md-6 mb-4">
-                                <label for="phone" class="form-label"><?php echo e(__('branch::branch.phone')); ?></label>
-                                <input type="text" id="phone" name="phone" value="<?php echo e(old('phone')); ?>" class="form-control" placeholder="<?php echo e(__('branch::branch.phone_placeholder')); ?>">
-                            </div>
+                        <div class="mb-4">
+                            <label for="phone" class="form-label"><?php echo e(__('branch::branch.phone')); ?></label>
+                            <input type="text" id="phone" name="phone" value="<?php echo e(old('phone')); ?>" class="form-control" placeholder="<?php echo e(__('branch::branch.phone_placeholder')); ?>">
                         </div>
 
                         <div class="mb-4">
@@ -287,16 +281,7 @@ endif;
 unset($__errorArgs, $__bag); ?>
                         </div>
 
-                        <div class="mb-4">
-                            <label for="address" class="form-label"><?php echo e(__('branch::branch.address')); ?></label>
-                            <textarea id="address" name="address" rows="4" class="form-control" placeholder="<?php echo e(__('branch::branch.address_placeholder')); ?>"><?php echo e(old('address')); ?></textarea>
-                        </div>
 
-                        <div class="form-check mb-4">
-                            <input type="hidden" name="is_active" value="0">
-                            <input class="form-check-input" type="checkbox" name="is_active" value="1" id="is_active" <?php echo e(old('is_active', true) ? 'checked' : ''); ?>>
-                            <label class="form-check-label fw-semibold" for="is_active"><?php echo e(__('branch::branch.active')); ?></label>
-                        </div>
 
                         <div class="d-flex justify-content-between flex-wrap gap-2 pt-3 border-top">
                             <a href="<?php echo e(route('branch.index')); ?>" class="btn-back">

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Modules\Branch\Models\Branch;
 use Modules\Shop\Models\Shop;
+use Yajra\DataTables\Facades\DataTables;
 
 class BranchController extends Controller
 {
@@ -22,16 +23,55 @@ class BranchController extends Controller
             abort(403, 'You do not have access to this shop.');
         }
 
-        $branches = Branch::forUser($user)
-            ->with('shop:id,name')
-            ->when($selectedShopId, function ($query) use ($selectedShopId) {
-                $query->where('shop_id', $selectedShopId);
-            })
-            ->latest()
-            ->paginate(15)
-            ->withQueryString();
+        if ($request->ajax()) {
+            $branches = Branch::forUser($user)
+                ->with(['shop:id,name', 'creator:id,name'])
+                ->when($selectedShopId, function ($query) use ($selectedShopId) {
+                    $query->where('shop_id', $selectedShopId);
+                });
 
-        return view('branch::index', compact('branches', 'shops', 'selectedShopId'));
+            return DataTables::eloquent($branches)
+                ->addColumn('shop_name', function (Branch $branch) {
+                    return $branch->shop?->name ?? '-';
+                })
+                ->addColumn('creator_name', function (Branch $branch) {
+                    return $branch->creator?->name ?? '-';
+                })
+                ->addColumn('status', function (Branch $branch) {
+                    if ($branch->is_active) {
+                        return '<span class="status-badge status-active"><i class="bi bi-check-circle-fill"></i>' . __('branch::branch.active') . '</span>';
+                    }
+                    return '<span class="status-badge status-inactive"><i class="bi bi-dash-circle"></i>' . __('branch::branch.inactive') . '</span>';
+                })
+                ->addColumn('created_at_formatted', function (Branch $branch) {
+                    return $branch->created_at?->format('M d, Y') ?? '-';
+                })
+                ->addColumn('actions', function (Branch $branch) {
+                    $viewUrl = route('branch.show', $branch->id);
+                    $editUrl = route('branch.edit', $branch->id);
+                    $deleteUrl = route('branch.destroy', $branch->id);
+
+                    return '<div class="d-flex gap-1 justify-content-center">'
+                        . '<a href="' . $viewUrl . '" class="btn btn-outline-info action-btn" title="' . __('app.view') . '">'
+                            . '<i class="bi bi-eye"></i>'
+                        . '</a>'
+                        . '<a href="' . $editUrl . '" class="btn btn-outline-warning action-btn" title="' . __('app.edit') . '">'
+                            . '<i class="bi bi-pencil"></i>'
+                        . '</a>'
+                        . '<form action="' . $deleteUrl . '" method="POST" class="d-inline" onsubmit="return confirm(\'' . __('branch::branch.confirm_delete') . '\')">'
+                            . csrf_field()
+                            . method_field('DELETE')
+                            . '<button type="submit" class="btn btn-outline-danger action-btn" title="' . __('app.delete') . '">'
+                                . '<i class="bi bi-trash"></i>'
+                            . '</button>'
+                        . '</form>'
+                        . '</div>';
+                })
+                ->rawColumns(['status', 'actions'])
+                ->toJson();
+        }
+
+        return view('branch::index', compact('shops', 'selectedShopId'));
     }
 
     public function create(Request $request)
@@ -63,16 +103,14 @@ class BranchController extends Controller
 
         $validated = $request->validate([
             'shop_id' => 'required|exists:shops,id',
-            'name' => [
+            'location' => [
                 'required',
                 'string',
                 'max:255',
                 Rule::unique('branches', 'name')->where(function ($query) use ($request) {
-                    return $query->where('shop_id', $request->input('shop_id'))
-                        ->whereNull('deleted_at');
+                    return $query->where('shop_id', $request->input('shop_id'));
                 }),
             ],
-            'location' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:30',
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string',
@@ -82,6 +120,8 @@ class BranchController extends Controller
         abort_unless($user->isSuperAdmin() || $user->ownsShop((int) $validated['shop_id']), 403, 'You do not have access to this shop.');
 
         $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['name'] = $validated['location'];
+        $validated['created_by'] = $user->id;
 
         $branch = Branch::create($validated);
 
@@ -93,7 +133,7 @@ class BranchController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $branch = Branch::forUser($user)->with('shop:id,name')->findOrFail($id);
+        $branch = Branch::forUser($user)->with(['shop:id,name', 'creator:id,name'])->findOrFail($id);
 
         return view('branch::show', compact('branch'));
     }
@@ -116,18 +156,16 @@ class BranchController extends Controller
 
         $validated = $request->validate([
             'shop_id' => 'required|exists:shops,id',
-            'name' => [
+            'location' => [
                 'required',
                 'string',
                 'max:255',
                 Rule::unique('branches', 'name')
                     ->ignore($branch->id)
                     ->where(function ($query) use ($request) {
-                        return $query->where('shop_id', $request->input('shop_id'))
-                            ->whereNull('deleted_at');
+                        return $query->where('shop_id', $request->input('shop_id'));
                     }),
             ],
-            'location' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:30',
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string',
@@ -137,6 +175,7 @@ class BranchController extends Controller
         abort_unless($user->isSuperAdmin() || $user->ownsShop((int) $validated['shop_id']), 403, 'You do not have access to this shop.');
 
         $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['name'] = $validated['location'];
 
         $branch->update($validated);
 

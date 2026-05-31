@@ -88,5 +88,6 @@ return [
     'assigned_branch'            => 'Assigned Branch',
     'branch_shop_mismatch'       => 'The selected branch does not belong to the selected shop.',
     'branch_shop_filter_hint'    => 'Only branches belonging to the selected shop will appear.',
+    'branch_optional_hint'       => 'Leave blank to assign the manager to the shop only.',
     'manager_shop_hint'          => 'Leave blank to assign later via the Approve action.',
 ];

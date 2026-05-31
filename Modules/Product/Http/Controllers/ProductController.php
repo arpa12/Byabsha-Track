@@ -41,9 +41,115 @@ class ProductController extends Controller
         if ($selectedShopId && !in_array($selectedShopId, $allowedShopIds)) {
             abort(403, 'You do not have access to this shop.');
         }
+
+        if ($request->ajax()) {
+            $modelNumberFieldIds = ProductDynamicField::query()
+                ->where(function ($query) {
+                    $query->whereRaw('LOWER(field_key) = ?', ['model_number'])
+                        ->orWhereRaw('LOWER(label) = ?', ['model number'])
+                        ->orWhereRaw('LOWER(label) like ?', ['%model number%']);
+                })
+                ->pluck('id');
+
+            $query = Product::query()
+                ->with([
+                    'shop:id,name',
+                    'productCategory:id,name',
+                    'creator:id,name',
+                    'dynamicValues' => function ($q) use ($modelNumberFieldIds) {
+                        $q->whereIn('product_dynamic_field_id', $modelNumberFieldIds);
+                    },
+                ])
+                ->where('shop_id', $selectedShopId);
+
+            return datatables()->of($query)
+                ->filter(function ($query) use ($request, $modelNumberFieldIds) {
+                    if ($request->filled('category_id')) {
+                        $query->where('category_id', $request->integer('category_id'));
+                    }
+
+                    $datatableSearch = $request->input('search.value');
+                    $customSearch = $request->input('search');
+                    $searchTerm = trim($datatableSearch ?: $customSearch ?: '');
+
+                    if ($searchTerm !== '') {
+                        $supportsModelName = Schema::hasColumn('products', 'model_name');
+
+                        $query->where(function ($q) use ($searchTerm, $supportsModelName, $modelNumberFieldIds) {
+                            $q->where('products.name', 'like', "%{$searchTerm}%")
+                              ->orWhere('products.brand', 'like', "%{$searchTerm}%")
+                              ->orWhere('products.category', 'like', "%{$searchTerm}%");
+
+                            if ($supportsModelName) {
+                                $q->orWhere('products.model_name', 'like', "%{$searchTerm}%");
+                            }
+
+                            if ($modelNumberFieldIds->isNotEmpty()) {
+                                $q->orWhereHas('dynamicValues', function ($dvQ) use ($searchTerm, $modelNumberFieldIds) {
+                                    $dvQ->whereIn('product_dynamic_field_id', $modelNumberFieldIds)
+                                        ->where('value', 'like', "%{$searchTerm}%");
+                                });
+                            }
+                        });
+                    }
+                })
+                ->addColumn('model_name', function ($product) {
+                    return $product->dynamicValues->first()?->value ?? '-';
+                })
+                ->addColumn('shop_name', function ($product) {
+                    return $product->shop?->name ?? '-';
+                })
+                ->addColumn('creator_name', function ($product) {
+                    return $product->creator?->name ?? '-';
+                })
+                ->editColumn('purchase_price', function ($product) {
+                    return '৳' . number_format($product->purchase_price, 2);
+                })
+                ->editColumn('stock_quantity', function ($product) {
+                    if ($product->stock_quantity <= 5) {
+                        return '<span class="stock-badge stock-low">' . $product->stock_quantity . '</span>';
+                    } elseif ($product->stock_quantity <= 20) {
+                        return '<span class="stock-badge stock-mid">' . $product->stock_quantity . '</span>';
+                    } else {
+                        return '<span class="stock-badge stock-high">' . $product->stock_quantity . '</span>';
+                    }
+                })
+                ->addColumn('actions', function ($product) {
+                    $batchesRoute = route('product.batches', $product->id);
+                    $showRoute = route('product.show', $product->id);
+                    $editRoute = route('product.edit', $product->id);
+                    $destroyRoute = route('product.destroy', $product->id);
+                    $confirmMessage = __("product.confirm_delete");
+                    $csrf = csrf_field();
+                    $method = method_field('DELETE');
+
+                    return <<<HTML
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{$batchesRoute}" class="btn btn-outline-success" title="Batch Tracker">
+                                <i class="bi bi-layers"></i>
+                            </a>
+                            <a href="{$showRoute}" class="btn btn-outline-primary" title="View">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{$editRoute}" class="btn btn-outline-warning" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form action="{$destroyRoute}" method="POST" class="d-inline" onsubmit="return confirm('{$confirmMessage}')">
+                                {$csrf}
+                                {$method}
+                                <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    HTML;
+                })
+                ->rawColumns(['stock_quantity', 'actions'])
+                ->make(true);
+        }
+
         $selectedCategoryId = $request->filled('category_id') ? $request->integer('category_id') : null;
         $searchTerm = trim((string) $request->input('search', ''));
-        $supportsModelName = Schema::hasColumn('products', 'model_name');
         $selectedShop = $selectedShopId ? $shops->firstWhere('id', $selectedShopId) : null;
 
         if ($selectedShopId && !$selectedShop) {
@@ -74,9 +180,10 @@ class ProductController extends Controller
         }
 
         $searchSuggestions = collect();
-        $products = null;
+        $products = collect(); // Pass empty collection for standard view compatibility
 
         if ($selectedShopId) {
+            $supportsModelName = Schema::hasColumn('products', 'model_name');
             $searchSuggestions = Product::query()
                 ->where('shop_id', $selectedShopId)
                 ->select(['name', 'brand', 'category'])
@@ -119,43 +226,6 @@ class ProductController extends Controller
                 ->sort()
                 ->values()
                 ->take(80);
-
-            $baseQuery = Product::query()
-                ->with([
-                    'shop:id,name',
-                    'productCategory:id,name',
-                    'dynamicValues' => function ($query) use ($modelNumberFieldIds) {
-                        $query->whereIn('product_dynamic_field_id', $modelNumberFieldIds);
-                    },
-                ])
-                ->where('shop_id', $selectedShopId)
-                ->when($searchTerm !== '', function ($query) use ($searchTerm, $supportsModelName, $modelNumberFieldIds) {
-                    $query->where(function ($searchQuery) use ($searchTerm, $supportsModelName, $modelNumberFieldIds) {
-                        $searchQuery
-                            ->where('name', 'like', '%' . $searchTerm . '%')
-                            ->orWhere('brand', 'like', '%' . $searchTerm . '%')
-                            ->orWhere('category', 'like', '%' . $searchTerm . '%');
-
-                        if ($supportsModelName) {
-                            $searchQuery->orWhere('model_name', 'like', '%' . $searchTerm . '%');
-                        }
-
-                        if ($modelNumberFieldIds->isNotEmpty()) {
-                            $searchQuery->orWhereHas('dynamicValues', function ($dynamicValueQuery) use ($searchTerm, $modelNumberFieldIds) {
-                                $dynamicValueQuery
-                                    ->whereIn('product_dynamic_field_id', $modelNumberFieldIds)
-                                    ->where('value', 'like', '%' . $searchTerm . '%');
-                            });
-                        }
-                    });
-                });
-
-            $products = (clone $baseQuery)
-                ->when($selectedCategoryId, function ($query) use ($selectedCategoryId) {
-                    $query->where('category_id', $selectedCategoryId);
-                })
-                ->latest()
-                ->get();
         }
 
         return view('product::index', compact(
@@ -242,6 +312,8 @@ class ProductController extends Controller
             ->whereKey($validated['category_id'] ?? null)
             ->value('name');
 
+        $validated['created_by'] = $user->id;
+
         $validatedDynamicValues = $this->validateDynamicFieldValues($request, $validated['category_id'] ?? null);
 
         DB::transaction(function () use ($validated, $validatedDynamicValues): void {
@@ -270,6 +342,7 @@ class ProductController extends Controller
         $product = Product::with([
             'shop',
             'productCategory',
+            'creator:id,name',
             'dynamicValues.dynamicField',
             'batches' => function ($query) {
                 $query->orderByDesc('batch_date')->orderByDesc('id');

@@ -193,6 +193,10 @@
                     </div>
                 </div>
                 <div class="detail-item">
+                    <div class="detail-label">{{ __('branch::branch.created_by') }}</div>
+                    <div class="detail-value">{{ $branch->creator?->name ?? '-' }}</div>
+                </div>
+                <div class="detail-item">
                     <div class="detail-label">{{ __('app.created_at') }}</div>
                     <div class="detail-value">{{ $branch->created_at?->format('F d, Y') }}</div>
                 </div>
@@ -274,18 +278,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12">
-                        <div class="detail-item">
-                            <div class="detail-label">{{ __('branch::branch.address') }}</div>
-                            <div class="detail-value">
-                                @if($branch->address)
-                                    <i class="bi bi-pin-map text-muted me-1"></i>{{ $branch->address }}
-                                @else
-                                    <span class="text-muted">—</span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>

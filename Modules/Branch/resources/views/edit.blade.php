@@ -127,20 +127,12 @@
 
                         <div class="col-sm-6">
                             <label class="form-label fw-semibold">
-                                {{ __('branch::branch.name') }} <span class="text-danger">*</span>
+                                {{ __('branch::branch.location') }} <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="name" value="{{ old('name', $branch->name) }}"
-                                class="form-control @error('name') is-invalid @enderror"
-                                placeholder="{{ __('branch::branch.name_placeholder') }}" required>
-                            @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-
-                        <div class="col-sm-6">
-                            <label class="form-label fw-semibold">{{ __('branch::branch.location') }}</label>
                             <input type="text" name="location" value="{{ old('location', $branch->location) }}"
                                 class="form-control @error('location') is-invalid @enderror"
-                                placeholder="{{ __('branch::branch.location_placeholder') }}">
-                            @error('location')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                placeholder="{{ __('branch::branch.location_placeholder') }}" required>
+                            @error('location')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
 
                         <div class="col-sm-6">
@@ -158,11 +150,7 @@
                             @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
-                        <div class="col-12">
-                            <label class="form-label fw-semibold">{{ __('branch::branch.address') }}</label>
-                            <textarea name="address" rows="3" class="form-control"
-                                placeholder="{{ __('branch::branch.address_placeholder') }}">{{ old('address', $branch->address) }}</textarea>
-                        </div>
+
 
                         <div class="col-12">
                             <div class="form-check form-switch">

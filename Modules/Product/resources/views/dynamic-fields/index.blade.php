@@ -161,17 +161,42 @@
         color: #fff;
     }
 
-    .btn-action-delete {
-        color: #dc2626;
-        border-color: rgba(220, 38, 38, 0.35);
-    }
-
     .btn-action-delete:hover {
         background: #dc2626;
         border-color: #dc2626;
         color: #fff;
     }
+
+    .dataTables_filter {
+        margin-bottom: 1.15rem;
+        text-align: right;
+    }
+    .dataTables_filter label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: #334155;
+        font-weight: 600;
+    }
+    .dataTables_filter input {
+        border-radius: 10px;
+        border: 1px solid #cedce9;
+        padding: 0.38rem 0.85rem;
+        outline: none;
+        font-size: 0.86rem;
+        color: #0f172a;
+        transition: border-color 0.2s;
+        background-color: #f8fafc;
+        width: 240px;
+    }
+    .dataTables_filter input:focus {
+        border-color: #0f766e;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 0.15rem rgba(15, 118, 110, 0.15);
+    }
 </style>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 @endpush
 
 @section('content')
@@ -192,66 +217,63 @@
     </div>
 </div>
 
-<div class="content-card">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+    <div class="table-responsive p-3">
+        <table class="table table-hover align-middle mb-0 w-100" id="dynamicFieldsTable">
             <thead class="table-light">
                 <tr>
                     <th>{{ __('product.dynamic_label') }}</th>
                     <th>{{ __('product.dynamic_key') }}</th>
                     <th>{{ __('product.dynamic_input_type') }}</th>
                     <th>{{ __('product.category') }}</th>
+                    <th>{{ __('product.col_created_by') }}</th>
                     <th class="text-center">{{ __('app.status') }}</th>
                     <th class="text-center">{{ __('product.dynamic_required') }}</th>
                     <th class="text-end">{{ __('app.actions') }}</th>
                 </tr>
             </thead>
             <tbody>
-            @forelse($fields as $field)
-                <tr>
-                    <td>{{ $field->label }}</td>
-                    <td><span class="key-chip">{{ $field->field_key }}</span></td>
-                    <td>{{ strtoupper($field->input_type) }}</td>
-                    <td>{{ $field->category?->name ?? __('product.dynamic_all_categories') }}</td>
-                    <td class="text-center">
-                        <span class="badge {{ $field->is_active ? 'text-bg-success' : 'text-bg-secondary' }}">
-                            {{ $field->is_active ? __('app.active') : __('app.inactive') }}
-                        </span>
-                    </td>
-                    <td class="text-center">
-                        <span class="badge {{ $field->is_required ? 'text-bg-danger' : 'text-bg-light border' }}">
-                            {{ $field->is_required ? __('app.yes') : __('app.no') }}
-                        </span>
-                    </td>
-                    <td class="text-end">
-                        <div class="btn-group btn-group-sm">
-                            <a href="{{ route('product.dynamic-fields.edit', $field->id) }}" class="btn btn-action-edit" title="{{ __('app.edit') }}">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form method="POST" action="{{ route('product.dynamic-fields.destroy', $field->id) }}" onsubmit="return confirm('{{ __('product.confirm_delete_dynamic_field') }}')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-action-delete" title="{{ __('app.delete') }}">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="7" class="text-center py-5 text-muted">{{ __('product.no_dynamic_fields') }}</td>
-                </tr>
-            @endforelse
             </tbody>
         </table>
     </div>
-
-    @if($fields->hasPages())
-        <div class="p-3 border-top">
-            {{ $fields->links() }}
-        </div>
-    @endif
 </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!window.jQuery || !$('#dynamicFieldsTable').length) {
+            return;
+        }
+
+        $('#dynamicFieldsTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: '{{ route("product.dynamic-fields.index") }}'
+            },
+            columns: [
+                { data: 'label', name: 'label' },
+                { data: 'field_key', name: 'field_key' },
+                { data: 'input_type', name: 'input_type' },
+                { data: 'category_name', name: 'category.name', orderable: false, searchable: false },
+                { data: 'creator_name', name: 'creator.name', orderable: false, searchable: false },
+                { data: 'is_active', name: 'is_active', className: 'text-center', searchable: false },
+                { data: 'is_required', name: 'is_required', className: 'text-center', searchable: false },
+                { data: 'actions', name: 'actions', orderable: false, searchable: false, className: 'text-end' }
+            ],
+            pageLength: 20,
+            order: [[0, 'asc']],
+            responsive: true,
+            language: {
+                search: '',
+                searchPlaceholder: 'Search attributes...',
+            },
+            dom: 'ftip',
+        });
+    });
+</script>
+@endpush

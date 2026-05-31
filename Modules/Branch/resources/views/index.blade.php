@@ -275,10 +275,43 @@
         .branch-header { flex-direction: column; align-items: stretch !important; }
         .btn-branch-theme { width: 100%; justify-content: center; }
         .btn-add-branch { width: 100%; justify-content: center; }
-        .table-desktop { display: none; }
-        .branch-mobile-cards { display: block; }
+    }
+    
+    .dataTables_wrapper .dataTables_length select {
+        border: 1px solid var(--branch-line);
+        border-radius: 10px;
+        padding: 0.35rem 1.8rem 0.35rem 0.75rem;
+        font-size: 0.88rem;
+        color: var(--branch-ink-700);
+    }
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1px solid var(--branch-line);
+        border-radius: 999px;
+        padding: 0.35rem 1rem;
+        font-size: 0.88rem;
+        color: var(--branch-ink-900);
+        margin-left: 0.5rem;
+    }
+    .dataTables_wrapper .dataTables_filter input:focus,
+    .dataTables_wrapper .dataTables_length select:focus {
+        outline: none;
+        border-color: var(--branch-brand);
+        box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+    }
+    .dataTables_info {
+        font-size: 0.85rem;
+        color: var(--branch-ink-500);
+        padding-top: 1rem !important;
+    }
+    .dataTables_paginate {
+        padding-top: 1rem !important;
+    }
+    .paginate_button.page-item.active .page-link {
+        background-color: var(--branch-brand) !important;
+        border-color: var(--branch-brand) !important;
     }
 </style>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 @endpush
 
 @section('content')
@@ -301,7 +334,7 @@
         <h5 class="content-card-title"><i class="bi bi-funnel"></i>{{ __('branch::branch.shop_filter') }}</h5>
     </div>
     <div class="p-3 p-md-4">
-        <form action="{{ route('branch.index') }}" method="GET" class="row g-3 align-items-end">
+        <form id="filterForm" class="row g-3 align-items-end">
             <div class="col-sm-8 col-md-9">
                 <select id="shop_id" name="shop_id" class="form-select">
                     <option value="">{{ __('branch::branch.all_shops') }}</option>
@@ -316,140 +349,97 @@
                 <button type="submit" class="btn btn-outline-primary fw-semibold flex-fill">
                     <i class="bi bi-search me-1 d-none d-sm-inline"></i>{{ __('app.apply_filters') }}
                 </button>
-                @if($selectedShopId)
-                    <a href="{{ route('branch.index') }}" class="btn btn-outline-secondary" title="{{ __('app.back_to_list') }}">
-                        <i class="bi bi-x-lg"></i>
-                    </a>
-                @endif
+                <button type="button" id="resetFilters" class="btn btn-outline-secondary" title="{{ __('app.back_to_list') }}">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
         </form>
     </div>
 </div>
 
-{{-- Desktop Table --}}
-<div class="content-card table-desktop">
-    <div class="table-responsive">
-        <table class="table table-custom">
+{{-- Branches Table Card --}}
+<div class="content-card">
+    <div class="table-responsive p-3">
+        <table id="branchesTable" class="table table-custom w-100">
             <thead>
                 <tr>
                     <th>{{ __('branch::branch.name') }}</th>
                     <th>{{ __('branch::branch.shop') }}</th>
                     <th>{{ __('branch::branch.location') }}</th>
                     <th>{{ __('branch::branch.phone') }}</th>
+                    <th>{{ __('branch::branch.created_by') }}</th>
                     <th>{{ __('branch::branch.status') }}</th>
                     <th>{{ __('app.created_at') }}</th>
                     <th>{{ __('app.actions') }}</th>
                 </tr>
             </thead>
-            <tbody>
-                @forelse($branches as $branch)
-                    <tr>
-                        <td><strong class="branch-name-cell">{{ $branch->name }}</strong></td>
-                        <td class="text-muted">{{ $branch->shop?->name ?? '-' }}</td>
-                        <td class="text-muted">{{ $branch->location ?: '-' }}</td>
-                        <td class="text-muted">{{ $branch->phone ?: '-' }}</td>
-                        <td>
-                            @if($branch->is_active)
-                                <span class="status-badge status-active"><i class="bi bi-check-circle-fill"></i>{{ __('branch::branch.active') }}</span>
-                            @else
-                                <span class="status-badge status-inactive"><i class="bi bi-dash-circle"></i>{{ __('branch::branch.inactive') }}</span>
-                            @endif
-                        </td>
-                        <td class="branch-date-cell">{{ $branch->created_at?->format('M d, Y') }}</td>
-                        <td>
-                            <div class="d-flex gap-1">
-                                <a href="{{ route('branch.show', $branch->id) }}" class="btn btn-outline-info action-btn" title="{{ __('app.view') }}">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a href="{{ route('branch.edit', $branch->id) }}" class="btn btn-outline-warning action-btn" title="{{ __('app.edit') }}">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <form action="{{ route('branch.destroy', $branch->id) }}" method="POST" class="d-inline"
-                                    onsubmit="return confirm('{{ __('branch::branch.confirm_delete') }}')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger action-btn" title="{{ __('app.delete') }}">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7">
-                            <div class="empty-state">
-                                <i class="bi bi-diagram-3"></i>
-                                <strong class="d-block mb-1">{{ __('branch::branch.no_branches') }}</strong>
-                                <p class="text-muted mb-3 small">{{ __('branch::branch.no_branches_sub') }}</p>
-                                <a href="{{ route('branch.create', ['shop_id' => $selectedShopId]) }}" class="btn-create-first">
-                                    <i class="bi bi-plus-circle"></i>{{ __('branch::branch.add_new') }}
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
+            <tbody></tbody>
         </table>
     </div>
-    @if($branches->hasPages())
-        <div class="p-3 border-top">{{ $branches->links() }}</div>
-    @endif
 </div>
-
-{{-- Mobile Cards --}}
-<div class="branch-mobile-cards">
-    @forelse($branches as $branch)
-        <div class="branch-mobile-card">
-            <div class="bmc-header">
-                <div>
-                    <strong class="branch-name-cell d-block">{{ $branch->name }}</strong>
-                    <span class="text-muted small">{{ $branch->shop?->name ?? '-' }}</span>
-                </div>
-                @if($branch->is_active)
-                    <span class="status-badge status-active"><i class="bi bi-check-circle-fill"></i>{{ __('branch::branch.active') }}</span>
-                @else
-                    <span class="status-badge status-inactive"><i class="bi bi-dash-circle"></i>{{ __('branch::branch.inactive') }}</span>
-                @endif
-            </div>
-            @if($branch->location)
-                <div class="bmc-meta"><i class="bi bi-geo-alt"></i>{{ $branch->location }}</div>
-            @endif
-            @if($branch->phone)
-                <div class="bmc-meta"><i class="bi bi-telephone"></i>{{ $branch->phone }}</div>
-            @endif
-            <div class="bmc-meta"><i class="bi bi-calendar3"></i>{{ $branch->created_at?->format('M d, Y') }}</div>
-            <div class="bmc-actions">
-                <a href="{{ route('branch.show', $branch->id) }}" class="btn btn-sm btn-outline-info flex-fill text-center">
-                    <i class="bi bi-eye me-1"></i>{{ __('app.view') }}
-                </a>
-                <a href="{{ route('branch.edit', $branch->id) }}" class="btn btn-sm btn-outline-warning flex-fill text-center">
-                    <i class="bi bi-pencil me-1"></i>{{ __('app.edit') }}
-                </a>
-                <form action="{{ route('branch.destroy', $branch->id) }}" method="POST"
-                    onsubmit="return confirm('{{ __('branch::branch.confirm_delete') }}')">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </form>
-            </div>
-        </div>
-    @empty
-        <div class="content-card p-4">
-            <div class="empty-state">
-                <i class="bi bi-diagram-3"></i>
-                <strong class="d-block mb-1">{{ __('branch::branch.no_branches') }}</strong>
-                <p class="text-muted mb-3 small">{{ __('branch::branch.no_branches_sub') }}</p>
-                <a href="{{ route('branch.create', ['shop_id' => $selectedShopId]) }}" class="btn-create-first">
-                    <i class="bi bi-plus-circle"></i>{{ __('branch::branch.add_new') }}
-                </a>
-            </div>
-        </div>
-    @endforelse
-    @if($branches->hasPages())
-        <div class="mt-3">{{ $branches->links() }}</div>
-    @endif
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    $(document).ready(function() {
+        const table = $('#branchesTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: "{{ route('branch.index') }}",
+                data: function(d) {
+                    d.shop_id = $('#shop_id').val();
+                }
+            },
+            columns: [
+                { data: 'name', name: 'name', render: function(data, type, row) {
+                    return '<strong class="branch-name-cell">' + escapeHtml(data) + '</strong>';
+                }},
+                { data: 'shop_name', name: 'shop.name', defaultContent: '-' },
+                { data: 'location', name: 'location', defaultContent: '-', render: function(data) {
+                    return data ? escapeHtml(data) : '-';
+                }},
+                { data: 'phone', name: 'phone', defaultContent: '-', render: function(data) {
+                    return data ? escapeHtml(data) : '-';
+                }},
+                { data: 'creator_name', name: 'creator.name', defaultContent: '-', render: function(data) {
+                    return data ? escapeHtml(data) : '-';
+                }},
+                { data: 'status', name: 'is_active', orderable: false, searchable: false },
+                { data: 'created_at_formatted', name: 'created_at' },
+                { data: 'actions', name: 'actions', orderable: false, searchable: false, className: 'text-center' }
+            ],
+            order: [[0, 'asc']],
+            pageLength: 15,
+            lengthMenu: [10, 15, 25, 50, 100],
+            language: {
+                searchPlaceholder: "Search branches...",
+                search: ""
+            }
+        });
+
+        $('#filterForm').on('submit', function(e) {
+            e.preventDefault();
+            table.ajax.reload();
+        });
+
+        $('#resetFilters').on('click', function() {
+            $('#shop_id').val('');
+            table.ajax.reload();
+        });
+        
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    });
+</script>
+@endpush

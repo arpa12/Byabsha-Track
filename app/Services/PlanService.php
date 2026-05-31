@@ -35,6 +35,10 @@ class PlanService
 
     public function isFeatureEnabled(User $user, string $feature): bool
     {
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         $planModel = $user->currentPlan();
         if ($planModel instanceof SubscriptionPlan) {
             return (bool) $planModel->getFeature($feature, false);
@@ -46,6 +50,10 @@ class PlanService
 
     public function canCreate(User $user, string $resource): bool
     {
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         $planModel = $user->currentPlan();
         $limit = null;
         if ($planModel instanceof SubscriptionPlan) {

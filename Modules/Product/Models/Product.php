@@ -28,6 +28,7 @@ class Product extends TenantModel
         'free_service_duration_value',
         'free_service_duration_unit',
         'free_service_terms',
+        'created_by',
     ];
 
     protected $casts = [
@@ -37,11 +38,17 @@ class Product extends TenantModel
         'stock_quantity' => 'integer',
         'has_free_service' => 'boolean',
         'free_service_duration_value' => 'integer',
+        'created_by' => 'integer',
     ];
 
     public function shop()
     {
         return $this->belongsTo(Shop::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'created_by')->withTrashed();
     }
 
     public function productCategory()

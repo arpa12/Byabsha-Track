@@ -146,7 +146,42 @@
     .btn-empty-brand:hover {
         color: #fff;
     }
+    
+    .dataTables_wrapper .dataTables_length select {
+        border: 1px solid var(--brand-line);
+        border-radius: 10px;
+        padding: 0.35rem 1.8rem 0.35rem 0.75rem;
+        font-size: 0.88rem;
+        color: var(--brand-ink-700);
+    }
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1px solid var(--brand-line);
+        border-radius: 999px;
+        padding: 0.35rem 1rem;
+        font-size: 0.88rem;
+        color: var(--brand-ink-900);
+        margin-left: 0.5rem;
+    }
+    .dataTables_wrapper .dataTables_filter input:focus,
+    .dataTables_wrapper .dataTables_length select:focus {
+        outline: none;
+        border-color: var(--brand-accent);
+        box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+    }
+    .dataTables_info {
+        font-size: 0.85rem;
+        color: var(--brand-ink-500);
+        padding-top: 1rem !important;
+    }
+    .dataTables_paginate {
+        padding-top: 1rem !important;
+    }
+    .paginate_button.page-item.active .page-link {
+        background-color: var(--brand-accent) !important;
+        border-color: var(--brand-accent) !important;
+    }
 </style>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 <?php $__env->stopPush(); ?>
 
 <?php $__env->startSection('content'); ?>
@@ -163,56 +198,76 @@
     </a>
 </div>
 
+<?php if(auth()->user()->isSuperAdmin()): ?>
+    <div class="alert alert-info border-0 rounded-4 shadow-sm mb-4 d-inline-flex align-items-center gap-2">
+        <i class="bi bi-info-circle-fill text-info fs-5"></i>
+        <div>
+            Total Brands Created: <strong class="text-dark"><?php echo e($totalBrandsCount); ?></strong> across all users.
+        </div>
+    </div>
+<?php endif; ?>
+
 <div class="content-card">
-    <div class="card-body p-0">
-        <?php if($brands->count() > 0): ?>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 table-brand">
-                    <thead class="table-light">
-                        <tr>
-                            <th><?php echo e(__('brand::brand.name')); ?></th>
-                            <th class="text-center"><?php echo e(__('brand::brand.product_count')); ?></th>
-                            <th class="text-end"><?php echo e(__('app.actions')); ?></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php $__currentLoopData = $brands; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $brand): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <tr>
-                                <td><span class="brand-name"><?php echo e($brand->name); ?></span></td>
-                                <td class="text-center"><span class="product-count-pill"><?php echo e($brand->products_count); ?></span></td>
-                                <td class="text-end">
-                                    <a href="<?php echo e(route('brand.show', $brand->id)); ?>" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="<?php echo e(route('brand.edit', $brand->id)); ?>" class="btn btn-sm btn-outline-warning">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <form action="<?php echo e(route('brand.destroy', $brand->id)); ?>" method="POST" class="d-inline"
-                                          onsubmit="return confirm('<?php echo e(__('brand::brand.confirm_delete')); ?>')">
-                                        <?php echo csrf_field(); ?>
-                                        <?php echo method_field('DELETE'); ?>
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                    </tbody>
-                </table>
-            </div>
-            <div class="p-3"><?php echo e($brands->links()); ?></div>
-        <?php else: ?>
-            <div class="empty-state">
-                <i class="bi bi-bookmark-star"></i>
-                <h5 class="mb-2"><?php echo e(__('brand::brand.no_brands')); ?></h5>
-                <p class="text-muted mb-3"><?php echo e(__('brand::brand.no_brands_sub')); ?></p>
-                <a href="<?php echo e(route('brand.create')); ?>" class="btn-empty-brand"><?php echo e(__('brand::brand.add_new')); ?></a>
-            </div>
-        <?php endif; ?>
+    <div class="card-body p-3">
+        <div class="table-responsive">
+            <table id="brandsTable" class="table table-hover align-middle mb-0 table-brand w-100">
+                <thead class="table-light">
+                    <tr>
+                        <th><?php echo e(__('brand::brand.name')); ?></th>
+                        <?php if(auth()->user()->isSuperAdmin()): ?>
+                            <th>Created By</th>
+                        <?php endif; ?>
+                        <th><?php echo e(__('brand::brand.product_count')); ?></th>
+                        <th class="text-end"><?php echo e(__('app.actions')); ?></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 </div>
 </div>
 <?php $__env->stopSection(); ?>
+
+<?php $__env->startPush('scripts'); ?>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#brandsTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: "<?php echo e(route('brand.index')); ?>",
+            columns: [
+                { data: 'name', name: 'name', render: function(data, type, row) {
+                    return '<span class="brand-name">' + escapeHtml(data) + '</span>';
+                }},
+                <?php if(auth()->user()->isSuperAdmin()): ?>
+                    { data: 'owner_info', name: 'owner.name' },
+                <?php endif; ?>
+                { data: 'products_badge', name: 'products_count', className: 'text-center', orderable: false, searchable: false },
+                { data: 'actions', name: 'actions', orderable: false, searchable: false }
+            ],
+            order: [[0, 'asc']],
+            pageLength: 15,
+            lengthMenu: [10, 15, 25, 50, 100],
+            language: {
+                searchPlaceholder: "Search brands...",
+                search: ""
+            }
+        });
+        
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    });
+</script>
+<?php $__env->stopPush(); ?>
 
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\Arpa\self_project\byabshaTrack\Modules/Brand\resources/views/index.blade.php ENDPATH**/ ?>

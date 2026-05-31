@@ -13,10 +13,62 @@ use Modules\Product\Models\ProductDynamicField;
 
 class ProductDynamicFieldController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        if ($request->ajax()) {
+            $query = ProductDynamicField::query()
+                ->with(['category:id,name', 'creator:id,name']);
+
+            return datatables()->of($query)
+                ->addColumn('category_name', function ($field) {
+                    return $field->category?->name ?? __('product.dynamic_all_categories');
+                })
+                ->addColumn('creator_name', function ($field) {
+                    return $field->creator?->name ?? '-';
+                })
+                ->editColumn('field_key', function ($field) {
+                    return '<span class="key-chip">' . e($field->field_key) . '</span>';
+                })
+                ->editColumn('input_type', function ($field) {
+                    return strtoupper(e($field->input_type));
+                })
+                ->editColumn('is_active', function ($field) {
+                    $class = $field->is_active ? 'text-bg-success' : 'text-bg-secondary';
+                    $text = $field->is_active ? __('app.active') : __('app.inactive');
+                    return '<span class="badge ' . $class . '">' . e($text) . '</span>';
+                })
+                ->editColumn('is_required', function ($field) {
+                    $class = $field->is_required ? 'text-bg-danger' : 'text-bg-light border';
+                    $text = $field->is_required ? __('app.yes') : __('app.no');
+                    return '<span class="badge ' . $class . '">' . e($text) . '</span>';
+                })
+                ->addColumn('actions', function ($field) {
+                    $editRoute = route('product.dynamic-fields.edit', $field->id);
+                    $destroyRoute = route('product.dynamic-fields.destroy', $field->id);
+                    $confirmMessage = __('product.confirm_delete_dynamic_field');
+                    $csrf = csrf_field();
+                    $method = method_field('DELETE');
+
+                    return <<<HTML
+                        <div class="btn-group btn-group-sm">
+                            <a href="{$editRoute}" class="btn btn-action-edit" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="POST" action="{$destroyRoute}" onsubmit="return confirm('{$confirmMessage}')" class="d-inline">
+                                {$csrf}
+                                {$method}
+                                <button type="submit" class="btn btn-action-delete" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    HTML;
+                })
+                ->rawColumns(['field_key', 'is_active', 'is_required', 'actions'])
+                ->make(true);
+        }
+
         $fields = ProductDynamicField::query()
-            ->with('category:id,name')
             ->orderBy('sort_order')
             ->orderBy('id')
             ->paginate(20);
@@ -45,6 +97,7 @@ class ProductDynamicFieldController extends Controller
         ]);
 
         $validated = $this->validateRequest($request);
+        $validated['created_by'] = auth()->id();
 
         ProductDynamicField::create($validated);
 
@@ -100,7 +153,6 @@ class ProductDynamicFieldController extends Controller
                 'alpha_dash',
                 Rule::unique('product_dynamic_fields', 'field_key')
                     ->where(fn ($query) => $query->where('category_id', $request->input('category_id')))
-                    ->whereNull('deleted_at')
                     ->ignore($field?->id),
             ],
             'input_type' => ['required', Rule::in(ProductDynamicField::INPUT_TYPES)],
@@ -149,8 +201,7 @@ class ProductDynamicFieldController extends Controller
         $fieldKey = $baseKey;
         $suffix = 2;
 
-        while (ProductDynamicField::query()
-            ->whereNull('deleted_at')
+        while (ProductDynamicField::withTrashed()
             ->where('category_id', $categoryId)
             ->where('field_key', $fieldKey)
             ->exists()) {

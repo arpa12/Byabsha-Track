@@ -241,7 +241,7 @@ class UserController extends Controller
     }
 
     /**
-     * Process manager approval: assign shop, branch, permissions.
+     * Process manager approval: assign shop, branch (optional), permissions.
      */
     public function approve(Request $request, $id)
     {
@@ -253,12 +253,14 @@ class UserController extends Controller
         $validated = $request->validate([
             'shop_id' => 'required|exists:shops,id',
             'branch_id' => [
-                'required',
+                'nullable',
                 'exists:branches,id',
                 function ($attribute, $value, $fail) use ($request) {
-                    $branch = Branch::find($value);
-                    if ($branch && (int) $branch->shop_id !== (int) $request->input('shop_id')) {
-                        $fail(__('user.branch_shop_mismatch'));
+                    if ($value) {
+                        $branch = Branch::find($value);
+                        if ($branch && (int) $branch->shop_id !== (int) $request->input('shop_id')) {
+                            $fail(__('user.branch_shop_mismatch'));
+                        }
                     }
                 },
             ],

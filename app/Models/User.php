@@ -20,6 +20,7 @@ class User extends Authenticatable
         'brand',
         'category',
         'product',
+        'product_attributes',
         'stock',
         'sale',
         'capital',

@@ -18,6 +18,7 @@ return [
     'out_of_stock' => 'Out of Stock',
     'stock_table_title' => 'Product Stock List',
     'product' => 'Product',
+    'created_by' => 'Created By',
     'category' => 'Category',
     'brand' => 'Brand',
     'custom_attributes' => 'Custom Attributes',

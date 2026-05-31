@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 return [
     'title' => 'স্টক ওভারভিউ',
@@ -15,6 +15,7 @@ return [
     'out_of_stock' => 'স্টক শেষ',
     'stock_table_title' => 'পণ্যের স্টক তালিকা',
     'product' => 'পণ্য',
+    'created_by' => 'তৈরি করেছেন',
     'category' => 'ক্যাটাগরি',
     'brand' => 'ব্র্যান্ড',
     'purchase_price' => 'ক্রয় মূল্য',

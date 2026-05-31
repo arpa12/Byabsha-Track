@@ -21,16 +21,23 @@ class Branch extends TenantModel
         'email',
         'address',
         'is_active',
+        'created_by',
     ];
 
     protected $casts = [
         'shop_id' => 'integer',
         'is_active' => 'boolean',
+        'created_by' => 'integer',
     ];
 
     public function shop()
     {
         return $this->belongsTo(Shop::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by')->withTrashed();
     }
 
     public function scopeForUser(Builder $query, User $user): Builder

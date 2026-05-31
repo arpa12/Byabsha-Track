@@ -273,10 +273,43 @@
         .branch-header { flex-direction: column; align-items: stretch !important; }
         .btn-branch-theme { width: 100%; justify-content: center; }
         .btn-add-branch { width: 100%; justify-content: center; }
-        .table-desktop { display: none; }
-        .branch-mobile-cards { display: block; }
+    }
+    
+    .dataTables_wrapper .dataTables_length select {
+        border: 1px solid var(--branch-line);
+        border-radius: 10px;
+        padding: 0.35rem 1.8rem 0.35rem 0.75rem;
+        font-size: 0.88rem;
+        color: var(--branch-ink-700);
+    }
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1px solid var(--branch-line);
+        border-radius: 999px;
+        padding: 0.35rem 1rem;
+        font-size: 0.88rem;
+        color: var(--branch-ink-900);
+        margin-left: 0.5rem;
+    }
+    .dataTables_wrapper .dataTables_filter input:focus,
+    .dataTables_wrapper .dataTables_length select:focus {
+        outline: none;
+        border-color: var(--branch-brand);
+        box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+    }
+    .dataTables_info {
+        font-size: 0.85rem;
+        color: var(--branch-ink-500);
+        padding-top: 1rem !important;
+    }
+    .dataTables_paginate {
+        padding-top: 1rem !important;
+    }
+    .paginate_button.page-item.active .page-link {
+        background-color: var(--branch-brand) !important;
+        border-color: var(--branch-brand) !important;
     }
 </style>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 <?php $__env->stopPush(); ?>
 
 <?php $__env->startSection('content'); ?>
@@ -300,7 +333,7 @@
         <h5 class="content-card-title"><i class="bi bi-funnel"></i><?php echo e(__('branch::branch.shop_filter')); ?></h5>
     </div>
     <div class="p-3 p-md-4">
-        <form action="<?php echo e(route('branch.index')); ?>" method="GET" class="row g-3 align-items-end">
+        <form id="filterForm" class="row g-3 align-items-end">
             <div class="col-sm-8 col-md-9">
                 <select id="shop_id" name="shop_id" class="form-select">
                     <option value=""><?php echo e(__('branch::branch.all_shops')); ?></option>
@@ -317,20 +350,18 @@
                     <i class="bi bi-search me-1 d-none d-sm-inline"></i><?php echo e(__('app.apply_filters')); ?>
 
                 </button>
-                <?php if($selectedShopId): ?>
-                    <a href="<?php echo e(route('branch.index')); ?>" class="btn btn-outline-secondary" title="<?php echo e(__('app.back_to_list')); ?>">
-                        <i class="bi bi-x-lg"></i>
-                    </a>
-                <?php endif; ?>
+                <button type="button" id="resetFilters" class="btn btn-outline-secondary" title="<?php echo e(__('app.back_to_list')); ?>">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
         </form>
     </div>
 </div>
 
 
-<div class="content-card table-desktop">
-    <div class="table-responsive">
-        <table class="table table-custom">
+<div class="content-card">
+    <div class="table-responsive p-3">
+        <table id="branchesTable" class="table table-custom w-100">
             <thead>
                 <tr>
                     <th><?php echo e(__('branch::branch.name')); ?></th>
@@ -342,121 +373,72 @@
                     <th><?php echo e(__('app.actions')); ?></th>
                 </tr>
             </thead>
-            <tbody>
-                <?php $__empty_1 = true; $__currentLoopData = $branches; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $branch): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                    <tr>
-                        <td><strong class="branch-name-cell"><?php echo e($branch->name); ?></strong></td>
-                        <td class="text-muted"><?php echo e($branch->shop?->name ?? '-'); ?></td>
-                        <td class="text-muted"><?php echo e($branch->location ?: '-'); ?></td>
-                        <td class="text-muted"><?php echo e($branch->phone ?: '-'); ?></td>
-                        <td>
-                            <?php if($branch->is_active): ?>
-                                <span class="status-badge status-active"><i class="bi bi-check-circle-fill"></i><?php echo e(__('branch::branch.active')); ?></span>
-                            <?php else: ?>
-                                <span class="status-badge status-inactive"><i class="bi bi-dash-circle"></i><?php echo e(__('branch::branch.inactive')); ?></span>
-                            <?php endif; ?>
-                        </td>
-                        <td class="branch-date-cell"><?php echo e($branch->created_at?->format('M d, Y')); ?></td>
-                        <td>
-                            <div class="d-flex gap-1">
-                                <a href="<?php echo e(route('branch.show', $branch->id)); ?>" class="btn btn-outline-info action-btn" title="<?php echo e(__('app.view')); ?>">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a href="<?php echo e(route('branch.edit', $branch->id)); ?>" class="btn btn-outline-warning action-btn" title="<?php echo e(__('app.edit')); ?>">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <form action="<?php echo e(route('branch.destroy', $branch->id)); ?>" method="POST" class="d-inline"
-                                    onsubmit="return confirm('<?php echo e(__('branch::branch.confirm_delete')); ?>')">
-                                    <?php echo csrf_field(); ?>
-                                    <?php echo method_field('DELETE'); ?>
-                                    <button type="submit" class="btn btn-outline-danger action-btn" title="<?php echo e(__('app.delete')); ?>">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                    <tr>
-                        <td colspan="7">
-                            <div class="empty-state">
-                                <i class="bi bi-diagram-3"></i>
-                                <strong class="d-block mb-1"><?php echo e(__('branch::branch.no_branches')); ?></strong>
-                                <p class="text-muted mb-3 small"><?php echo e(__('branch::branch.no_branches_sub')); ?></p>
-                                <a href="<?php echo e(route('branch.create', ['shop_id' => $selectedShopId])); ?>" class="btn-create-first">
-                                    <i class="bi bi-plus-circle"></i><?php echo e(__('branch::branch.add_new')); ?>
-
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
+            <tbody></tbody>
         </table>
     </div>
-    <?php if($branches->hasPages()): ?>
-        <div class="p-3 border-top"><?php echo e($branches->links()); ?></div>
-    <?php endif; ?>
 </div>
-
-
-<div class="branch-mobile-cards">
-    <?php $__empty_1 = true; $__currentLoopData = $branches; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $branch): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-        <div class="branch-mobile-card">
-            <div class="bmc-header">
-                <div>
-                    <strong class="branch-name-cell d-block"><?php echo e($branch->name); ?></strong>
-                    <span class="text-muted small"><?php echo e($branch->shop?->name ?? '-'); ?></span>
-                </div>
-                <?php if($branch->is_active): ?>
-                    <span class="status-badge status-active"><i class="bi bi-check-circle-fill"></i><?php echo e(__('branch::branch.active')); ?></span>
-                <?php else: ?>
-                    <span class="status-badge status-inactive"><i class="bi bi-dash-circle"></i><?php echo e(__('branch::branch.inactive')); ?></span>
-                <?php endif; ?>
-            </div>
-            <?php if($branch->location): ?>
-                <div class="bmc-meta"><i class="bi bi-geo-alt"></i><?php echo e($branch->location); ?></div>
-            <?php endif; ?>
-            <?php if($branch->phone): ?>
-                <div class="bmc-meta"><i class="bi bi-telephone"></i><?php echo e($branch->phone); ?></div>
-            <?php endif; ?>
-            <div class="bmc-meta"><i class="bi bi-calendar3"></i><?php echo e($branch->created_at?->format('M d, Y')); ?></div>
-            <div class="bmc-actions">
-                <a href="<?php echo e(route('branch.show', $branch->id)); ?>" class="btn btn-sm btn-outline-info flex-fill text-center">
-                    <i class="bi bi-eye me-1"></i><?php echo e(__('app.view')); ?>
-
-                </a>
-                <a href="<?php echo e(route('branch.edit', $branch->id)); ?>" class="btn btn-sm btn-outline-warning flex-fill text-center">
-                    <i class="bi bi-pencil me-1"></i><?php echo e(__('app.edit')); ?>
-
-                </a>
-                <form action="<?php echo e(route('branch.destroy', $branch->id)); ?>" method="POST"
-                    onsubmit="return confirm('<?php echo e(__('branch::branch.confirm_delete')); ?>')">
-                    <?php echo csrf_field(); ?>
-                    <?php echo method_field('DELETE'); ?>
-                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </form>
-            </div>
-        </div>
-    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-        <div class="content-card p-4">
-            <div class="empty-state">
-                <i class="bi bi-diagram-3"></i>
-                <strong class="d-block mb-1"><?php echo e(__('branch::branch.no_branches')); ?></strong>
-                <p class="text-muted mb-3 small"><?php echo e(__('branch::branch.no_branches_sub')); ?></p>
-                <a href="<?php echo e(route('branch.create', ['shop_id' => $selectedShopId])); ?>" class="btn-create-first">
-                    <i class="bi bi-plus-circle"></i><?php echo e(__('branch::branch.add_new')); ?>
-
-                </a>
-            </div>
-        </div>
-    <?php endif; ?>
-    <?php if($branches->hasPages()): ?>
-        <div class="mt-3"><?php echo e($branches->links()); ?></div>
-    <?php endif; ?>
 </div>
 <?php $__env->stopSection(); ?>
+
+<?php $__env->startPush('scripts'); ?>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    $(document).ready(function() {
+        const table = $('#branchesTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: "<?php echo e(route('branch.index')); ?>",
+                data: function(d) {
+                    d.shop_id = $('#shop_id').val();
+                }
+            },
+            columns: [
+                { data: 'name', name: 'name', render: function(data, type, row) {
+                    return '<strong class="branch-name-cell">' + escapeHtml(data) + '</strong>';
+                }},
+                { data: 'shop_name', name: 'shop.name', defaultContent: '-' },
+                { data: 'location', name: 'location', defaultContent: '-', render: function(data) {
+                    return data ? escapeHtml(data) : '-';
+                }},
+                { data: 'phone', name: 'phone', defaultContent: '-', render: function(data) {
+                    return data ? escapeHtml(data) : '-';
+                }},
+                { data: 'status', name: 'is_active', orderable: false, searchable: false },
+                { data: 'created_at_formatted', name: 'created_at' },
+                { data: 'actions', name: 'actions', orderable: false, searchable: false, className: 'text-center' }
+            ],
+            order: [[0, 'asc']],
+            pageLength: 15,
+            lengthMenu: [10, 15, 25, 50, 100],
+            language: {
+                searchPlaceholder: "Search branches...",
+                search: ""
+            }
+        });
+
+        $('#filterForm').on('submit', function(e) {
+            e.preventDefault();
+            table.ajax.reload();
+        });
+
+        $('#resetFilters').on('click', function() {
+            $('#shop_id').val('');
+            table.ajax.reload();
+        });
+        
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    });
+</script>
+<?php $__env->stopPush(); ?>
 
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\Arpa\self_project\byabshaTrack\Modules/Branch\resources/views/index.blade.php ENDPATH**/ ?>

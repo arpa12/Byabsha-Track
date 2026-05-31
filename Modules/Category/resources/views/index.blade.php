@@ -148,7 +148,42 @@
     .btn-empty-category:hover {
         color: #fff;
     }
+    
+    .dataTables_wrapper .dataTables_length select {
+        border: 1px solid var(--category-line);
+        border-radius: 10px;
+        padding: 0.35rem 1.8rem 0.35rem 0.75rem;
+        font-size: 0.88rem;
+        color: var(--category-ink-700);
+    }
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1px solid var(--category-line);
+        border-radius: 999px;
+        padding: 0.35rem 1rem;
+        font-size: 0.88rem;
+        color: var(--category-ink-900);
+        margin-left: 0.5rem;
+    }
+    .dataTables_wrapper .dataTables_filter input:focus,
+    .dataTables_wrapper .dataTables_length select:focus {
+        outline: none;
+        border-color: var(--category-brand);
+        box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+    }
+    .dataTables_info {
+        font-size: 0.85rem;
+        color: var(--category-ink-500);
+        padding-top: 1rem !important;
+    }
+    .dataTables_paginate {
+        padding-top: 1rem !important;
+    }
+    .paginate_button.page-item.active .page-link {
+        background-color: var(--category-brand) !important;
+        border-color: var(--category-brand) !important;
+    }
 </style>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 @endpush
 
 @section('content')
@@ -164,54 +199,74 @@
     </a>
 </div>
 
+@if(auth()->user()->isSuperAdmin())
+    <div class="alert alert-info border-0 rounded-4 shadow-sm mb-4 d-inline-flex align-items-center gap-2">
+        <i class="bi bi-info-circle-fill text-info fs-5"></i>
+        <div>
+            Total Categories Created: <strong class="text-dark">{{ $totalCategoriesCount }}</strong> across all users.
+        </div>
+    </div>
+@endif
+
 <div class="content-card">
-    <div class="card-body p-0">
-        @if($categories->count() > 0)
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 table-category">
-                    <thead class="table-light">
-                        <tr>
-                            <th>{{ __('category::category.name') }}</th>
-                            <th class="text-center">{{ __('category::category.product_count') }}</th>
-                            <th class="text-end">{{ __('app.actions') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($categories as $category)
-                            <tr>
-                                <td><span class="category-name">{{ $category->name }}</span></td>
-                                <td class="text-center"><span class="product-count-pill">{{ $category->products_count }}</span></td>
-                                <td class="text-end">
-                                    <a href="{{ route('category.show', $category->id) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="{{ route('category.edit', $category->id) }}" class="btn btn-sm btn-outline-warning">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <form action="{{ route('category.destroy', $category->id) }}" method="POST" class="d-inline"
-                                          onsubmit="return confirm('{{ __('category::category.confirm_delete') }}')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            <div class="p-3">{{ $categories->links() }}</div>
-        @else
-            <div class="empty-state">
-                <i class="bi bi-tags"></i>
-                <h5 class="mb-2">{{ __('category::category.no_categories') }}</h5>
-                <p class="text-muted mb-3">{{ __('category::category.no_categories_sub') }}</p>
-                <a href="{{ route('category.create') }}" class="btn-empty-category">{{ __('category::category.add_new') }}</a>
-            </div>
-        @endif
+    <div class="card-body p-3">
+        <div class="table-responsive">
+            <table id="categoriesTable" class="table table-hover align-middle mb-0 table-category w-100">
+                <thead class="table-light">
+                    <tr>
+                        <th>{{ __('category::category.name') }}</th>
+                        @if(auth()->user()->isSuperAdmin())
+                            <th>Created By</th>
+                        @endif
+                        <th>{{ __('category::category.product_count') }}</th>
+                        <th class="text-end">{{ __('app.actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#categoriesTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: "{{ route('category.index') }}",
+            columns: [
+                { data: 'name', name: 'name', render: function(data, type, row) {
+                    return '<span class="category-name">' + escapeHtml(data) + '</span>';
+                }},
+                @if(auth()->user()->isSuperAdmin())
+                    { data: 'owner_info', name: 'owner.name' },
+                @endif
+                { data: 'products_badge', name: 'products_count', className: 'text-center', orderable: false, searchable: false },
+                { data: 'actions', name: 'actions', orderable: false, searchable: false }
+            ],
+            order: [[0, 'asc']],
+            pageLength: 15,
+            lengthMenu: [10, 15, 25, 50, 100],
+            language: {
+                searchPlaceholder: "Search categories...",
+                search: ""
+            }
+        });
+        
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    });
+</script>
+@endpush

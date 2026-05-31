@@ -20,7 +20,7 @@ class CapitalController extends Controller
         $user = auth()->user();
         $planService = app(\App\Services\PlanService::class);
         if (!$planService->isFeatureEnabled($user, 'capitals')) {
-            return redirect()->route('dashboard')->with('error', 'Capitals are not available on your current plan. Please upgrade to access this feature.');
+            return redirect()->route('dashboard.index')->with('error', 'Capitals are not available on your current plan. Please upgrade to access this feature.');
         }
         $shopIds = $user->accessibleShopIds();
         $capitals = $this->capitalService->getAllShopCapitals($shopIds);

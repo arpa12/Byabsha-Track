@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Register simple plan helpers for convenience in controllers and views
-        if (! function_exists('planFeature')) {
+        if (! function_exists('App\Providers\planFeature')) {
             function planFeature(string $feature, $user = null): bool
             {
                 $user = $user ?: auth()->user();
@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
-        if (! function_exists('planLimit')) {
+        if (! function_exists('App\Providers\planLimit')) {
             function planLimit(string $limitKey, $user = null)
             {
                 $user = $user ?: auth()->user();
@@ -46,7 +46,7 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
-        if (! function_exists('has_module_access')) {
+        if (! function_exists('App\Providers\has_module_access')) {
             function has_module_access(string $moduleKey, $user = null): bool
             {
                 $user = $user ?: auth()->user();

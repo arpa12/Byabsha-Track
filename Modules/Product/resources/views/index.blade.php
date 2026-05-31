@@ -545,89 +545,25 @@
 </div>
 
 <div class="content-card">
-    @if($products && $products->count() > 0)
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="productDataTable">
-                <thead class="table-light">
-                    <tr>
-                        <th>{{ __('product.col_name') }}</th>
-                        <th>{{ __('product.col_model_name') }}</th>
-                        <th>{{ __('product.col_shop') }}</th>
-                        <th>{{ __('product.col_category') }}</th>
-                        <th>{{ __('product.col_brand') }}</th>
-                        <th class="text-end">{{ __('product.col_purchase_price') }}</th>
-                        <th class="text-center">{{ __('product.col_stock') }}</th>
-                        <th class="text-center">{{ __('product.col_actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($products as $product)
-                    <tr>
-                        <td>
-                            <strong class="product-name">{{ $product->name }}</strong>
-                        </td>
-                        <td>{{ $product->dynamicValues->first()?->value ?? '-' }}</td>
-                        <td>
-                            <span class="shop-pill">{{ $product->shop->name }}</span>
-                        </td>
-                        <td>{{ $product->category ?? '-' }}</td>
-                        <td>{{ $product->brand ?? '-' }}</td>
-                        <td class="text-end"><span class="price-value">৳{{ number_format($product->purchase_price, 2) }}</span></td>
-                        <td class="text-center">
-                            @if($product->stock_quantity <= 5)
-                                <span class="stock-badge stock-low">{{ $product->stock_quantity }}</span>
-                            @elseif($product->stock_quantity <= 20)
-                                <span class="stock-badge stock-mid">{{ $product->stock_quantity }}</span>
-                            @else
-                                <span class="stock-badge stock-high">{{ $product->stock_quantity }}</span>
-                            @endif
-                        </td>
-                        <td class="text-center">
-                            <div class="btn-group btn-group-sm" role="group">
-                                <a href="{{ route('product.batches', $product->id) }}"
-                                   class="btn btn-outline-success"
-                                   title="Batch Tracker">
-                                    <i class="bi bi-layers"></i>
-                                </a>
-                                <a href="{{ route('product.show', $product->id) }}"
-                                   class="btn btn-outline-primary"
-                                   title="View">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a href="{{ route('product.edit', $product->id) }}"
-                                   class="btn btn-outline-warning"
-                                   title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <form action="{{ route('product.destroy', $product->id) }}"
-                                      method="POST"
-                                      class="d-inline"
-                                      onsubmit="return confirm('{{ __("product.confirm_delete") }}')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit"
-                                            class="btn btn-outline-danger"
-                                            title="Delete">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @else
-        <div class="empty-state">
-            <i class="bi bi-box-seam"></i>
-            <h3>{{ __('product.no_products') }}</h3>
-            <p>{{ __('product.no_products_sub') }}</p>
-            <a href="{{ route('product.create', ['shop_id' => $selectedShopId]) }}" class="btn btn-empty-add">
-                <i class="bi bi-plus-circle"></i> {{ __('product.add_product_btn') }}
-            </a>
-        </div>
-    @endif
+    <div class="table-responsive p-3">
+        <table class="table table-hover align-middle mb-0 w-100" id="productDataTable">
+            <thead class="table-light">
+                <tr>
+                    <th>{{ __('product.col_name') }}</th>
+                    <th>{{ __('product.col_model_name') }}</th>
+                    <th>{{ __('product.col_shop') }}</th>
+                    <th>{{ __('product.col_category') }}</th>
+                    <th>{{ __('product.col_brand') }}</th>
+                    <th>{{ __('product.col_created_by') }}</th>
+                    <th class="text-end">{{ __('product.col_purchase_price') }}</th>
+                    <th class="text-center">{{ __('product.col_stock') }}</th>
+                    <th class="text-center">{{ __('product.col_actions') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
 </div>
 @else
 <div class="content-card">
@@ -651,7 +587,28 @@
             return;
         }
 
-        $('#productDataTable').DataTable({
+        var table = $('#productDataTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: '{{ route("product.index") }}',
+                data: function (d) {
+                    d.shop_id = '{{ $selectedShopId }}';
+                    d.category_id = $('#categoryNameFilter').val();
+                    d.search = $('#searchFilter').val();
+                }
+            },
+            columns: [
+                { data: 'name', name: 'name' },
+                { data: 'model_name', name: 'model_name', orderable: false, searchable: false },
+                { data: 'shop_name', name: 'shop.name', orderable: false },
+                { data: 'category', name: 'category' },
+                { data: 'brand', name: 'brand' },
+                { data: 'creator_name', name: 'creator.name', orderable: false },
+                { data: 'purchase_price', name: 'purchase_price', className: 'text-end' },
+                { data: 'stock_quantity', name: 'stock_quantity', className: 'text-center', orderable: true, searchable: false },
+                { data: 'actions', name: 'actions', orderable: false, searchable: false, className: 'text-center' }
+            ],
             pageLength: 15,
             order: [[0, 'asc']],
             responsive: true,
@@ -660,6 +617,12 @@
                 searchPlaceholder: @json(__('product.search_filter_placeholder')),
             },
             dom: 'rtip',
+        });
+
+        // Dynamic reload on filter change to avoid page refresh
+        $('form.control-row').on('submit', function (e) {
+            e.preventDefault();
+            table.ajax.reload();
         });
     });
 </script>

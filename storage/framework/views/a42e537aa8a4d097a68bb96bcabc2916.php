@@ -242,7 +242,42 @@
             justify-content: center;
         }
     }
+    
+    .dataTables_wrapper .dataTables_length select {
+        border: 1px solid var(--shop-line);
+        border-radius: 10px;
+        padding: 0.35rem 1.8rem 0.35rem 0.75rem;
+        font-size: 0.88rem;
+        color: var(--shop-ink-700);
+    }
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1px solid var(--shop-line);
+        border-radius: 999px;
+        padding: 0.35rem 1rem;
+        font-size: 0.88rem;
+        color: var(--shop-ink-900);
+        margin-left: 0.5rem;
+    }
+    .dataTables_wrapper .dataTables_filter input:focus,
+    .dataTables_wrapper .dataTables_length select:focus {
+        outline: none;
+        border-color: var(--shop-brand);
+        box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+    }
+    .dataTables_info {
+        font-size: 0.85rem;
+        color: var(--shop-ink-500);
+        padding-top: 1rem !important;
+    }
+    .dataTables_paginate {
+        padding-top: 1rem !important;
+    }
+    .paginate_button.page-item.active .page-link {
+        background-color: var(--shop-brand) !important;
+        border-color: var(--shop-brand) !important;
+    }
 </style>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 <?php $__env->stopPush(); ?>
 
 <?php $__env->startSection('content'); ?>
@@ -260,11 +295,14 @@
 </div>
 
 <div class="content-card">
-    <div class="table-responsive">
-        <table class="table table-custom">
+    <div class="table-responsive p-3">
+        <table id="shopsTable" class="table table-custom w-100">
             <thead>
                 <tr>
                     <th><?php echo e(__('shop.col_name')); ?></th>
+                    <?php if(auth()->user()->isSuperAdmin()): ?>
+                        <th><?php echo e(__('app.shop_owner')); ?></th>
+                    <?php endif; ?>
                     <th><?php echo e(__('shop.col_location')); ?></th>
                     <th><?php echo e(__('shop.col_address')); ?></th>
                     <th><?php echo e(__('shop.col_products')); ?></th>
@@ -274,79 +312,61 @@
                     <th><?php echo e(__('shop.col_actions')); ?></th>
                 </tr>
             </thead>
-            <tbody>
-                <?php $__empty_1 = true; $__currentLoopData = $shops; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $shop): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                <tr>
-                    <td>
-                        <strong class="shop-name"><?php echo e($shop->name); ?></strong>
-                    </td>
-                    <td class="text-muted">
-                        <?php echo e($shop->location ?: '-'); ?>
-
-                    </td>
-                    <td class="text-muted">
-                        <?php echo e($shop->address ?: '-'); ?>
-
-                    </td>
-                    <td>
-                        <span class="shop-badge shop-badge-products"><?php echo e($shop->products_count); ?> <?php echo e(__('shop.products_badge')); ?></span>
-                    </td>
-                    <td>
-                        <span class="shop-badge shop-badge-sales"><?php echo e($shop->sales_count); ?> <?php echo e(__('shop.sales_badge')); ?></span>
-                    </td>
-                    <td>
-                        <span class="shop-badge shop-badge-branches"><?php echo e($shop->branches_count); ?> <?php echo e(__('shop.branches_badge')); ?></span>
-                    </td>
-                    <td class="shop-date">
-                        <?php echo e($shop->created_at->format('M d, Y')); ?>
-
-                    </td>
-                    <td class="actions-cell">
-                        <div class="btn-group btn-group-sm">
-                            <a href="<?php echo e(route('shop.show', $shop->id)); ?>"
-                               class="btn btn-outline-info"
-                               title="View Details">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a href="<?php echo e(route('shop.edit', $shop->id)); ?>"
-                               class="btn btn-outline-warning"
-                               title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form action="<?php echo e(route('shop.destroy', $shop->id)); ?>"
-                                  method="POST"
-                                  class="d-inline"
-                                  onsubmit="return confirm('<?php echo e(__("shop.confirm_delete")); ?>')">
-                                <?php echo csrf_field(); ?>
-                                <?php echo method_field('DELETE'); ?>
-                                <button type="submit"
-                                        class="btn btn-outline-danger"
-                                        title="Delete">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                <tr>
-                    <td colspan="8">
-                        <div class="empty-state">
-                            <i class="bi bi-shop"></i>
-                            <p class="mb-2"><?php echo e(__('shop.no_shops')); ?></p>
-                            <a href="<?php echo e(route('shop.create')); ?>" class="btn btn-sm btn-create-first">
-                                <i class="bi bi-plus-circle"></i> <?php echo e(__('shop.create_first')); ?>
-
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                <?php endif; ?>
-            </tbody>
+            <tbody></tbody>
         </table>
     </div>
 </div>
 </div>
 <?php $__env->stopSection(); ?>
+
+<?php $__env->startPush('scripts'); ?>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#shopsTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: "<?php echo e(route('shop.index')); ?>",
+            columns: [
+                { data: 'name', name: 'name', render: function(data, type, row) {
+                    return '<strong class="shop-name">' + escapeHtml(data) + '</strong>';
+                }},
+                <?php if(auth()->user()->isSuperAdmin()): ?>
+                    { data: 'owner_name', name: 'owner.name' },
+                <?php endif; ?>
+                { data: 'location', name: 'location', defaultContent: '-', render: function(data) {
+                    return data ? escapeHtml(data) : '-';
+                }},
+                { data: 'address', name: 'address', defaultContent: '-', render: function(data) {
+                    return data ? escapeHtml(data) : '-';
+                }},
+                { data: 'products_badge', name: 'products_count', orderable: false, searchable: false },
+                { data: 'sales_badge', name: 'sales_count', orderable: false, searchable: false },
+                { data: 'branches_badge', name: 'branches_count', orderable: false, searchable: false },
+                { data: 'created_at_formatted', name: 'created_at' },
+                { data: 'actions', name: 'actions', orderable: false, searchable: false, className: 'actions-cell text-center' }
+            ],
+            order: [[0, 'asc']],
+            pageLength: 15,
+            lengthMenu: [10, 15, 25, 50, 100],
+            language: {
+                searchPlaceholder: "Search shops...",
+                search: ""
+            }
+        });
+        
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    });
+</script>
+<?php $__env->stopPush(); ?>
 
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\Arpa\self_project\byabshaTrack\Modules/Shop\resources/views/index.blade.php ENDPATH**/ ?>

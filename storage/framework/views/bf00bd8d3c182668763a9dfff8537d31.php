@@ -45,6 +45,43 @@
                 <form action="<?php echo e(route('shop.store')); ?>" method="POST">
                     <?php echo csrf_field(); ?>
 
+                    
+                    <?php if(auth()->user()->isSuperAdmin() && $shopOwners): ?>
+                        <div class="mb-4">
+                            <label for="user_id" class="form-label fw-semibold">
+                                <?php echo e(__('app.shop_owner')); ?> <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select <?php $__errorArgs = ['user_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                                    id="user_id"
+                                    name="user_id"
+                                    required>
+                                <option value=""><?php echo e(__('app.select_owner')); ?></option>
+                                <?php $__currentLoopData = $shopOwners; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $owner): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($owner->id); ?>" <?php echo e(old('user_id') == $owner->id ? 'selected' : ''); ?>>
+                                        <?php echo e($owner->name); ?> (<?php echo e($owner->email); ?>)
+                                    </option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </select>
+                            <?php $__errorArgs = ['user_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                <div class="invalid-feedback"><?php echo e($message); ?></div>
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                        </div>
+                    <?php endif; ?>
+
                     <div class="mb-4">
                         <label for="name" class="form-label fw-semibold">
                             <?php echo e(__('shop.name')); ?> <span class="text-danger">*</span>

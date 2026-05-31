@@ -221,22 +221,16 @@
                         </div>
 
                         <div class="mb-4">
-                            <label for="name" class="form-label">
-                                {{ __('branch::branch.name') }} <span class="text-danger">*</span>
+                            <label for="location" class="form-label">
+                                {{ __('branch::branch.location') }} <span class="text-danger">*</span>
                             </label>
-                            <input type="text" id="name" name="name" value="{{ old('name') }}" class="form-control @error('name') is-invalid @enderror" placeholder="{{ __('branch::branch.name_placeholder') }}" required>
-                            @error('name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            <input type="text" id="location" name="location" value="{{ old('location') }}" class="form-control @error('location') is-invalid @enderror" placeholder="{{ __('branch::branch.location_placeholder') }}" required>
+                            @error('location')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-4">
-                                <label for="location" class="form-label">{{ __('branch::branch.location') }}</label>
-                                <input type="text" id="location" name="location" value="{{ old('location') }}" class="form-control" placeholder="{{ __('branch::branch.location_placeholder') }}">
-                            </div>
-                            <div class="col-md-6 mb-4">
-                                <label for="phone" class="form-label">{{ __('branch::branch.phone') }}</label>
-                                <input type="text" id="phone" name="phone" value="{{ old('phone') }}" class="form-control" placeholder="{{ __('branch::branch.phone_placeholder') }}">
-                            </div>
+                        <div class="mb-4">
+                            <label for="phone" class="form-label">{{ __('branch::branch.phone') }}</label>
+                            <input type="text" id="phone" name="phone" value="{{ old('phone') }}" class="form-control" placeholder="{{ __('branch::branch.phone_placeholder') }}">
                         </div>
 
                         <div class="mb-4">
@@ -245,16 +239,7 @@
                             @error('email')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
 
-                        <div class="mb-4">
-                            <label for="address" class="form-label">{{ __('branch::branch.address') }}</label>
-                            <textarea id="address" name="address" rows="4" class="form-control" placeholder="{{ __('branch::branch.address_placeholder') }}">{{ old('address') }}</textarea>
-                        </div>
 
-                        <div class="form-check mb-4">
-                            <input type="hidden" name="is_active" value="0">
-                            <input class="form-check-input" type="checkbox" name="is_active" value="1" id="is_active" {{ old('is_active', true) ? 'checked' : '' }}>
-                            <label class="form-check-label fw-semibold" for="is_active">{{ __('branch::branch.active') }}</label>
-                        </div>
 
                         <div class="d-flex justify-content-between flex-wrap gap-2 pt-3 border-top">
                             <a href="{{ route('branch.index') }}" class="btn-back">

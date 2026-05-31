@@ -14,6 +14,7 @@ return [
     'col_shop'            => 'Shop',
     'col_category'        => 'Category',
     'col_brand'           => 'Brand',
+    'col_created_by'      => 'Created By',
     'col_purchase_price'  => 'Purchase Price',
     'col_sale_price'      => 'Sale Price',
     'col_stock'           => 'Stock',

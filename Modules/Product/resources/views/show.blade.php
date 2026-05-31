@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', __('product.show_title'))
 
@@ -291,6 +291,10 @@
                                     <span class="stock-pill stock-high">{{ $product->stock_quantity }} {{ __('app.units') }}</span>
                                 @endif
                             </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">{{ __('product.col_created_by') }}:</td>
+                            <td>{{ $product->creator?->name ?? '-' }}</td>
                         </tr>
                         <tr>
                             <td class="fw-semibold">{{ __('app.created_at') }}:</td>
