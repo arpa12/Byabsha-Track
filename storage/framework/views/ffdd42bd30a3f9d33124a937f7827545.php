@@ -184,12 +184,12 @@
                                 <div class="text-slate-400 small" style="font-size: 0.75rem;"><?php echo e($register->closed_at ? $register->closed_at->format('h:i A') : '-'); ?></div>
                             </td>
                             <td class="small text-slate-600"><?php echo e($register->user->name ?? '-'); ?></td>
-                            <td class="text-end display-font">৳<?php echo e(number_format($register->opening_balance, 2)); ?></td>
-                            <td class="text-end display-font">৳<?php echo e(number_format($register->expected_balance, 2)); ?></td>
-                            <td class="text-end display-font">৳<?php echo e(number_format($register->actual_balance, 2)); ?></td>
+                            <td class="text-end display-font"><?php echo e(currency_symbol()); ?><?php echo e(number_format($register->opening_balance, 2)); ?></td>
+                            <td class="text-end display-font"><?php echo e(currency_symbol()); ?><?php echo e(number_format($register->expected_balance, 2)); ?></td>
+                            <td class="text-end display-font"><?php echo e(currency_symbol()); ?><?php echo e(number_format($register->actual_balance, 2)); ?></td>
                             <td class="text-end display-font">
                                 <span class="<?php echo e(abs($register->discrepancy) < 0.01 ? 'discrepancy-text-zero' : 'discrepancy-text-active'); ?>">
-                                    ৳<?php echo e(number_format($register->discrepancy, 2)); ?>
+                                    <?php echo e(currency_symbol()); ?><?php echo e(number_format($register->discrepancy, 2)); ?>
 
                                 </span>
                             </td>

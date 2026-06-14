@@ -327,4 +327,30 @@
 </div>
 <?php $__env->stopSection(); ?>
 
+<?php $__env->startPush('scripts'); ?>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const currencySelect = document.getElementById('currency');
+        const currencySymbolInput = document.getElementById('currency_symbol');
+
+        if (currencySelect && currencySymbolInput) {
+            const currencySymbols = {
+                'USD': '$',
+                'EUR': '€',
+                'GBP': '£',
+                'BDT': '৳',
+                'INR': '₹'
+            };
+
+            currencySelect.addEventListener('change', function () {
+                const selectedCurrency = this.value;
+                if (currencySymbols[selectedCurrency]) {
+                    currencySymbolInput.value = currencySymbols[selectedCurrency];
+                }
+            });
+        }
+    });
+</script>
+<?php $__env->stopPush(); ?>
+
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\personal\Byabsha-Track\Modules/Settings\resources/views/index.blade.php ENDPATH**/ ?>

@@ -2,147 +2,163 @@
 
 <?php $__env->startPush('styles'); ?>
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
-    .reconciliation-shell {
+    .khata-shell {
         font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
-        color: #0f172a;
+        background-color: #f3f4f6;
+        padding: 2rem 1rem;
     }
 
-    .display-font {
-        font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
-        letter-spacing: -0.03em;
+    /* Print styling and page layout */
+    .khata-book {
+        background-color: #fdfdfa;
+        border: 2px solid #dfd8c0;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        padding: 2rem;
+        display: flex;
+        gap: 3rem;
+        position: relative;
+        min-height: 1000px;
     }
 
-    .page-title {
-        font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
-        font-size: clamp(1.55rem, 3.2vw, 2.3rem);
-        line-height: 1.1;
-        color: #0f172a;
-        margin-bottom: 0.45rem;
+    /* Book center fold line */
+    .khata-book::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 2px;
+        background: linear-gradient(to bottom, #e2e8f0 0%, #cbd5e1 50%, #e2e8f0 100%);
+    }
+
+    .khata-page {
+        flex: 1;
+        position: relative;
+        padding-left: 2rem;
+    }
+
+    /* Red Margin Line */
+    .khata-page::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 1.5rem;
+        width: 1.5px;
+        background-color: #f87171;
+    }
+
+    /* Ruled paper lines */
+    .khata-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.5rem;
         font-weight: 800;
-    }
-
-    .report-kicker {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.48rem;
-        background: color-mix(in srgb, var(--brand, #0f766e) 12%, transparent);
-        color: var(--brand, #0f766e);
-        border: 1px solid color-mix(in srgb, var(--brand, #0f766e) 22%, transparent);
-        border-radius: 999px;
-        padding: 0.42rem 0.92rem;
-        font-size: 0.76rem;
-        font-weight: 700;
-        margin-bottom: 0.8rem;
-        box-shadow: 0 8px 18px color-mix(in srgb, var(--brand, #0f766e) 13%, transparent);
-    }
-
-    .panel {
-        background: #fff;
-        border: 1px solid #dce6ef;
-        border-radius: 16px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-        overflow: hidden;
-    }
-
-    .panel-head {
-        padding: 1rem 1.25rem;
-        border-bottom: 1px solid #e7eef5;
-        font-size: 0.85rem;
-        font-weight: 800;
+        color: #1e3a8a; /* Blue ink color */
+        border-bottom: 2px solid #ef4444; /* Red ink underline */
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: #475569;
-        background: #fafbfe;
     }
 
-    .panel-body {
-        padding: 1.25rem;
+    .khata-table {
+        width: 100%;
+        margin-bottom: 1.5rem;
+        border-collapse: collapse;
     }
 
-    .btn-secondary-custom {
-        border-radius: 10px;
-        padding: 0.6rem 1.25rem;
-        font-size: 0.85rem;
-        font-weight: 700;
-        border: 1px solid #9eb8cb;
-        color: #1f3f58;
-        background: #f7fbff;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s ease;
-    }
-
-    .btn-secondary-custom:hover {
-        color: #0f172a;
-        border-color: #6f93b0;
-        background: #ffffff;
-    }
-
-    .compact-table th {
-        background: #f8fafc;
-        font-size: 0.76rem;
+    .khata-table th {
+        font-size: 0.75rem;
         text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: #64748b;
+        color: #ef4444; /* Red headings */
         font-weight: 700;
+        padding: 0.5rem;
+        border-bottom: 2px solid #94a3b8;
+        text-align: left;
+    }
+
+    .khata-table td {
+        font-size: 0.9rem;
+        padding: 0.65rem 0.5rem;
+        border-bottom: 1px solid #cbd5e1; /* Ruled lines */
+        color: #1d4ed8; /* Blue ink text */
+    }
+
+    .khata-table tr:hover td {
+        background-color: rgba(30, 58, 138, 0.02);
+    }
+
+    .khata-table .num-col {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        text-align: right;
+    }
+
+    .khata-total-box {
+        border-top: 2px double #1e3a8a;
+        border-bottom: 2px double #1e3a8a;
         padding: 0.75rem 0.5rem;
-    }
-
-    .compact-table td {
-        padding: 0.75rem 0.5rem;
-        font-size: 0.85rem;
-        border-color: #e2e8f0;
-    }
-
-    .math-card {
-        background: radial-gradient(circle at top right, #fafbfe 0%, #edf4fa 100%);
-        border: 1px solid #cbdde9;
-        border-radius: 16px;
-    }
-
-    .reconciliation-math-row {
+        font-weight: 800;
+        color: #1e3a8a;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
         font-size: 1.05rem;
-        font-weight: 600;
-        padding: 0.45rem 0;
-        border-bottom: 1px dashed #cfdfec;
     }
 
-    .reconciliation-math-row:last-child {
-        border-bottom: none;
-        font-size: 1.3rem;
-        font-weight: 800;
+    .khata-sub-box {
+        border-bottom: 1px solid #cbd5e1;
+        padding: 0.5rem;
+        color: #1e3a8a;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.95rem;
     }
 
-    .discrepancy-badge {
-        padding: 0.5rem 1rem;
-        border-radius: 10px;
-        font-weight: 800;
-        display: inline-block;
+    .ink-blue {
+        color: #1d4ed8;
     }
 
-    .discrepancy-zero {
+    .ink-red {
+        color: #ef4444;
+    }
+
+    .badge-reconciled {
         background-color: #d1fae5;
         color: #065f46;
         border: 1px solid #a7f3d0;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 700;
     }
 
-    .discrepancy-active {
+    .badge-discrepancy {
         background-color: #fee2e2;
         color: #991b1b;
         border: 1px solid #fecaca;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 700;
     }
 
+    /* Print styles */
     @media print {
+        body {
+            background-color: #fff !important;
+            font-size: 10px;
+        }
+
         .top-header,
         .sidebar,
         .sidebar-toggle,
-        .btn,
-        a.btn,
-        .no-print {
+        .no-print,
+        .btn {
             display: none !important;
         }
 
@@ -151,276 +167,277 @@
             padding-top: 0 !important;
         }
 
-        body {
-            background: white !important;
-            font-size: 11px;
+        .khata-shell {
+            padding: 0 !important;
+            background-color: #fff !important;
         }
 
-        .panel {
-            border: 1px solid #ddd !important;
+        .khata-book {
             box-shadow: none !important;
-            page-break-inside: avoid;
+            border: none !important;
+            padding: 0 !important;
+            gap: 2rem;
+            min-height: auto;
+        }
+
+        .khata-book::after {
+            background: #cbd5e1;
         }
     }
 </style>
 <?php $__env->stopPush(); ?>
 
 <?php $__env->startSection('content'); ?>
-<div class="reconciliation-shell">
+<div class="khata-shell">
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-4 border-bottom border-slate-200 pb-4 mb-4 no-print">
         <div>
-            <span class="report-kicker"><i class="bi bi-file-earmark-bar-graph"></i> <?php echo e(__('reconciliation.audit_sheet')); ?></span>
             <h1 class="page-title display-font text-3xl font-black text-slate-900 leading-none mb-1"><?php echo e(__('reconciliation.audit_sheet')); ?></h1>
-            <p class="page-subtitle text-slate-500 text-sm mt-1.5"><?php echo e(__('reconciliation.session_details')); ?></p>
+            <p class="page-subtitle text-slate-500 text-sm mt-1.5">Ruled notebook representation of register session.</p>
         </div>
         <div class="d-flex gap-2 flex-wrap">
-            <button onclick="window.print()" class="btn-secondary-custom">
-                <i class="bi bi-printer"></i> Print Sheet
+            <button onclick="window.print()" class="btn btn-primary fw-bold px-4 py-2">
+                <i class="bi bi-printer me-2"></i> Print Khata Sheet
             </button>
-            <a href="<?php echo e(route('reconciliation.history', ['shop_id' => $register->shop_id])); ?>" class="btn-secondary-custom">
-                <i class="bi bi-arrow-left"></i> <?php echo e(__('reconciliation.back_to_history')); ?>
+            <a href="<?php echo e(route('reconciliation.history', ['shop_id' => $register->shop_id])); ?>" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> <?php echo e(__('reconciliation.back_to_history')); ?>
 
             </a>
         </div>
     </div>
 
-    <!-- Metadata Panel -->
-    <div class="panel mb-4">
-        <div class="panel-head">
-            <span><i class="bi bi-info-circle me-1"></i><?php echo e(__('reconciliation.session_details')); ?></span>
-            <span class="badge bg-secondary">Reference #REG-<?php echo e($register->id); ?></span>
-        </div>
-        <div class="panel-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <div class="small text-slate-400">Shop</div>
-                    <div class="fw-bold"><?php echo e($register->shop->name ?? '-'); ?></div>
+    <!-- Khata Notebook Container -->
+    <div class="khata-book">
+        
+        <!-- ==================== LEFT PAGE (SALES / INCOME / B/F) ==================== -->
+        <div class="khata-page">
+            <div class="khata-title">Left Side (Sales & Incomes)</div>
+            
+            <div class="mb-4 text-xs text-slate-500">
+                <strong>Register #REG-<?php echo e($register->id); ?></strong> | 
+                Opened: <?php echo e($register->opened_at->format('d/m/Y h:i A')); ?> | 
+                Closed: <?php echo e($register->closed_at ? $register->closed_at->format('d/m/Y h:i A') : '-'); ?>
+
+            </div>
+
+            <!-- Sales Table -->
+            <table class="khata-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50%;">Product Details</th>
+                        <th style="width: 15%; text-align: center;">Qty</th>
+                        <th style="width: 15%; text-align: right;">Profit</th>
+                        <th style="width: 20%; text-align: right;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $totalSalesSum = 0; ?>
+                    <?php $__empty_1 = true; $__currentLoopData = $posSales; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $sale): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <?php $totalSalesSum += $sale->total_amount; ?>
+                        <tr>
+                            <td>
+                                <strong><?php echo e($sale->product->name ?? '-'); ?></strong>
+                                <div class="text-slate-400 small" style="font-size: 0.75rem;">Time: <?php echo e($sale->created_at->format('h:i A')); ?></div>
+                            </td>
+                            <td class="text-center"><?php echo e($sale->quantity); ?></td>
+                            <td class="num-col text-success">৳<?php echo e(number_format($sale->profit, 2)); ?></td>
+                            <td class="num-col">৳<?php echo e(number_format($sale->total_amount, 2)); ?></td>
+                        </tr>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">No POS Sales recorded.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+
+            <!-- Manual Incomes Table -->
+            <?php 
+                $manualIncomes = $register->transactions->where('type', 'income')->where('category', '!=', 'POS Sale');
+                $totalManualIncome = $manualIncomes->sum('amount');
+            ?>
+            <?php if($manualIncomes->isNotEmpty()): ?>
+                <h6 class="ink-red fw-bold small uppercase mb-2">Other Manual Incomes</h6>
+                <table class="khata-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">Category</th>
+                            <th style="width: 30%;">Notes</th>
+                            <th style="width: 20%; text-align: right;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $__currentLoopData = $manualIncomes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <tr>
+                                <td><strong><?php echo e($item->category); ?></strong></td>
+                                <td><?php echo e($item->notes ?? '-'); ?></td>
+                                <td class="num-col">৳<?php echo e(number_format($item->amount, 2)); ?></td>
+                            </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+
+            <!-- Math Addition Section: B/F + Sales -->
+            <div class="mt-4">
+                <div class="khata-sub-box">
+                    <span>B/F (Brought Forward / Previous Balance):</span>
+                    <span class="num-col">৳<?php echo e(number_format($register->opening_balance, 2)); ?></span>
                 </div>
-                <div class="col-md-3">
-                    <div class="small text-slate-400">Opened At</div>
-                    <div class="fw-bold"><?php echo e($register->opened_at->format('d M Y, h:i A')); ?></div>
+                <div class="khata-sub-box">
+                    <span>Total Sales (পিওএস বিক্রি) (+):</span>
+                    <span class="num-col">৳<?php echo e(number_format($totalSalesSum, 2)); ?></span>
                 </div>
-                <div class="col-md-3">
-                    <div class="small text-slate-400">Closed At</div>
-                    <div class="fw-bold"><?php echo e($register->closed_at ? $register->closed_at->format('d M Y, h:i A') : '-'); ?></div>
-                </div>
-                <div class="col-md-3">
-                    <div class="small text-slate-400">Session Manager</div>
-                    <div class="fw-bold"><?php echo e($register->user->name ?? '-'); ?></div>
+                <?php if($totalManualIncome > 0): ?>
+                    <div class="khata-sub-box">
+                        <span>Manual Income (+)</span>
+                        <span class="num-col">৳<?php echo e(number_format($totalManualIncome, 2)); ?></span>
+                    </div>
+                <?php endif; ?>
+                
+                <?php
+                    $leftPageTotal = $register->opening_balance + $totalSalesSum + $totalManualIncome;
+                ?>
+                <div class="khata-total-box">
+                    <span>Total Expected Cash Flow:</span>
+                    <span>৳<?php echo e(number_format($leftPageTotal, 2)); ?></span>
                 </div>
             </div>
         </div>
-    </div>
+        
+        <!-- ==================== RIGHT PAGE (PURCHASES / EXPENSES / RECONCILIATION) ==================== -->
+        <div class="khata-page">
+            <div class="khata-title">Right Side (Costs & Reconciliation)</div>
 
-    <!-- Reconciliation Math Card -->
-    <div class="panel math-card mb-4">
-        <div class="panel-head" style="background: transparent;">
-            <span><i class="bi bi-calculator me-1"></i><?php echo e(__('reconciliation.reconciliation_summary')); ?></span>
-        </div>
-        <div class="panel-body">
-            <div class="row g-4 align-items-center">
-                <div class="col-md-6 border-end border-slate-200 pe-md-4">
-                    <div class="reconciliation-math-row d-flex justify-content-between">
-                        <span class="text-slate-500"><?php echo e(__('reconciliation.opening_balance')); ?>:</span>
-                        <span class="display-font">৳<?php echo e(number_format($register->opening_balance, 2)); ?></span>
-                    </div>
-                    <div class="reconciliation-math-row d-flex justify-content-between">
-                        <?php
-                            $posSalesSum = (float) $posSales->sum('total_amount');
-                            $posSalesProfitSum = (float) $posSales->sum('profit');
-                            $manualIncomeSum = (float) $register->transactions->where('type', 'income')->where('category', '!=', 'POS Sale')->sum('amount');
-                            $totalExpenses = (float) $register->transactions->where('type', 'expense')->sum('amount');
-                            $receivablesSum = (float) $register->receivables->where('status', 'pending')->sum('amount');
+            <div class="mb-4 text-xs text-slate-500">
+                <strong>Manager:</strong> <?php echo e($register->user->name ?? '-'); ?> | 
+                <strong>Shop:</strong> <?php echo e($register->shop->name ?? '-'); ?>
+
+            </div>
+
+            <!-- Expenses / Purchase Table -->
+            <?php 
+                $expenses = $register->transactions->where('type', 'expense');
+                $totalExpensesSum = $expenses->sum('amount');
+            ?>
+            <table class="khata-table">
+                <thead>
+                    <tr>
+                        <th style="width: 40%;">Expense / Purchase</th>
+                        <th style="width: 40%;">Notes</th>
+                        <th style="width: 20%; text-align: right;">Cost Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $__empty_1 = true; $__currentLoopData = $expenses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <tr>
+                            <td><strong><?php echo e($item->category); ?></strong></td>
+                            <td><?php echo e($item->notes ?? '-'); ?></td>
+                            <td class="num-col text-danger">-৳<?php echo e(number_format($item->amount, 2)); ?></td>
+                        </tr>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">No expenses recorded.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+
+            <!-- Subtract Costs to get Expected Balance -->
+            <div class="khata-sub-box mt-3">
+                <span>Total expected before costs:</span>
+                <span>৳<?php echo e(number_format($leftPageTotal, 2)); ?></span>
+            </div>
+            <div class="khata-sub-box">
+                <span class="ink-red">Less Total Cost (খরচ বাদ) (-):</span>
+                <span class="text-danger">-৳<?php echo e(number_format($totalExpensesSum, 2)); ?></span>
+            </div>
+            
+            <div class="khata-total-box">
+                <span class="ink-red">Expected Balance (expected cash):</span>
+                <span>৳<?php echo e(number_format($register->expected_balance, 2)); ?></span>
+            </div>
+
+            <!-- Drawer Cash Count -->
+            <h6 class="ink-red fw-bold small uppercase mt-4 mb-2">Drawer Cash Count</h6>
+            <div class="khata-sub-box bg-light p-2 mb-4 rounded">
+                <span>Physical Cash in Drawer:</span>
+                <strong class="display-font">৳<?php echo e(number_format($register->cash_in_hand, 2)); ?></strong>
+            </div>
+
+            <!-- Reconciliation: Receivables + Cash Count -->
+            <h6 class="ink-red fw-bold small uppercase mb-2">Outstanding Dues & Cash (Dena Pawna)</h6>
+            <table class="khata-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50%;">Due / Asset Description</th>
+                        <th style="width: 30%;">Status</th>
+                        <th style="width: 20%; text-align: right;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $receivablesSum = 0; ?>
+                    <?php $__empty_1 = true; $__currentLoopData = $register->receivables; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <?php 
+                            if ($item->status === 'pending') {
+                                $receivablesSum += $item->amount;
+                            }
                         ?>
-                        <span class="text-slate-500"><?php echo e(__('reconciliation.pos_sales')); ?> (+):</span>
-                        <div>
-                            <span class="display-font text-slate-800 me-2">৳<?php echo e(number_format($posSalesSum, 2)); ?></span>
-                            <span class="text-success small fw-semibold">(Profit: ৳<?php echo e(number_format($posSalesProfitSum, 2)); ?>)</span>
-                        </div>
-                    </div>
-                    <div class="reconciliation-math-row d-flex justify-content-between">
-                        <span class="text-slate-500"><?php echo e(__('reconciliation.manual_income')); ?> (+):</span>
-                        <span class="display-font">৳<?php echo e(number_format($manualIncomeSum, 2)); ?></span>
-                    </div>
-                    <div class="reconciliation-math-row d-flex justify-content-between">
-                        <span class="text-slate-500"><?php echo e(__('reconciliation.total_expenses')); ?> (-):</span>
-                        <span class="display-font text-danger">-৳<?php echo e(number_format($totalExpenses, 2)); ?></span>
-                    </div>
-                    <div class="reconciliation-math-row d-flex justify-content-between fw-bold bg-white border border-slate-200 rounded-3 p-3 my-2">
-                        <span class="text-slate-800"><?php echo e(__('reconciliation.expected_balance')); ?>:</span>
-                        <span class="display-font text-primary">৳<?php echo e(number_format($register->expected_balance, 2)); ?></span>
-                    </div>
-                </div>
-                <div class="col-md-6 ps-md-4">
-                    <div class="reconciliation-math-row d-flex justify-content-between">
-                        <span class="text-slate-500"><?php echo e(__('reconciliation.cash_in_hand')); ?> (v):</span>
-                        <span class="display-font">৳<?php echo e(number_format($register->cash_in_hand, 2)); ?></span>
-                    </div>
-                    <div class="reconciliation-math-row d-flex justify-content-between">
-                        <span class="text-slate-500">Accounts Receivable (+):</span>
-                        <span class="display-font">৳<?php echo e(number_format($register->actual_balance - $register->cash_in_hand, 2)); ?></span>
-                    </div>
-                    <div class="reconciliation-math-row d-flex justify-content-between fw-bold bg-white border border-slate-200 rounded-3 p-3 my-2">
-                        <span class="text-slate-800"><?php echo e(__('reconciliation.actual_balance')); ?>:</span>
-                        <span class="display-font text-slate-800">৳<?php echo e(number_format($register->actual_balance, 2)); ?></span>
-                    </div>
-                    <div class="reconciliation-math-row d-flex justify-content-between align-items-center">
-                        <span class="fw-bold text-slate-800"><?php echo e(__('reconciliation.discrepancy')); ?>:</span>
-                        <span class="discrepancy-badge <?php echo e(abs($register->discrepancy) < 0.01 ? 'discrepancy-zero' : 'discrepancy-active'); ?> display-font">
-                            ৳<?php echo e(number_format($register->discrepancy, 2)); ?>
+                        <tr>
+                            <td>
+                                <strong><?php echo e($item->customer_name); ?></strong>
+                                <?php if($item->customer_phone): ?>
+                                    <div class="text-slate-400 small" style="font-size: 0.75rem;"><?php echo e($item->customer_phone); ?></div>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <span class="badge <?php echo e($item->status === 'pending' ? 'bg-warning text-dark' : 'bg-success'); ?>">
+                                    <?php echo e(ucfirst($item->status)); ?>
 
-                        </span>
-                    </div>
-                </div>
+                                </span>
+                            </td>
+                            <td class="num-col">৳<?php echo e(number_format($item->amount, 2)); ?></td>
+                        </tr>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">No dues/receivables recorded.</td>
+                        </tr>
+                    <?php endif; ?>
+                    
+                    <!-- Add Cash in Hand row -->
+                    <tr>
+                        <td><strong>Physical Cash (ড্রয়ারে নগদ)</strong></td>
+                        <td><span class="badge bg-info text-white">Drawer Cash</span></td>
+                        <td class="num-col">৳<?php echo e(number_format($register->cash_in_hand, 2)); ?></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Final Reconciliation sum -->
+            <?php
+                $actualTotalSum = $register->cash_in_hand + $receivablesSum;
+            ?>
+            <div class="khata-total-box mt-3">
+                <span class="ink-blue">Actual Balance (Dues + Cash):</span>
+                <span>৳<?php echo e(number_format($actualTotalSum, 2)); ?></span>
             </div>
-        </div>
-    </div>
 
-    <!-- Detailed Ledger Records -->
-    <div class="row g-4">
-        <!-- Left Side: POS Sales and Manual Income -->
-        <div class="col-lg-6">
-            <div class="panel h-100">
-                <div class="panel-head">
-                    <span class="text-success"><i class="bi bi-graph-up me-2"></i><?php echo e(__('reconciliation.left_side')); ?> Details</span>
+            <!-- Discrepancy Match Info -->
+            <div class="d-flex justify-content-between align-items-center mt-3 p-3 bg-slate-50 border rounded-3">
+                <div>
+                    <span class="small text-slate-500 d-block">Discrepancy</span>
+                    <strong class="display-font fs-5">৳<?php echo e(number_format($register->discrepancy, 2)); ?></strong>
                 </div>
-                <div class="panel-body">
-                    <!-- POS Sales List -->
-                    <h6 class="text-slate-500 fw-bold small mb-2">POS Sales</h6>
-                    <div class="table-responsive mb-4" style="max-height: 300px; overflow-y: auto;">
-                        <table class="table compact-table align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Product</th>
-                                    <th class="text-center">Qty</th>
-                                    <th class="text-end">Profit</th>
-                                    <th class="text-end">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php $__empty_1 = true; $__currentLoopData = $posSales; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $sale): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                                    <tr>
-                                        <td>
-                                            <span class="fw-semibold text-slate-800"><?php echo e($sale->product->name ?? '-'); ?></span>
-                                            <div class="text-slate-400 small" style="font-size: 0.7rem;">Time: <?php echo e($sale->created_at->format('h:i A')); ?></div>
-                                        </td>
-                                        <td class="text-center"><?php echo e($sale->quantity); ?></td>
-                                        <td class="text-end text-success display-font">৳<?php echo e(number_format($sale->profit, 2)); ?></td>
-                                        <td class="text-end display-font">৳<?php echo e(number_format($sale->total_amount, 2)); ?></td>
-                                    </tr>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                                    <tr>
-                                        <td colspan="3" class="text-center text-muted py-3">No POS sales in this session.</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Manual Incomes -->
-                    <h6 class="text-slate-500 fw-bold small mb-2"><?php echo e(__('reconciliation.manual_income')); ?></h6>
-                    <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
-                        <table class="table compact-table align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Category</th>
-                                    <th>Notes</th>
-                                    <th class="text-end">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php $__empty_1 = true; $__currentLoopData = $register->transactions->where('type', 'income')->where('category', '!=', 'POS Sale'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                                    <tr>
-                                        <td class="fw-semibold text-slate-800"><?php echo e($item->category); ?></td>
-                                        <td class="text-slate-500 small"><?php echo e($item->notes ?? '-'); ?></td>
-                                        <td class="text-end display-font text-success font-bold">+৳<?php echo e(number_format($item->amount, 2)); ?></td>
-                                    </tr>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                                    <tr>
-                                        <td colspan="3" class="text-center text-muted py-3">No manual income transactions logged.</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                <div>
+                    <?php if(abs($register->discrepancy) < 0.01): ?>
+                        <span class="badge-reconciled"><i class="bi bi-check-circle me-1"></i>Perfect Match</span>
+                    <?php else: ?>
+                        <span class="badge-discrepancy"><i class="bi bi-exclamation-triangle me-1"></i>Unbalanced</span>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
 
-        <!-- Right Side: Manual Expenses and Accounts Receivable -->
-        <div class="col-lg-6">
-            <div class="panel h-100">
-                <div class="panel-head">
-                    <span class="text-danger"><i class="bi bi-graph-down me-2"></i><?php echo e(__('reconciliation.right_side')); ?> Details</span>
-                </div>
-                <div class="panel-body">
-                    <!-- Manual Expenses -->
-                    <h6 class="text-slate-500 fw-bold small mb-2"><?php echo e(__('reconciliation.total_expenses')); ?></h6>
-                    <div class="table-responsive mb-4" style="max-height: 300px; overflow-y: auto;">
-                        <table class="table compact-table align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Category</th>
-                                    <th>Notes</th>
-                                    <th class="text-end">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php $__empty_1 = true; $__currentLoopData = $register->transactions->where('type', 'expense'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                                    <tr>
-                                        <td class="fw-semibold text-slate-800"><?php echo e($item->category); ?></td>
-                                        <td class="text-slate-500 small"><?php echo e($item->notes ?? '-'); ?></td>
-                                        <td class="text-end display-font text-danger font-bold">-৳<?php echo e(number_format($item->amount, 2)); ?></td>
-                                    </tr>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                                    <tr>
-                                        <td colspan="3" class="text-center text-muted py-3">No manual expense transactions logged.</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Accounts Receivable -->
-                    <h6 class="text-slate-500 fw-bold small mb-2">Customer Due Credits (Receivables)</h6>
-                    <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
-                        <table class="table compact-table align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Customer</th>
-                                    <th>Status</th>
-                                    <th class="text-end">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php $__empty_1 = true; $__currentLoopData = $register->receivables; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                                    <tr>
-                                        <td>
-                                            <span class="fw-semibold text-slate-800"><?php echo e($item->customer_name); ?></span>
-                                            <?php if($item->customer_phone): ?>
-                                                <div class="text-slate-400 small" style="font-size: 0.7rem;"><i class="bi bi-telephone me-1"></i><?php echo e($item->customer_phone); ?></div>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <span class="badge <?php echo e($item->status === 'pending' ? 'bg-warning text-dark' : 'bg-success'); ?>">
-                                                <?php echo e(ucfirst($item->status)); ?>
-
-                                            </span>
-                                        </td>
-                                        <td class="text-end display-font font-bold">৳<?php echo e(number_format($item->amount, 2)); ?></td>
-                                    </tr>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                                    <tr>
-                                        <td colspan="3" class="text-center text-muted py-3">No due credits logged in this session.</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 <?php $__env->stopSection(); ?>

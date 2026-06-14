@@ -102,7 +102,6 @@ class SubscriptionPlan extends Model
             'reports'        => 'report',
             'daily_pl'       => 'report',
             'monthly_pl'     => 'report',
-            'reconciliation' => 'report',
         ];
 
         $normalizedKey = $map[$key] ?? $key;

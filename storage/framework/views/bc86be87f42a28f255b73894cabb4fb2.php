@@ -305,7 +305,7 @@
                                 <i class="bi bi-wallet2 fs-4 me-3 text-success"></i>
                                 <div>
                                     <div class="small text-slate-500">Rollover Cash Available from Last Session:</div>
-                                    <div class="fw-bold fs-5">৳<?php echo e(number_format($rolloverBalance, 2)); ?></div>
+                                    <div class="fw-bold fs-5"><?php echo e(currency_symbol()); ?><?php echo e(number_format($rolloverBalance, 2)); ?></div>
                                 </div>
                             </div>
                         <?php endif; ?>
@@ -315,7 +315,7 @@
                             <input type="hidden" name="shop_id" value="<?php echo e($selectedShopId); ?>">
 
                             <div class="mb-4">
-                                <label for="opening_balance" class="form-label fw-bold small text-slate-600"><?php echo e(__('reconciliation.enter_opening_balance')); ?> (৳)</label>
+                                <label for="opening_balance" class="form-label fw-bold small text-slate-600"><?php echo e(__('reconciliation.enter_opening_balance')); ?> (<?php echo e(currency_symbol()); ?>)</label>
                                 <input type="number" step="0.01" class="form-control form-control-lg display-font font-bold" id="opening_balance" name="opening_balance" value="<?php echo e($rolloverBalance); ?>" required min="0">
                             </div>
 
@@ -350,12 +350,12 @@
                                     <div class="fw-bold small text-slate-600"><?php echo e(__('reconciliation.pos_sales')); ?></div>
                                     <div class="text-slate-400 small">Since: <?php echo e($activeRegister->opened_at->format('d M, h:i A')); ?></div>
                                     <div class="text-success small fw-semibold mt-1">
-                                        <i class="bi bi-arrow-up-right-circle me-1"></i>Profit: ৳<?php echo e(number_format($posSalesProfit, 2)); ?>
+                                        <i class="bi bi-arrow-up-right-circle me-1"></i>Profit: <?php echo e(currency_symbol()); ?><?php echo e(number_format($posSalesProfit, 2)); ?>
 
                                     </div>
                                 </div>
                             </div>
-                            <div class="fs-5 fw-bold display-font text-slate-800">৳<?php echo e(number_format($posSalesSum, 2)); ?></div>
+                            <div class="fs-5 fw-bold display-font text-slate-800"><?php echo e(currency_symbol()); ?><?php echo e(number_format($posSalesSum, 2)); ?></div>
                         </div>
 
                         <!-- Manual Income List -->
@@ -374,13 +374,13 @@
                                         <?php endif; ?>
                                         <?php if($item->category === 'POS Sale' && $item->sale): ?>
                                             <div class="text-success small fw-semibold mt-0.5" style="font-size: 0.75rem;">
-                                                <i class="bi bi-arrow-up-right-circle me-1"></i>Profit: ৳<?php echo e(number_format($item->sale->profit, 2)); ?>
+                                                <i class="bi bi-arrow-up-right-circle me-1"></i>Profit: <?php echo e(currency_symbol()); ?><?php echo e(number_format($item->sale->profit, 2)); ?>
 
                                             </div>
                                         <?php endif; ?>
                                         <div class="text-slate-400 small" style="font-size: 0.7rem;"><?php echo e($item->created_at->format('h:i A')); ?></div>
                                     </div>
-                                    <div class="ledger-amount-positive display-font">+৳<?php echo e(number_format($item->amount, 2)); ?></div>
+                                    <div class="ledger-amount-positive display-font">+<?php echo e(currency_symbol()); ?><?php echo e(number_format($item->amount, 2)); ?></div>
                                 </div>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                 <div class="text-center text-slate-400 py-4 small">
@@ -396,7 +396,7 @@
                         ?>
                         <div class="border-top border-slate-200 pt-3 mt-3 d-flex justify-content-between align-items-center">
                             <span class="fw-bold text-slate-700">Total Sales & Income:</span>
-                            <span class="fs-4 fw-extrabold display-font text-success">৳<?php echo e(number_format($totalLeftSide, 2)); ?></span>
+                            <span class="fs-4 fw-extrabold display-font text-success"><?php echo e(currency_symbol()); ?><?php echo e(number_format($totalLeftSide, 2)); ?></span>
                         </div>
                     </div>
                 </div>
@@ -434,7 +434,7 @@
                                             <?php endif; ?>
                                             <div class="text-slate-400 small" style="font-size: 0.7rem;"><?php echo e($item->created_at->format('h:i A')); ?></div>
                                         </div>
-                                        <div class="ledger-amount-negative display-font">-৳<?php echo e(number_format($item->amount, 2)); ?></div>
+                                        <div class="ledger-amount-negative display-font">-<?php echo e(currency_symbol()); ?><?php echo e(number_format($item->amount, 2)); ?></div>
                                     </div>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                     <div class="text-center text-slate-400 py-3 small">
@@ -445,7 +445,7 @@
                             </div>
                             <div class="d-flex justify-content-between align-items-center mt-2 px-1">
                                 <span class="small fw-bold text-slate-500">Expenses Sum:</span>
-                                <span class="fw-bold text-danger display-font">৳<?php echo e(number_format($totalExpenses, 2)); ?></span>
+                                <span class="fw-bold text-danger display-font"><?php echo e(currency_symbol()); ?><?php echo e(number_format($totalExpenses, 2)); ?></span>
                             </div>
                         </div>
 
@@ -471,7 +471,7 @@
                                                 <?php echo e($item->status === 'pending' ? __('reconciliation.pending') : __('reconciliation.repaid')); ?>
 
                                             </span>
-                                            <div class="display-font fw-bold text-slate-800 me-2">৳<?php echo e(number_format($item->amount, 2)); ?></div>
+                                            <div class="display-font fw-bold text-slate-800 me-2"><?php echo e(currency_symbol()); ?><?php echo e(number_format($item->amount, 2)); ?></div>
                                             <?php if($item->isPending()): ?>
                                                 <form action="<?php echo e(route('ledger.repay', $item->id)); ?>" method="POST" class="d-inline">
                                                     <?php echo csrf_field(); ?>
@@ -491,7 +491,7 @@
                             </div>
                             <div class="d-flex justify-content-between align-items-center mt-2 px-1">
                                 <span class="small fw-bold text-slate-500">Active Receivables Sum:</span>
-                                <span class="fw-bold text-slate-800 display-font">৳<?php echo e(number_format($receivablesSum, 2)); ?></span>
+                                <span class="fw-bold text-slate-800 display-font"><?php echo e(currency_symbol()); ?><?php echo e(number_format($receivablesSum, 2)); ?></span>
                             </div>
                         </div>
                     </div>
@@ -511,27 +511,27 @@
                         <div class="mb-3">
                             <div class="reconciliation-math-row d-flex justify-content-between align-items-center">
                                 <span class="text-slate-500"><?php echo e(__('reconciliation.opening_balance')); ?>:</span>
-                                <span class="display-font">৳<?php echo e(number_format($activeRegister->opening_balance, 2)); ?></span>
+                                <span class="display-font"><?php echo e(currency_symbol()); ?><?php echo e(number_format($activeRegister->opening_balance, 2)); ?></span>
                             </div>
                             <div class="reconciliation-math-row d-flex justify-content-between align-items-center">
                                 <span class="text-slate-500"><?php echo e(__('reconciliation.pos_sales')); ?> (+):</span>
-                                <span class="display-font">৳<?php echo e(number_format($posSalesSum, 2)); ?></span>
+                                <span class="display-font"><?php echo e(currency_symbol()); ?><?php echo e(number_format($posSalesSum, 2)); ?></span>
                             </div>
                             <div class="reconciliation-math-row d-flex justify-content-between align-items-center">
                                 <span class="text-slate-500"><?php echo e(__('reconciliation.manual_income')); ?> (+):</span>
-                                <span class="display-font">৳<?php echo e(number_format($manualIncomeSum, 2)); ?></span>
+                                <span class="display-font"><?php echo e(currency_symbol()); ?><?php echo e(number_format($manualIncomeSum, 2)); ?></span>
                             </div>
                             <div class="reconciliation-math-row d-flex justify-content-between align-items-center">
                                 <span class="text-slate-500"><?php echo e(__('reconciliation.total_expenses')); ?> (-):</span>
-                                <span class="display-font text-danger">-৳<?php echo e(number_format($totalExpenses, 2)); ?></span>
+                                <span class="display-font text-danger">-<?php echo e(currency_symbol()); ?><?php echo e(number_format($totalExpenses, 2)); ?></span>
                             </div>
                             <div class="reconciliation-math-row d-flex justify-content-between align-items-center bg-white border border-slate-200 rounded-3 p-3 my-2">
                                 <span class="fw-bold text-slate-800"><?php echo e(__('reconciliation.expected_balance')); ?>:</span>
-                                <span class="display-font text-primary fw-extrabold" id="lblExpected" data-val="<?php echo e($expectedBalance); ?>">৳<?php echo e(number_format($expectedBalance, 2)); ?></span>
+                                <span class="display-font text-primary fw-extrabold" id="lblExpected" data-val="<?php echo e($expectedBalance); ?>"><?php echo e(currency_symbol()); ?><?php echo e(number_format($expectedBalance, 2)); ?></span>
                             </div>
                             <div class="reconciliation-math-row d-flex justify-content-between align-items-center">
                                 <span class="text-slate-500"><?php echo e(__('reconciliation.accounts_receivable')); ?> (+):</span>
-                                <span class="display-font" id="lblReceivable" data-val="<?php echo e($receivablesSum); ?>">৳<?php echo e(number_format($receivablesSum, 2)); ?></span>
+                                <span class="display-font" id="lblReceivable" data-val="<?php echo e($receivablesSum); ?>"><?php echo e(currency_symbol()); ?><?php echo e(number_format($receivablesSum, 2)); ?></span>
                             </div>
                         </div>
 
@@ -558,7 +558,7 @@
                             <?php echo csrf_field(); ?>
 
                             <div class="mb-4">
-                                <label for="cash_in_hand" class="form-label fw-bold text-slate-700"><?php echo e(__('reconciliation.enter_cash_in_hand')); ?> (৳)</label>
+                                <label for="cash_in_hand" class="form-label fw-bold text-slate-700"><?php echo e(__('reconciliation.enter_cash_in_hand')); ?> (<?php echo e(currency_symbol()); ?>)</label>
                                 <input type="number" step="0.01" class="form-control form-control-lg display-font font-bold" id="cash_in_hand" name="cash_in_hand" placeholder="0.00" required min="0">
                             </div>
 
@@ -567,12 +567,12 @@
                                 <div class="row text-center">
                                     <div class="col-6 border-end border-slate-200">
                                         <div class="small text-slate-500 mb-1"><?php echo e(__('reconciliation.actual_balance')); ?></div>
-                                        <div class="fw-bold fs-5 display-font text-slate-800" id="lblActual">৳<?php echo e(number_format($receivablesSum, 2)); ?></div>
+                                        <div class="fw-bold fs-5 display-font text-slate-800" id="lblActual"><?php echo e(currency_symbol()); ?><?php echo e(number_format($receivablesSum, 2)); ?></div>
                                     </div>
                                     <div class="col-6">
                                         <div class="small text-slate-500 mb-1"><?php echo e(__('reconciliation.discrepancy')); ?></div>
                                         <div class="d-inline-block" id="discrepancyBadgeWrap">
-                                            <span class="discrepancy-badge discrepancy-active display-font" id="lblDiscrepancy">৳<?php echo e(number_format($expectedBalance - $receivablesSum, 2)); ?></span>
+                                            <span class="discrepancy-badge discrepancy-active display-font" id="lblDiscrepancy"><?php echo e(currency_symbol()); ?><?php echo e(number_format($expectedBalance - $receivablesSum, 2)); ?></span>
                                         </div>
                                     </div>
                                 </div>
@@ -614,7 +614,7 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="income_amount" class="form-label small fw-bold text-slate-600"><?php echo e(__('reconciliation.amount')); ?> (৳)</label>
+                        <label for="income_amount" class="form-label small fw-bold text-slate-600"><?php echo e(__('reconciliation.amount')); ?> (<?php echo e(currency_symbol()); ?>)</label>
                         <input type="number" step="0.01" class="form-control display-font" id="income_amount" name="amount" required min="0.01">
                     </div>
                     <div class="mb-3">
@@ -659,7 +659,7 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="expense_amount" class="form-label small fw-bold text-slate-600"><?php echo e(__('reconciliation.amount')); ?> (৳)</label>
+                        <label for="expense_amount" class="form-label small fw-bold text-slate-600"><?php echo e(__('reconciliation.amount')); ?> (<?php echo e(currency_symbol()); ?>)</label>
                         <input type="number" step="0.01" class="form-control display-font" id="expense_amount" name="amount" required min="0.01">
                     </div>
                     <div class="mb-3">
@@ -699,7 +699,7 @@
                         <input type="text" class="form-control" id="customer_phone" name="customer_phone">
                     </div>
                     <div class="mb-3">
-                        <label for="receivable_amount" class="form-label small fw-bold text-slate-600"><?php echo e(__('reconciliation.amount')); ?> (৳)</label>
+                        <label for="receivable_amount" class="form-label small fw-bold text-slate-600"><?php echo e(__('reconciliation.amount')); ?> (<?php echo e(currency_symbol()); ?>)</label>
                         <input type="number" step="0.01" class="form-control display-font" id="receivable_amount" name="amount" required min="0.01">
                     </div>
                     <div class="mb-3">
@@ -729,14 +729,15 @@
         
         const expectedVal = parseFloat(document.getElementById('lblExpected').getAttribute('data-val')) || 0;
         const receivableVal = parseFloat(document.getElementById('lblReceivable').getAttribute('data-val')) || 0;
+        const currencySymbol = <?php echo json_encode(currency_symbol(), 15, 512) ?>;
 
         function updateReconciliationMath() {
             const cashVal = parseFloat(cashInHandInput.value) || 0;
             const actualVal = cashVal + receivableVal;
             const discrepancyVal = expectedVal - actualVal;
 
-            lblActual.textContent = '৳' + actualVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            lblDiscrepancy.textContent = '৳' + discrepancyVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            lblActual.textContent = currencySymbol + actualVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            lblDiscrepancy.textContent = currencySymbol + discrepancyVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
             if (Math.abs(discrepancyVal) < 0.01) {
                 lblDiscrepancy.className = 'discrepancy-badge discrepancy-zero display-font';

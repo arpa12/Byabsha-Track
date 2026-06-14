@@ -15,6 +15,5 @@
     "Settings": true,
     "Stock": true,
     "Branch": true,
-    "Subscription": true,
-    "Reconciliation": true
+    "Subscription": true
 }
