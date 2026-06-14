@@ -946,6 +946,19 @@
             <?php endif; ?>
 
             <div class="nav-section-title"><?php echo e(__('app.analytics')); ?></div>
+
+            <?php if($sidebarUser->hasModuleAccess('reconciliation')): ?>
+            <a href="<?php echo e(route('reconciliation.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('reconciliation.*') ? 'active' : ''); ?>">
+                <i class="bi bi-calculator"></i>
+                <span><?php echo e(__('reconciliation.sidebar_title')); ?></span>
+            </a>
+            <?php else: ?>
+            <a href="<?php echo e(route('subscription.plans')); ?>" class="nav-link-custom opacity-75" title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip">
+                <i class="bi bi-calculator"></i>
+                <span><?php echo e(__('reconciliation.sidebar_title')); ?></span>
+                <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
+            </a>
+            <?php endif; ?>
             
             <?php if($sidebarUser->hasModuleAccess('report')): ?>
             <a href="<?php echo e(route('report.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('report.index') ? 'active' : ''); ?>">

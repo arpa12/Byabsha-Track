@@ -95,13 +95,14 @@ class SubscriptionPlan extends Model
     public function getFeature(string $key, $default = false)
     {
         $map = [
-            'branches'   => 'branch',
-            'capitals'   => 'capital',
-            'damages'    => 'damage',
-            'stocks'     => 'stock',
-            'reports'    => 'report',
-            'daily_pl'   => 'report',
-            'monthly_pl' => 'report',
+            'branches'       => 'branch',
+            'capitals'       => 'capital',
+            'damages'        => 'damage',
+            'stocks'         => 'stock',
+            'reports'        => 'report',
+            'daily_pl'       => 'report',
+            'monthly_pl'     => 'report',
+            'reconciliation' => 'report',
         ];
 
         $normalizedKey = $map[$key] ?? $key;

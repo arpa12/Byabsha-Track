@@ -942,6 +942,19 @@
             @endif
 
             <div class="nav-section-title">{{ __('app.analytics') }}</div>
+
+            @if($sidebarUser->hasModuleAccess('reconciliation'))
+            <a href="{{ route('reconciliation.index') }}" class="nav-link-custom {{ request()->routeIs('reconciliation.*') ? 'active' : '' }}">
+                <i class="bi bi-calculator"></i>
+                <span>{{ __('reconciliation.sidebar_title') }}</span>
+            </a>
+            @else
+            <a href="{{ route('subscription.plans') }}" class="nav-link-custom opacity-75" title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip">
+                <i class="bi bi-calculator"></i>
+                <span>{{ __('reconciliation.sidebar_title') }}</span>
+                <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
+            </a>
+            @endif
             
             @if($sidebarUser->hasModuleAccess('report'))
             <a href="{{ route('report.index') }}" class="nav-link-custom {{ request()->routeIs('report.index') ? 'active' : '' }}">

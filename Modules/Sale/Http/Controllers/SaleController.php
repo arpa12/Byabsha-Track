@@ -339,6 +339,22 @@ class SaleController extends Controller
                     'customer_address' => $validated['customer_address'] ?? null,
                 ]);
 
+                // Log to daily cash ledger if active session is open
+                $activeRegister = \Modules\Reconciliation\Models\CashRegister::where('shop_id', $validated['shop_id'])
+                    ->where('status', 'open')
+                    ->first();
+
+                if ($activeRegister) {
+                    \Modules\Reconciliation\Models\LedgerTransaction::create([
+                        'register_id' => $activeRegister->id,
+                        'type' => 'income',
+                        'category' => 'POS Sale',
+                        'amount' => $totalAmount,
+                        'notes' => 'Sale of ' . ($product->name ?? 'Product') . ' (Qty: ' . $quantity . ')',
+                        'sale_id' => $sale->id,
+                    ]);
+                }
+
                 $this->productBatchService->consumeBatch($batch, $quantity);
                 $this->warrantyExchangeService->syncAutoWarrantyForSale($sale, $creatorId);
             });
@@ -424,6 +440,22 @@ class SaleController extends Controller
                     'profit' => $profit,
                     'sale_date' => $validated['sale_date'],
                 ]);
+
+                // Log to daily cash ledger if active session is open
+                $activeRegister = \Modules\Reconciliation\Models\CashRegister::where('shop_id', $validated['shop_id'])
+                    ->where('status', 'open')
+                    ->first();
+
+                if ($activeRegister) {
+                    \Modules\Reconciliation\Models\LedgerTransaction::create([
+                        'register_id' => $activeRegister->id,
+                        'type' => 'income',
+                        'category' => 'POS Sale',
+                        'amount' => $totalAmount,
+                        'notes' => 'Sale of ' . ($product->name ?? 'Product') . ' (Qty: ' . $quantity . ')',
+                        'sale_id' => $sale->id,
+                    ]);
+                }
 
                 $this->productBatchService->consumeBatch($batch, $quantity);
                 $this->warrantyExchangeService->syncAutoWarrantyForSale($sale, $creatorId);
@@ -555,6 +587,35 @@ class SaleController extends Controller
                     'sale_date' => $validated['sale_date'],
                 ]);
 
+                // Sync with daily cash ledger
+                $ledgerTx = \Modules\Reconciliation\Models\LedgerTransaction::where('sale_id', $sale->id)->first();
+                $activeRegister = \Modules\Reconciliation\Models\CashRegister::where('shop_id', $validated['shop_id'])
+                    ->where('status', 'open')
+                    ->first();
+
+                if ($activeRegister) {
+                    if ($ledgerTx) {
+                        $ledgerTx->update([
+                            'register_id' => $activeRegister->id,
+                            'amount' => $totalAmount,
+                            'notes' => 'Sale of ' . ($product->name ?? 'Product') . ' (Qty: ' . $requestedQty . ')',
+                        ]);
+                    } else {
+                        \Modules\Reconciliation\Models\LedgerTransaction::create([
+                            'register_id' => $activeRegister->id,
+                            'type' => 'income',
+                            'category' => 'POS Sale',
+                            'amount' => $totalAmount,
+                            'notes' => 'Sale of ' . ($product->name ?? 'Product') . ' (Qty: ' . $requestedQty . ')',
+                            'sale_id' => $sale->id,
+                        ]);
+                    }
+                } else {
+                    if ($ledgerTx) {
+                        $ledgerTx->delete();
+                    }
+                }
+
                 $this->productBatchService->consumeBatch($batch, $requestedQty);
                 $this->warrantyExchangeService->syncAutoWarrantyForSale($sale->fresh('product'), $creatorId);
             });
@@ -585,6 +646,9 @@ class SaleController extends Controller
             if ($batch) {
                 $this->productBatchService->restoreBatch($batch, (int) $sale->quantity);
             }
+
+            // Remove cash ledger entry if exists
+            \Modules\Reconciliation\Models\LedgerTransaction::where('sale_id', $sale->id)->delete();
 
             $sale->delete();
         });
