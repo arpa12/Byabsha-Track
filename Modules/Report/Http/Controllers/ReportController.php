@@ -296,4 +296,80 @@ class ReportController extends Controller
 
         return $pdf->download($filename);
     }
+
+    public function warranties(Request $request)
+    {
+        $filters = $this->authorizedFilters($request, [
+            'start_date' => $request->input('start_date', now()->startOfMonth()->format('Y-m-d')),
+            'end_date'   => $request->input('end_date', now()->format('Y-m-d')),
+            'status'     => $request->input('status'),
+        ]);
+
+        $warranties = $this->reportService->getPaginatedWarranties($filters);
+        $warrantySummary = $this->reportService->getWarrantySummary($filters);
+        $shops = $this->reportService->getShops($filters['shop_ids']);
+
+        return view('report::warranties', compact('warranties', 'warrantySummary', 'shops', 'filters'));
+    }
+
+    public function exportWarrantiesPdf(Request $request)
+    {
+        $filters = $this->authorizedFilters($request, [
+            'start_date' => $request->input('start_date', now()->startOfMonth()->format('Y-m-d')),
+            'end_date'   => $request->input('end_date', now()->format('Y-m-d')),
+            'status'     => $request->input('status'),
+        ]);
+
+        $warranties = $this->reportService->getPaginatedWarranties($filters, 1000);
+        $warrantySummary = $this->reportService->getWarrantySummary($filters);
+        $shops = $this->reportService->getShops($filters['shop_ids']);
+        $shopName = $filters['shop_id']
+            ? ($shops->firstWhere('id', $filters['shop_id'])->name ?? __('report.all_shops'))
+            : __('report.all_shops');
+
+        $pdf = Pdf::loadView('report::pdf.warranties-pdf', compact('warranties', 'warrantySummary', 'shops', 'filters', 'shopName'))
+            ->setPaper('a4', 'landscape');
+
+        $filename = 'warranties-report-' . $filters['start_date'] . '-to-' . $filters['end_date'] . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    public function exchanges(Request $request)
+    {
+        $filters = $this->authorizedFilters($request, [
+            'start_date' => $request->input('start_date', now()->startOfMonth()->format('Y-m-d')),
+            'end_date'   => $request->input('end_date', now()->format('Y-m-d')),
+            'exchange_type' => $request->input('exchange_type'),
+        ]);
+
+        $exchanges = $this->reportService->getPaginatedExchanges($filters);
+        $exchangeSummary = $this->reportService->getExchangeSummary($filters);
+        $shops = $this->reportService->getShops($filters['shop_ids']);
+
+        return view('report::exchanges', compact('exchanges', 'exchangeSummary', 'shops', 'filters'));
+    }
+
+    public function exportExchangesPdf(Request $request)
+    {
+        $filters = $this->authorizedFilters($request, [
+            'start_date' => $request->input('start_date', now()->startOfMonth()->format('Y-m-d')),
+            'end_date'   => $request->input('end_date', now()->format('Y-m-d')),
+            'exchange_type' => $request->input('exchange_type'),
+        ]);
+
+        $exchanges = $this->reportService->getPaginatedExchanges($filters, 1000);
+        $exchangeSummary = $this->reportService->getExchangeSummary($filters);
+        $shops = $this->reportService->getShops($filters['shop_ids']);
+        $shopName = $filters['shop_id']
+            ? ($shops->firstWhere('id', $filters['shop_id'])->name ?? __('report.all_shops'))
+            : __('report.all_shops');
+
+        $pdf = Pdf::loadView('report::pdf.exchanges-pdf', compact('exchanges', 'exchangeSummary', 'shops', 'filters', 'shopName'))
+            ->setPaper('a4', 'landscape');
+
+        $filename = 'exchanges-report-' . $filters['start_date'] . '-to-' . $filters['end_date'] . '.pdf';
+
+        return $pdf->download($filename);
+    }
 }

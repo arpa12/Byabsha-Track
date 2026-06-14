@@ -77,5 +77,11 @@ return [
     'feat8_desc'       => 'Establish multiple branches under each shop. Delegate management tasks and view branch-level reports.',
     'feat9_title'      => 'Subscriptions & RBAC',
     'feat9_desc'       => 'Manage flexible subscription plans. Role-Based Access Control (Owner, Manager, Staff) keeps operations secure.',
+    'feat10_title'     => 'Warranty & Exchange Tracking',
+    'feat10_desc'      => 'Track product warranty parameters, process returns, and log customer exchanges with original vs replacement batch cost sync.',
+    'feat11_title'     => 'Branding & Dynamic Themes',
+    'feat11_desc'      => 'Upload custom logos, update favicons, and synchronize color palettes dynamically across landing pages and user dashboards.',
+    'feat12_title'     => 'Real-Time Notifications',
+    'feat12_desc'      => 'Stay informed with live alerts for low stock levels, new restock procurement logs, user signups, and transaction status.',
 ];
 

@@ -3,28 +3,22 @@
 @section('title', __('report.title'))
 
 @push('styles')
+    @vite(['resources/css/app.css'])
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
     .report-shell {
-        font-family: 'Manrope', 'Segoe UI', sans-serif;
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
         color: #0f172a;
     }
 
-    .report-shell::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
-        background:
-            radial-gradient(700px 420px at 90% 5%, rgba(14, 116, 144, 0.14), transparent 60%),
-            radial-gradient(580px 360px at 5% 8%, rgba(251, 146, 60, 0.14), transparent 60%),
-            linear-gradient(180deg, #f7fafc 0%, #eff4f8 100%);
+    .display-font {
+        font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+        letter-spacing: -0.03em;
     }
 
     .page-title {
-        font-family: 'Outfit', 'Segoe UI', sans-serif;
+        font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
         font-size: clamp(1.4rem, 2.6vw, 2rem);
         margin-bottom: 0.3rem;
     }
@@ -66,8 +60,8 @@
     }
 
     .quick-link:hover {
-        border-color: #67a6b9;
-        background: #f4fbfd;
+        border-color: color-mix(in srgb, var(--brand, #0f766e) 40%, transparent);
+        background: color-mix(in srgb, var(--brand, #0f766e) 5%, transparent);
     }
 
     .quick-link h6 {
@@ -202,16 +196,16 @@
     }
 
     .btn-report-brand {
-        background: linear-gradient(135deg, #0f766e 0%, #0d5969 100%);
-        border-color: #0f766e;
+        background: linear-gradient(135deg, var(--brand, #0f766e) 0%, var(--brand-deep, #0d5969) 100%);
+        border-color: var(--brand, #0f766e);
         color: #fff;
-        box-shadow: 0 8px 18px rgba(15, 118, 110, 0.18);
+        box-shadow: 0 8px 18px color-mix(in srgb, var(--brand, #0f766e) 18%, transparent);
     }
 
     .btn-report-brand:hover,
     .btn-report-brand:focus {
-        background: linear-gradient(135deg, #0d5969 0%, #0f766e 100%);
-        border-color: #0d5969;
+        background: linear-gradient(135deg, var(--brand-deep, #0d5969) 0%, var(--brand, #0f766e) 100%);
+        border-color: var(--brand-deep, #0d5969);
         color: #fff;
     }
 
@@ -234,10 +228,6 @@
             font-size: 11px;
         }
 
-        .report-shell::before {
-            display: none !important;
-        }
-
         .content-card,
         .stat-card {
             border: none !important;
@@ -248,19 +238,67 @@
             font-size: 10px;
         }
     }
+
+    .report-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.48rem;
+        background: color-mix(in srgb, var(--brand, #0f766e) 12%, transparent);
+        color: var(--brand, #0f766e);
+        border: 1px solid color-mix(in srgb, var(--brand, #0f766e) 22%, transparent);
+        border-radius: 999px;
+        padding: 0.42rem 0.92rem;
+        font-size: 0.76rem;
+        font-weight: 700;
+        margin-bottom: 0.8rem;
+        box-shadow: 0 8px 18px color-mix(in srgb, var(--brand, #0f766e) 13%, transparent);
+    }
+
+    .page-title {
+        font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+        font-size: clamp(1.55rem, 3.2vw, 2.3rem);
+        line-height: 1.1;
+        color: #0f172a;
+        margin-bottom: 0.45rem;
+        font-weight: 800;
+    }
+
+    .btn-secondary-custom {
+        border-radius: 999px;
+        padding: 0.52rem 1.1rem;
+        font-size: 0.84rem;
+        font-weight: 700;
+        border: 1px solid #9eb8cb;
+        color: #1f3f58;
+        background: #f7fbff;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-secondary-custom:hover {
+        color: #0f172a;
+        border-color: #6f93b0;
+        background: #ffffff;
+    }
 </style>
 @endpush
 
 @section('content')
 <div class="report-shell">
-    <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-4 border-bottom border-slate-200 pb-5 mb-8 report-header">
         <div>
-            <h1 class="page-title"><i class="bi bi-grid-1x2-fill me-1"></i>{{ __('report.title') }}</h1>
-            <p class="page-subtitle">{{ __('report.compact_subtitle') }}</p>
+            <span class="report-kicker"><i class="bi bi-bar-chart-line"></i> {{ __('app.analytics') }}</span>
+            <h1 class="dashboard-title display-font text-3xl font-black text-slate-900 leading-none mb-1">{{ __('report.title') }}</h1>
+            <p class="dashboard-subtitle text-slate-500 text-sm mt-1.5">{{ __('report.compact_subtitle') }}</p>
         </div>
-        <a href="{{ route('report.print.index', request()->query()) }}" target="_blank" class="btn btn-outline-secondary">
-            <i class="bi bi-printer"></i> {{ __('report.print') }}
-        </a>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ route('report.print.index', request()->query()) }}" target="_blank" class="btn-secondary-custom">
+                <i class="bi bi-printer"></i> {{ __('report.print') }}
+            </a>
+        </div>
     </div>
 
     <div class="panel mb-3">
@@ -350,13 +388,43 @@
         </div>
         <div class="panel-body">
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-md-4">
+                    <a href="{{ route('report.sales', ['shop_id' => $filters['shop_id']]) }}" class="quick-link">
+                        <h6><i class="bi bi-receipt me-1"></i>{{ __('report.sales_report') }}</h6>
+                        <p>{{ __('report.sales_report_subtitle') }}</p>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ route('report.products', ['shop_id' => $filters['shop_id']]) }}" class="quick-link">
+                        <h6><i class="bi bi-box-seam me-1"></i>{{ __('report.products_report') }}</h6>
+                        <p>{{ __('report.products_report_subtitle') }}</p>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ route('report.shops', ['shop_id' => $filters['shop_id']]) }}" class="quick-link">
+                        <h6><i class="bi bi-shop me-1"></i>{{ __('report.shops_report') }}</h6>
+                        <p>{{ __('report.shops_report_subtitle') }}</p>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ route('report.warranties', ['shop_id' => $filters['shop_id']]) }}" class="quick-link">
+                        <h6><i class="bi bi-shield-check me-1"></i>{{ __('report.warranties_report') }}</h6>
+                        <p>{{ __('report.warranties_report_subtitle') }}</p>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ route('report.exchanges', ['shop_id' => $filters['shop_id']]) }}" class="quick-link">
+                        <h6><i class="bi bi-arrow-left-right me-1"></i>{{ __('report.exchanges_report') }}</h6>
+                        <p>{{ __('report.exchanges_report_subtitle') }}</p>
+                    </a>
+                </div>
+                <div class="col-md-4">
                     <a href="{{ route('report.daily', ['shop_id' => $filters['shop_id'], 'month' => now()->format('Y-m')]) }}" class="quick-link">
                         <h6><i class="bi bi-calendar-day me-1"></i>{{ __('report.daily_pnl') }}</h6>
                         <p>{{ __('report.view_daily_report') }}</p>
                     </a>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <a href="{{ route('report.monthly', ['shop_id' => $filters['shop_id'], 'year' => now()->format('Y')]) }}" class="quick-link">
                         <h6><i class="bi bi-calendar-range me-1"></i>{{ __('report.monthly_pnl') }}</h6>
                         <p>{{ __('report.view_monthly_report') }}</p>

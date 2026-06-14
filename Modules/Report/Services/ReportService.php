@@ -264,13 +264,15 @@ class ReportService
     public function getProductReport($filters = [])
     {
         $query = Product::with('shop')
-            ->leftJoin('sales', 'products.id', '=', 'sales.product_id')
-            ->select(
-                'products.*',
-                DB::raw('COALESCE(SUM(sales.quantity), 0) as total_units_sold'),
-                DB::raw('COALESCE(SUM(sales.total_amount), 0) as total_revenue')
-            )
-            ->groupBy('products.id');
+            ->select('products.*')
+            ->addSelect([
+                'total_units_sold' => DB::table('sales')
+                    ->whereColumn('sales.product_id', 'products.id')
+                    ->selectRaw('COALESCE(SUM(sales.quantity), 0)'),
+                'total_revenue' => DB::table('sales')
+                    ->whereColumn('sales.product_id', 'products.id')
+                    ->selectRaw('COALESCE(SUM(sales.total_amount), 0)'),
+            ]);
 
         if (!empty($filters['shop_ids'])) {
             $query->whereIn('products.shop_id', $filters['shop_ids']);
@@ -598,6 +600,157 @@ class ReportService
             'totals'        => $totals,
             'shopBreakdown' => $shopBreakdown,
             'year'          => $year,
+        ];
+    }
+
+    public function getPaginatedExchanges($filters = [], $perPage = 25)
+    {
+        $query = SaleExchange::with(['shop', 'sale.product', 'originalBatch.product', 'replacementBatch.product', 'creator']);
+
+        if (!empty($filters['shop_ids'])) {
+            $query->whereIn('shop_id', $filters['shop_ids']);
+        }
+
+        if (!empty($filters['shop_id'])) {
+            $query->where('shop_id', $filters['shop_id']);
+        }
+
+        if (!empty($filters['start_date'])) {
+            $query->whereDate('exchange_date', '>=', $filters['start_date']);
+        }
+
+        if (!empty($filters['end_date'])) {
+            $query->whereDate('exchange_date', '<=', $filters['end_date']);
+        }
+
+        if (!empty($filters['exchange_type'])) {
+            $query->where('exchange_type', $filters['exchange_type']);
+        }
+
+        return $query->latest('exchange_date')->paginate($perPage)->withQueryString();
+    }
+
+    public function getExchangeSummary($filters = [])
+    {
+        $query = SaleExchange::query();
+
+        if (!empty($filters['shop_ids'])) {
+            $query->whereIn('shop_id', $filters['shop_ids']);
+        }
+
+        if (!empty($filters['shop_id'])) {
+            $query->where('shop_id', $filters['shop_id']);
+        }
+
+        if (!empty($filters['start_date'])) {
+            $query->whereDate('exchange_date', '>=', $filters['start_date']);
+        }
+
+        if (!empty($filters['end_date'])) {
+            $query->whereDate('exchange_date', '<=', $filters['end_date']);
+        }
+
+        $totalExchanges = (clone $query)->count();
+        $totalReplacements = (clone $query)->where('exchange_type', 'replacement')->count();
+        $totalReturnOnlys = (clone $query)->where('exchange_type', 'return_only')->count();
+        $totalCostDifference = (clone $query)->sum('cost_difference');
+
+        return (object) [
+            'total' => $totalExchanges,
+            'replacements' => $totalReplacements,
+            'returns' => $totalReturnOnlys,
+            'cost_difference' => $totalCostDifference,
+        ];
+    }
+
+    public function getPaginatedWarranties($filters = [], $perPage = 25)
+    {
+        $query = SaleWarranty::with(['shop', 'sale.product', 'creator']);
+
+        if (!empty($filters['shop_ids'])) {
+            $query->whereIn('shop_id', $filters['shop_ids']);
+        }
+
+        if (!empty($filters['shop_id'])) {
+            $query->where('shop_id', $filters['shop_id']);
+        }
+
+        if (!empty($filters['start_date'])) {
+            $query->whereDate('start_date', '>=', $filters['start_date']);
+        }
+
+        if (!empty($filters['end_date'])) {
+            $query->whereDate('start_date', '<=', $filters['end_date']);
+        }
+
+        if (!empty($filters['status'])) {
+            if ($filters['status'] === 'expired') {
+                $query->where('status', 'active')
+                    ->whereDate('end_date', '<', now()->toDateString());
+            } else {
+                $query->where('status', $filters['status']);
+                if ($filters['status'] === 'active') {
+                    $query->whereDate('end_date', '>=', now()->toDateString());
+                }
+            }
+        }
+
+        return $query->latest('start_date')->paginate($perPage)->withQueryString();
+    }
+
+    public function getWarrantySummary($filters = [])
+    {
+        $query = SaleWarranty::query();
+
+        if (!empty($filters['shop_ids'])) {
+            $query->whereIn('shop_id', $filters['shop_ids']);
+        }
+
+        if (!empty($filters['shop_id'])) {
+            $query->where('shop_id', $filters['shop_id']);
+        }
+
+        if (!empty($filters['start_date'])) {
+            $query->whereDate('start_date', '>=', $filters['start_date']);
+        }
+
+        if (!empty($filters['end_date'])) {
+            $query->whereDate('start_date', '<=', $filters['end_date']);
+        }
+
+        // Get total count
+        $total = (clone $query)->count();
+
+        // Get counts by status
+        $active = (clone $query)
+            ->where('status', 'active')
+            ->whereDate('end_date', '>=', now()->toDateString())
+            ->count();
+
+        $expired = (clone $query)
+            ->where(function ($q) {
+                $q->where('status', 'expired')
+                    ->orWhere(function ($sub) {
+                        $sub->where('status', 'active')
+                            ->whereDate('end_date', '<', now()->toDateString());
+                    });
+            })
+            ->count();
+
+        $claimed = (clone $query)
+            ->where('status', 'claimed')
+            ->count();
+
+        $voided = (clone $query)
+            ->where('status', 'void')
+            ->count();
+
+        return (object) [
+            'total' => $total,
+            'active' => $active,
+            'expired' => $expired,
+            'claimed' => $claimed,
+            'voided' => $voided,
         ];
     }
 }

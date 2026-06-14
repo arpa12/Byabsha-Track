@@ -975,6 +975,27 @@
                         <p class="mb-0 text-secondary small">{{ __('landing.feat9_desc') }}</p>
                     </div>
                 </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <span class="feature-icon" style="background:#fff1f2;color:#f43f5e;"><i class="bi bi-shield-fill-check"></i></span>
+                        <h3 class="h5 mb-2">{{ __('landing.feat10_title') }}</h3>
+                        <p class="mb-0 text-secondary small">{{ __('landing.feat10_desc') }}</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <span class="feature-icon" style="background:#f0fdf4;color:#15803d;"><i class="bi bi-palette-fill"></i></span>
+                        <h3 class="h5 mb-2">{{ __('landing.feat11_title') }}</h3>
+                        <p class="mb-0 text-secondary small">{{ __('landing.feat11_desc') }}</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <span class="feature-icon" style="background:#f0f9ff;color:#0369a1;"><i class="bi bi-bell-fill"></i></span>
+                        <h3 class="h5 mb-2">{{ __('landing.feat12_title') }}</h3>
+                        <p class="mb-0 text-secondary small">{{ __('landing.feat12_desc') }}</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>

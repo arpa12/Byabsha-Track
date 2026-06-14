@@ -637,9 +637,9 @@
             <div class="notification-bell">
                 <button class="btn" id="notificationBell" type="button">
                     <i class="bi bi-bell-fill"></i>
-                    @if(auth()->user()->unreadNotificationsCount() > 0)
-                        <span class="notification-badge">{{ auth()->user()->unreadNotificationsCount() }}</span>
-                    @endif
+                    <span class="notification-badge" id="notificationBadge" style="display: {{ auth()->user()->unreadNotificationsCount() > 0 ? 'inline-block' : 'none' }}">
+                        {{ auth()->user()->unreadNotificationsCount() }}
+                    </span>
                 </button>
 
                 <div class="notification-dropdown" id="notificationDropdown">
@@ -674,11 +674,9 @@
                             </div>
                         @endforelse
                     </div>
-                    @if($recentNotifications->count() > 0)
-                        <div class="notification-dropdown-footer">
-                            <a href="{{ route('notifications.index') }}">{{ __('notifications.view_all') }}</a>
-                        </div>
-                    @endif
+                    <div class="notification-dropdown-footer" id="notificationListFooter" style="display: {{ $recentNotifications->count() > 0 ? 'block' : 'none' }}">
+                        <a href="{{ route('notifications.index') }}">{{ __('notifications.view_all') }}</a>
+                    </div>
                 </div>
             </div>
 
@@ -944,13 +942,40 @@
             @endif
 
             <div class="nav-section-title">{{ __('app.analytics') }}</div>
-            <a href="{{ $sidebarUser->hasModuleAccess('report') ? route('report.index') : route('subscription.plans') }}" class="nav-link-custom {{ (request()->routeIs('report.index') || request()->routeIs('report.sales') || request()->routeIs('report.products') || request()->routeIs('report.shops')) ? 'active' : '' }} {{ !$sidebarUser->hasModuleAccess('report') ? 'opacity-75' : '' }}" {!! !$sidebarUser->hasModuleAccess('report') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : '' !!}>
+            
+            @if($sidebarUser->hasModuleAccess('report'))
+            <a href="{{ route('report.index') }}" class="nav-link-custom {{ request()->routeIs('report.index') ? 'active' : '' }}">
+                <i class="bi bi-grid-1x2"></i>
+                <span>Overview</span>
+            </a>
+            <a href="{{ route('report.sales') }}" class="nav-link-custom {{ request()->routeIs('report.sales') ? 'active' : '' }}">
+                <i class="bi bi-receipt"></i>
+                <span>{{ __('report.sales_report') }}</span>
+            </a>
+            <a href="{{ route('report.products') }}" class="nav-link-custom {{ request()->routeIs('report.products') ? 'active' : '' }}">
+                <i class="bi bi-box-seam"></i>
+                <span>{{ __('report.products_report') }}</span>
+            </a>
+            <a href="{{ route('report.shops') }}" class="nav-link-custom {{ request()->routeIs('report.shops') ? 'active' : '' }}">
+                <i class="bi bi-shop"></i>
+                <span>{{ __('report.shops_report') }}</span>
+            </a>
+            <a href="{{ route('report.warranties') }}" class="nav-link-custom {{ request()->routeIs('report.warranties') ? 'active' : '' }}">
+                <i class="bi bi-shield-check"></i>
+                <span>{{ __('report.warranties_report') }}</span>
+            </a>
+            <a href="{{ route('report.exchanges') }}" class="nav-link-custom {{ request()->routeIs('report.exchanges') ? 'active' : '' }}">
+                <i class="bi bi-arrow-left-right"></i>
+                <span>{{ __('report.exchanges_report') }}</span>
+            </a>
+            @else
+            <a href="{{ route('subscription.plans') }}" class="nav-link-custom opacity-75" title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip">
                 <i class="bi bi-bar-chart-line"></i>
                 <span>{{ __('app.reports') }}</span>
-                @if(!$sidebarUser->hasModuleAccess('report'))
-                    <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
-                @endif
+                <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.85rem;"></i>
             </a>
+            @endif
+
             <a href="{{ $sidebarUser->hasModuleAccess('report') ? route('report.daily') : route('subscription.plans') }}" class="nav-link-custom {{ (request()->routeIs('report.daily') || request()->routeIs('report.export.daily-pdf')) ? 'active' : '' }} {{ !$sidebarUser->hasModuleAccess('report') ? 'opacity-75' : '' }}" {!! !$sidebarUser->hasModuleAccess('report') ? 'title="Available on paid plans. Click to upgrade." data-bs-toggle="tooltip"' : '' !!}>
                 <i class="bi bi-calendar-check"></i>
                 <span>{{ __('app.daily_pnl') }}</span>
@@ -1047,13 +1072,20 @@
         updateDate();
 
         // Notification bell dropdown
+        // Notification bell dropdown
         const notificationBell = document.getElementById('notificationBell');
         const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationBadge = document.getElementById('notificationBadge');
+        const notificationList = document.getElementById('notificationList');
+        const notificationListFooter = document.getElementById('notificationListFooter');
 
         if (notificationBell && notificationDropdown) {
             notificationBell.addEventListener('click', (e) => {
                 e.stopPropagation();
                 notificationDropdown.classList.toggle('show');
+                if (notificationDropdown.classList.contains('show')) {
+                    fetchRecentNotifications();
+                }
             });
 
             // Close dropdown when clicking outside
@@ -1062,6 +1094,69 @@
                     notificationDropdown.classList.remove('show');
                 }
             });
+
+            function fetchRecentNotifications() {
+                fetch('/notifications/recent?limit=5', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    // Update Badge
+                    if (notificationBadge) {
+                        if (data.unread_count > 0) {
+                            notificationBadge.textContent = data.unread_count;
+                            notificationBadge.style.display = 'inline-block';
+                        } else {
+                            notificationBadge.style.display = 'none';
+                        }
+                    }
+
+                    // Update List
+                    if (notificationList) {
+                        if (data.notifications && data.notifications.length > 0) {
+                            notificationList.innerHTML = data.notifications.map(n => `
+                                <a href="${n.url}" class="notification-item ${n.is_unread ? 'unread' : ''}">
+                                    <i class="${n.icon} notification-icon"></i>
+                                    <div class="notification-content">
+                                        <div class="notification-title">${escapeHtml(n.title)}</div>
+                                        <div class="notification-message">${escapeHtml(n.message)}</div>
+                                        <div class="notification-time">${escapeHtml(n.created_at_human)}</div>
+                                    </div>
+                                </a>
+                            `).join('');
+                            if (notificationListFooter) {
+                                notificationListFooter.style.display = 'block';
+                            }
+                        } else {
+                            notificationList.innerHTML = `
+                                <div class="notification-empty">
+                                    <i class="bi bi-bell-slash"></i>
+                                    <p class="mb-0">${escapeHtml(@json(__('notifications.no_notifications')))}</p>
+                                </div>
+                            `;
+                            if (notificationListFooter) {
+                                notificationListFooter.style.display = 'none';
+                            }
+                        }
+                    }
+                })
+                .catch(err => console.error('Error fetching notifications:', err));
+            }
+
+            function escapeHtml(str) {
+                return String(str || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            // Poll for new notifications every 60 seconds
+            setInterval(fetchRecentNotifications, 60000);
         }
 
         // Initialize Bootstrap tooltips

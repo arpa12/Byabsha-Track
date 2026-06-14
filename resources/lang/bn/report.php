@@ -87,7 +87,14 @@ return [
     'products_report_subtitle'=> 'বর্তমান মজুদ স্তর, স্টক মূল্য এবং বিক্রয় কর্মক্ষমতা',
     'shops_report'            => 'দোকান তুলনা প্রতিবেদন',
     'shops_report_subtitle'   => 'প্রতি দোকানের কর্মক্ষমতা তুলনা ও বিশ্লেষণ',
+    'warranties_report'       => 'ওয়ারেন্টি ট্র্যাকিং প্রতিবেদন',
+    'warranties_report_subtitle' => 'সকল পণ্যের ওয়ারেন্টি, বর্তমান অবস্থা ও সেবা মেয়াদের বিস্তারিত বিবরণ',
     'back_to_reports'         => 'প্রতিবেদনে ফিরুন',
+    'total_warranties'        => 'মোট ওয়ারেন্টি',
+    'warranty_code'           => 'ওয়ারেন্টি কোড',
+    'warranty_period'         => 'ওয়ারেন্টির মেয়াদ',
+    'terms_notes'             => 'শর্তাবলী ও নোট',
+    'no_warranties_found'     => 'কোনো ওয়ারেন্টি পাওয়া যায়নি।',
 
     // Sales sub-page
     'sales_transactions'  => 'বিক্রয় লেনদেন',
@@ -166,4 +173,16 @@ return [
     'generated'               => 'তৈরি করা হয়েছে',
     'total'                   => 'মোট',
     'pdf_footer'              => 'এই প্রতিবেদনটি ব্যাবশা ট্র্যাক দ্বারা স্বয়ংক্রিয়ভাবে তৈরি করা হয়েছে।',
+
+    // Exchange Report
+    'exchanges_report'          => 'এক্সচেঞ্জ প্রতিবেদন',
+    'exchanges_report_subtitle' => 'সকল পণ্য এক্সচেঞ্জ, প্রতিস্থাপন, ফেরত এবং মূল্যের পার্থক্যের বিস্তারিত বিবরণ',
+    'exchanges_count'           => 'মোট এক্সচেঞ্জ',
+    'replacements_count'        => 'প্রতিস্থাপন',
+    'returns_count'             => 'শুধুমাত্র ফেরত',
+    'cost_difference'           => 'মূল্যের পার্থক্য',
+    'sale_reference'            => 'বিক্রয় রেফারেন্স',
+    'original_batch'            => 'মূল ব্যাচ',
+    'replacement_batch'         => 'প্রতিস্থাপন ব্যাচ',
+    'no_exchanges_found'        => 'কোনো এক্সচেঞ্জ পাওয়া যায়নি।',
 ];

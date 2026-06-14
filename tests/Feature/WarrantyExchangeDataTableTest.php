@@ -161,3 +161,134 @@ test('admin can view exchanges table with yajra datatable structure', function (
     $response->assertSee('Exchange Test Product');
     $response->assertSee('return_only');
 });
+
+test('admin can view exchange report page', function () {
+    $this->withoutMiddleware([
+        \App\Http\Middleware\EnsureSubscriptionActive::class,
+        \App\Http\Middleware\CheckModuleAccess::class,
+    ]);
+
+    $owner = User::factory()->create(['role' => 'owner', 'name' => 'Shop Owner User']);
+
+    $shop = Shop::create([
+        'name' => 'Exchange Report Shop',
+        'user_id' => $owner->id
+    ]);
+
+    $product = Product::create([
+        'shop_id' => $shop->id,
+        'name' => 'Report Exchange Product',
+        'purchase_price' => 150,
+        'sale_price' => 200,
+        'stock_quantity' => 50,
+        'created_by' => $owner->id,
+    ]);
+
+    $batch = ProductBatch::create([
+        'product_id' => $product->id,
+        'shop_id' => $shop->id,
+        'batch_code' => 'B-001',
+        'purchase_price' => 150,
+        'initial_quantity' => 50,
+        'remaining_quantity' => 50,
+        'batch_date' => now()->toDateString(),
+    ]);
+
+    $sale = Sale::create([
+        'shop_id' => $shop->id,
+        'product_id' => $product->id,
+        'product_batch_id' => $batch->id,
+        'quantity' => 1,
+        'purchase_price' => 150,
+        'sale_price' => 200,
+        'total_amount' => 200,
+        'profit' => 50,
+        'sale_date' => now()->toDateString(),
+        'customer_name' => 'John Report',
+    ]);
+
+    $exchange = SaleExchange::create([
+        'shop_id' => $shop->id,
+        'sale_id' => $sale->id,
+        'original_batch_id' => $batch->id,
+        'quantity' => 1,
+        'exchange_date' => now()->toDateString(),
+        'exchange_type' => 'replacement',
+        'reason' => 'damaged',
+        'cost_difference' => 0.00,
+        'status' => 'completed',
+        'created_by' => $owner->id,
+    ]);
+
+    $response = $this->actingAs($owner)
+        ->get(route('report.exchanges', ['shop_id' => $shop->id]));
+
+    $response->assertStatus(200);
+    $response->assertSee('Exchange Report');
+    $response->assertSee('Report Exchange Product');
+});
+
+test('admin can export exchange report to pdf', function () {
+    $this->withoutMiddleware([
+        \App\Http\Middleware\EnsureSubscriptionActive::class,
+        \App\Http\Middleware\CheckModuleAccess::class,
+    ]);
+
+    $owner = User::factory()->create(['role' => 'owner', 'name' => 'Shop Owner User']);
+
+    $shop = Shop::create([
+        'name' => 'Exchange PDF Shop',
+        'user_id' => $owner->id
+    ]);
+
+    $product = Product::create([
+        'shop_id' => $shop->id,
+        'name' => 'PDF Exchange Product',
+        'purchase_price' => 150,
+        'sale_price' => 200,
+        'stock_quantity' => 50,
+        'created_by' => $owner->id,
+    ]);
+
+    $batch = ProductBatch::create([
+        'product_id' => $product->id,
+        'shop_id' => $shop->id,
+        'batch_code' => 'B-001',
+        'purchase_price' => 150,
+        'initial_quantity' => 50,
+        'remaining_quantity' => 50,
+        'batch_date' => now()->toDateString(),
+    ]);
+
+    $sale = Sale::create([
+        'shop_id' => $shop->id,
+        'product_id' => $product->id,
+        'product_batch_id' => $batch->id,
+        'quantity' => 1,
+        'purchase_price' => 150,
+        'sale_price' => 200,
+        'total_amount' => 200,
+        'profit' => 50,
+        'sale_date' => now()->toDateString(),
+        'customer_name' => 'John PDF',
+    ]);
+
+    $exchange = SaleExchange::create([
+        'shop_id' => $shop->id,
+        'sale_id' => $sale->id,
+        'original_batch_id' => $batch->id,
+        'quantity' => 1,
+        'exchange_date' => now()->toDateString(),
+        'exchange_type' => 'replacement',
+        'reason' => 'damaged',
+        'cost_difference' => 0.00,
+        'status' => 'completed',
+        'created_by' => $owner->id,
+    ]);
+
+    $response = $this->actingAs($owner)
+        ->get(route('report.export.exchanges-pdf', ['shop_id' => $shop->id]));
+
+    $response->assertStatus(200);
+    $response->assertHeader('content-type', 'application/pdf');
+});

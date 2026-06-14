@@ -163,3 +163,9 @@ Artisan::command('subscription:check-expiry', function () {
 })->purpose('Find and expire all active subscriptions that have passed their ends_at date');
 
 Schedule::command('subscription:check-expiry')->hourly();
+
+Schedule::call(function () {
+    \App\Models\Notification::where('created_at', '<', now()->subDays(30))
+        ->whereNotNull('read_at')
+        ->delete();
+})->daily();

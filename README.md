@@ -42,11 +42,15 @@ Byabsha Track directly addresses these pain points by offering:
 *   **Sales Transactions with Stock Sync**: Automatically deducts stock and computes exact net profit on each sale. Includes complete database transaction safety to prevent data corruption.
 *   **Restock Tracking**: Add new inventory with unit purchase price. Automatically increments stock levels and updates capital.
 *   **Real-time Business Dashboard**: Track today's sales, daily and monthly profits, total capital, and low-stock alerts at a single glance.
+*   **Warranty & Exchange Tracking**: Log item warranty claims, process product swaps, and synchronize replacement items with original/replacement batch FIFO costing.
+*   **Tenant Branding Settings**: Upload logos, favicons, and customize application brand colors dynamically for landing pages and dashboards.
+*   **Real-time System Notifications**: Live, secure alerts for low inventory thresholds, new restocks, user actions, and sales events.
 *   **Comprehensive Reports & Analytics**:
     *   Sales list report with advanced filters
     *   Stock levels & low stock alerts
     *   Daily & Monthly P&L breakdowns
     *   Branch-by-branch comparisons
+    *   Warranty & Exchange performance reports
     *   One-click print-ready PDF download for all reports
 *   **Bilingual User Interface**: Easily toggle between English and Bengali (বাংলা).
 
@@ -68,17 +72,25 @@ We leverage a cutting-edge PHP stack designed for security, performance, and sca
 
 ## 📁 Clean Modular Structure
 
-The codebase is organized into **9 decoupled modules** under `Modules/`, making it highly maintainable and clean:
+The codebase is organized into **17 decoupled domain modules** under `Modules/`, making it highly maintainable and scalable:
 
-1.  **Auth**: Manages secure login/logout authentication with guest/auth middleware.
-2.  **Landing**: A clean, public landing page for marketing.
-3.  **Dashboard**: Business metrics, monthly graphs, and low-stock indicators.
-4.  **Shop**: Management of physical retail outlets or online channels.
-5.  **Product**: CRUD for inventory, categories, pricing, and stock monitoring.
-6.  **Sale**: Handles checkout, inventory deduction, and profit margin calculation.
-7.  **Restock**: Inventory procurement records and purchase cost calculations.
-8.  **Capital**: Automated valuation of shop assets and current inventory cost.
-9.  **Report**: Advanced search filters and professional PDF export layouts.
+1.  **Auth**: Secure tenant login/registration, password recovery, and middleware filters.
+2.  **Branch**: Hierarchical sub-location structure for physical retail outlets.
+3.  **Brand**: Manufacturer profiles and branding attributes.
+4.  **Capital**: Real-time asset evaluation of store inventory based on purchase price logs.
+5.  **Category**: Infinite parent-child categorizations for the product catalog.
+6.  **Damage**: Damage/loss reporting that adjusts stock levels and profits.
+7.  **Dashboard**: Operations command center with sales charts and live indicators.
+8.  **Landing**: Public marketing page, translation toggles, and login modals.
+9.  **Product**: Product specs, supplier parameters, and SKU tracking.
+10. **Report**: Multi-shop comparison, daily/monthly profit-loss reports, sales logs, stock sheets, and warranty/exchange reports (with PDF downloads).
+11. **Restock**: Inbound procurement flow, auto-updating unit cost tracking.
+12. **Sale**: POS checkout, stock reductions, and transactional profit calculation.
+13. **Settings**: Tenant-wide branding settings (App name, theme colors, logo, and favicon uploads).
+14. **Shop**: Parent entity for organizing store channels and locations.
+15. **Stock**: Multi-batch inventory tracker implementing FIFO/LIFO tracking metrics.
+16. **Subscription**: SaaS package limits, pricing tier control, and tenant checkout routes.
+17. **User**: Management of tenant users, Role-Based Access Controls (RBAC), and team invites.
 
 ---
 

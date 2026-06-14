@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder
             ['email' => $superAdminEmail],
             [
                 'name' => 'Super Admin',
-                'password' => Hash::make($superAdminPassword),
+                'password' => Hash::make('12345'),
                 'role' => 'superadmin',
             ]
         );

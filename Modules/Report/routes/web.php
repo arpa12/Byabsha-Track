@@ -9,6 +9,8 @@ Route::middleware(['auth', 'module.access:report'])->prefix('reports')->name('re
     Route::get('/sales', [ReportController::class, 'sales'])->name('sales');
     Route::get('/products', [ReportController::class, 'products'])->name('products');
     Route::get('/shops', [ReportController::class, 'shops'])->name('shops');
+    Route::get('/warranties', [ReportController::class, 'warranties'])->name('warranties');
+    Route::get('/exchanges', [ReportController::class, 'exchanges'])->name('exchanges');
     Route::get('/daily', [ReportController::class, 'daily'])->name('daily');
     Route::get('/monthly', [ReportController::class, 'monthly'])->name('monthly');
 
@@ -18,4 +20,6 @@ Route::middleware(['auth', 'module.access:report'])->prefix('reports')->name('re
     Route::get('/export/sales-pdf', [ReportController::class, 'exportSalesPdf'])->name('export.sales-pdf');
     Route::get('/export/products-pdf', [ReportController::class, 'exportProductsPdf'])->name('export.products-pdf');
     Route::get('/export/shops-pdf', [ReportController::class, 'exportShopsPdf'])->name('export.shops-pdf');
+    Route::get('/export/warranties-pdf', [ReportController::class, 'exportWarrantiesPdf'])->name('export.warranties-pdf');
+    Route::get('/export/exchanges-pdf', [ReportController::class, 'exportExchangesPdf'])->name('export.exchanges-pdf');
 });

@@ -157,6 +157,48 @@ class ProductBatchService
 
         $product->save();
 
+        // Check stock warning threshold dynamically
+        $threshold = (int) \Modules\Settings\Models\Setting::get('low_stock_alert', 10);
+        $threshold = $threshold > 0 ? $threshold : 10;
+
+        if ($stock <= $threshold) {
+            $users = \App\Models\User::query()->get();
+            foreach ($users as $user) {
+                // Only notify user if they have access to this shop
+                if (!$user->ownsShop((int) $product->shop_id)) {
+                    continue;
+                }
+
+                $alreadyNotified = \App\Models\Notification::query()
+                    ->where('user_id', $user->id)
+                    ->where('type', 'low_stock')
+                    ->whereDate('created_at', today())
+                    ->where('data->product_id', $product->id)
+                    ->exists();
+
+                if ($alreadyNotified) {
+                    continue;
+                }
+
+                \App\Models\Notification::create([
+                    'user_id' => $user->id,
+                    'type' => 'low_stock',
+                    'title' => __('notifications.type_low_stock'),
+                    'message' => __('notifications.low_stock_message', [
+                        'product' => $product->name,
+                        'quantity' => $stock,
+                    ]),
+                    'data' => [
+                        'product_id' => $product->id,
+                        'shop_id' => $product->shop_id,
+                        'shop_name' => $product->shop?->name,
+                        'threshold' => $threshold,
+                        'url' => route('stock.index', ['shop_id' => $product->shop_id]),
+                    ],
+                ]);
+            }
+        }
+
         return $stock;
     }
 

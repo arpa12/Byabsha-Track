@@ -4,27 +4,35 @@
 
 @push('styles')
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
     .daily-shell {
-        font-family: 'Manrope', 'Segoe UI', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         color: #0f172a;
     }
 
-    .daily-shell::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
-        background:
-            radial-gradient(700px 420px at 90% 5%, rgba(14, 116, 144, 0.14), transparent 60%),
-            radial-gradient(580px 360px at 5% 8%, rgba(251, 146, 60, 0.14), transparent 60%),
-            linear-gradient(180deg, #f7fafc 0%, #eff4f8 100%);
+    .display-font {
+        font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+        letter-spacing: -0.03em;
+    }
+
+    .report-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.48rem;
+        background: color-mix(in srgb, var(--brand, #0f766e) 12%, transparent);
+        color: var(--brand, #0f766e);
+        border: 1px solid color-mix(in srgb, var(--brand, #0f766e) 22%, transparent);
+        border-radius: 999px;
+        padding: 0.42rem 0.92rem;
+        font-size: 0.76rem;
+        font-weight: 700;
+        margin-bottom: 0.8rem;
+        box-shadow: 0 8px 18px color-mix(in srgb, var(--brand, #0f766e) 13%, transparent);
     }
 
     .page-title {
-        font-family: 'Outfit', 'Segoe UI', sans-serif;
+        font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
         font-size: clamp(1.35rem, 2.4vw, 1.9rem);
         margin: 0;
     }
@@ -99,7 +107,7 @@
         font-size: 0.74rem;
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        color: #64748b;
+        color: var(--brand, #0f766e);
         margin: 0 0 0.2rem;
         font-weight: 700;
     }
@@ -170,16 +178,16 @@
     }
 
     .btn-report-brand {
-        background: linear-gradient(135deg, #0f766e 0%, #0d5969 100%);
-        border-color: #0f766e;
+        background: linear-gradient(135deg, var(--brand, #0f766e) 0%, var(--brand-deep, #0d5969) 100%);
+        border-color: var(--brand, #0f766e);
         color: #fff;
-        box-shadow: 0 8px 18px rgba(15, 118, 110, 0.18);
+        box-shadow: 0 8px 18px color-mix(in srgb, var(--brand, #0f766e) 18%, transparent);
     }
 
     .btn-report-brand:hover,
     .btn-report-brand:focus {
-        background: linear-gradient(135deg, #0d5969 0%, #0f766e 100%);
-        border-color: #0d5969;
+        background: linear-gradient(135deg, var(--brand-deep, #0d5969) 0%, var(--brand, #0f766e) 100%);
+        border-color: var(--brand-deep, #0d5969);
         color: #fff;
     }
 
@@ -208,14 +216,15 @@
 
 @section('content')
 <div class="daily-shell">
-    <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-4 border-bottom border-slate-200 pb-5 mb-8 report-header">
         <div>
-            <h1 class="page-title"><i class="bi bi-calendar-day me-1"></i>{{ __('report.daily_pnl') }}</h1>
+            <span class="report-kicker"><i class="bi bi-calendar-day"></i> {{ __('app.analytics') }}</span>
             @php
                 $currentShop = $shops->firstWhere('id', $filters['shop_id']);
                 $shopDisplay = $currentShop ? $currentShop->name : __('report.all_shops');
             @endphp
-            <p class="mb-0 text-muted">{{ __('report.daily_pnl_subtitle') }} • <strong>{{ __('report.shop') }}:</strong> {{ $shopDisplay }}</p>
+            <h1 class="dashboard-title display-font text-3xl font-black text-slate-900 leading-none mb-1">{{ __('report.daily_pnl') }}</h1>
+            <p class="dashboard-subtitle text-slate-500 text-sm mt-1.5">{{ __('report.daily_pnl_subtitle') }} • <strong>{{ __('report.shop') }}:</strong> {{ $shopDisplay }}</p>
         </div>
         <div class="d-flex flex-wrap gap-2">
             <a href="{{ route('report.export.daily-pdf', request()->query()) }}" class="btn btn-danger btn-sm">
